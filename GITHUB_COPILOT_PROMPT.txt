@@ -1,0 +1,247 @@
+"""
+GITHUB COPILOT PROMPT - FretPilot Complete Setup & Deployment
+
+Paste this entire prompt into GitHub Copilot to set up the FretPilot project:
+
+---
+
+Create a complete AI-powered guitar learning platform called "FretPilot" with the following architecture and features:
+
+## PROJECT OVERVIEW
+- Vue 3 + Vite frontend
+- Node.js + Express backend
+- Capacitor for mobile (Android/iOS)
+- Stripe for payments and subscriptions
+- 3-tier monetization: Free, Premium ($9.99/mo), Pro ($19.99/mo)
+
+## CORE FEATURES TO IMPLEMENT
+
+### 1. AI Video Lessons Component (src/components/AIVideoLessons.vue)
+- Video player with HTML5 video element
+- Real-time AI feedback panel with technique tips
+- Interactive hotspots that appear at specific timestamps
+- Pose detection overlay canvas (for Premium+ users)
+- Adaptive difficulty slider (1-5 levels)
+- Progress tracking (completion %, practice time, mastery score)
+- Lesson library with search and filters (difficulty, category)
+- Personalized recommendations section (Premium+ feature)
+- Daily usage limits for free tier (3 lessons/day)
+- Upgrade prompts when hitting limits or locked features
+- Pricing modal showing all 3 tiers with features
+- Download button for offline viewing (Premium+)
+- Mark complete and playlist buttons
+
+### 2. Subscription Service (src/services/subscriptionService.js)
+Create service with:
+- TIER_LIMITS object defining Free/Premium/Pro features and prices
+- Free tier: 3 videos/day, basic tracking
+- Premium tier: $9.99/mo, unlimited videos, AI analysis, pose detection, downloads, no ads
+- Pro tier: $19.99/mo, everything + custom plans, 1-on-1 coaching, priority support
+- Methods: getCurrentSubscription(), setSubscription(), hasFeature(), trackVideoView()
+- Daily usage tracking in localStorage
+- Feature gating functions
+- Stripe price IDs (use placeholders: price_premium_monthly, price_pro_monthly)
+
+### 3. Subscription Checkout Component (src/components/SubscriptionCheckout.vue)
+- Display selected tier and price
+- "Subscribe with Stripe" button
+- Call /api/create-subscription-checkout endpoint
+- Redirect to Stripe Checkout
+- Success/loading states
+- Secure payment disclaimer
+
+### 4. Backend Subscription Endpoints (server/index.js)
+Add these API routes:
+
+POST /api/create-subscription-checkout
+- Accept: priceId, tier, successUrl, cancelUrl
+- Create Stripe checkout session (mode: 'subscription')
+- Return sessionId and checkout URL
+- Include dev mode fallback when Stripe not configured
+
+POST /api/stripe-webhook (express.raw middleware)
+- Verify webhook signature
+- Handle events: checkout.session.completed, customer.subscription.updated/deleted, invoice.payment_succeeded/failed
+- Log subscription changes
+- TODO comments for database persistence
+
+POST /api/subscription/validate
+- Accept: stripeSubscriptionId
+- Fetch subscription from Stripe
+- Return: valid, tier, status, currentPeriodEnd, cancelAtPeriodEnd
+- Dev mode fallback
+
+POST /api/subscription/cancel
+- Accept: stripeSubscriptionId
+- Cancel subscription at period end (not immediately)
+- Return: ok, cancelAt date
+
+POST /api/subscription/update
+- Accept: stripeSubscriptionId, newPriceId, newTier
+- Update subscription with proration
+- Return: ok, new tier, period end
+
+POST /api/subscription/portal
+- Accept: stripeCustomerId, returnUrl
+- Create Stripe billing portal session
+- Return: portal URL
+
+### 5. Music Store Component (src/components/MusicStore.vue)
+Full e-commerce with:
+- Product catalog with images, prices, categories
+- Three fulfillment types:
+  * FretPilot-fulfilled (ships from us, calculate shipping)
+  * Dropship (vendor ships, free/flat shipping)
+  * Affiliate (external link, no cart)
+- Shopping cart with add/remove/quantity
+- Shipping address form
+- Payment selection (Stripe, Bitcoin)
+- Stripe Checkout integration
+- Order confirmation
+- Email/vendor PO on order completion
+
+### 6. Order Service (src/services/orderService.js)
+- saveOrder() - persist to localStorage
+- getOrders() - retrieve order history
+- getOrderById() - single order lookup
+- updateOrderStatus() - update tracking/status
+- Order schema: id, items, total, shipping, payment, fulfillment, status, tracking, timestamps
+
+### 7. Order History Component (src/components/OrderHistory.vue)
+- List all orders with status badges
+- Expandable order details
+- Track shipment button
+- Reorder functionality
+- Filter by status/date
+
+### 8. Main App Integration (src/App.vue)
+- Import AIVideoLessons and OrderHistory components
+- Add navigation buttons: "📚 Video Lessons" and "📦 Orders"
+- Add view cases for 'videolessons' and 'orders'
+- Implement handleUpgradeTier() function to trigger checkout
+- Emit upgrade-tier event with tier and stripePriceId
+
+### 9. Progress Service (src/services/progressService.js)
+- Track lesson completion, time spent, mastery scores
+- Store in localStorage with lesson IDs as keys
+- Methods: updateLessonProgress(), getLessonProgress(), getStats()
+
+### 10. Backend Store Endpoints (server/index.js - already exists)
+Ensure these exist:
+- POST /api/stripe/create-checkout-session
+- POST /api/email/send
+- POST /api/vendor/po
+
+## STYLING REQUIREMENTS
+- Dark theme (#000 background, #fff text)
+- Purple/blue gradient buttons (#667eea to #764ba2)
+- Smooth transitions and hover effects
+- Responsive grid layouts
+- Card-based UI with rounded corners and shadows
+- Badge system for tiers (Free: gray, Premium: purple, Pro: pink gradient)
+- Progress bars with gradient fills
+- Mobile-first responsive design
+
+## ENVIRONMENT VARIABLES (.env)
+```
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+VITE_STRIPE_PUBLIC_KEY=pk_test_...
+PORT=5175
+NODE_ENV=development
+OPENAI_API_KEY=...
+```
+
+## PACKAGE DEPENDENCIES
+Frontend: vue@3, vite, @capacitor/core, @capacitor/android
+Backend: express, stripe, cors
+Ensure package.json includes all dependencies
+
+## FILE STRUCTURE
+```
+fretpilot/
+├── src/
+│   ├── components/
+│   │   ├── AIVideoLessons.vue (NEW)
+│   │   ├── SubscriptionCheckout.vue (NEW)
+│   │   ├── MusicStore.vue (exists)
+│   │   ├── OrderHistory.vue (exists)
+│   │   └── ...
+│   ├── services/
+│   │   ├── subscriptionService.js (NEW)
+│   │   ├── orderService.js (exists)
+│   │   ├── progressService.js (exists)
+│   │   └── ...
+│   ├── App.vue (UPDATE)
+│   └── main.js
+├── server/
+│   └── index.js (UPDATE with subscription endpoints)
+├── android/
+├── public/
+├── README.md (UPDATE)
+├── DEPLOYMENT_GUIDE.md (NEW)
+└── package.json
+```
+
+## IMPLEMENTATION NOTES
+1. Use localStorage for all data persistence (subscriptions, orders, progress)
+2. Include dev mode fallbacks when Stripe keys not configured
+3. Add TODO comments where database integration is needed
+4. All API calls should handle errors gracefully
+5. Show upgrade prompts at strategic moments (hitting limits, locked features)
+6. Implement proper CORS in backend
+7. Use express.json() and express.raw() middleware appropriately
+8. Stripe webhook must use raw body for signature verification
+9. Include comprehensive JSDoc comments
+10. Follow Vue 3 Composition API patterns
+
+## UNIQUE SELLING POINTS TO HIGHLIGHT
+- Real-time pose detection with accuracy scores
+- AI adapts lesson difficulty based on performance
+- Interactive video hotspots for contextual learning
+- Personalized AI recommendations
+- Custom AI-generated lesson plans (Pro tier)
+- Offline video downloads (Premium+)
+- Integrated music store with multiple fulfillment models
+- Complete subscription management with Stripe
+
+## BUILD COMMANDS
+Development:
+- Frontend: npm run dev (http://localhost:5173)
+- Backend: cd server && node index.js (http://localhost:5175)
+
+Production:
+- Build: npm run build
+- Sync mobile: npx cap sync android
+- Build APK: cd android && ./gradlew assembleDebug
+
+## TESTING CHECKLIST
+- [ ] Free user can view 3 lessons/day
+- [ ] Upgrade prompt appears on 4th lesson
+- [ ] Premium/Pro users have unlimited access
+- [ ] Feature gating works (pose detection, downloads, custom plans)
+- [ ] Stripe checkout redirects properly
+- [ ] Subscription validation works
+- [ ] Music store cart functions
+- [ ] Orders save and display in history
+- [ ] Video playback works
+- [ ] Progress tracking updates
+- [ ] Mobile responsive design
+
+## SECURITY
+- Never expose Stripe secret keys in frontend
+- Validate all API inputs
+- Use Stripe webhook signatures
+- Implement rate limiting (add express-rate-limit)
+- Sanitize user inputs
+- HTTPS only in production
+
+## MONETIZATION STRATEGY
+- Freemium funnel: 3 lessons/day drives upgrades
+- Premium sweet spot: $9.99 impulse buy
+- Pro tier: High value for serious musicians
+- Store revenue: FretPilot products + affiliates
+- Upsells: Coaching, certificates, commercial licenses
+
+Now implement all of the above following Vue 3 best practices, ensuring type safety where possible, and creating a production-ready application. Generate all files in the structure specified above.
+"""

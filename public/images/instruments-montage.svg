@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" width="1200" height="220">
+  <rect width="1200" height="220" fill="#0a0a0a" rx="16"/>
+  <!-- Guitar silhouette -->
+  <g fill="#2f2f2f" opacity="0.9" transform="translate(60,40)">
+    <rect x="0" y="50" width="260" height="18" rx="9"/>
+    <circle cx="290" cy="60" r="40"/>
+    <circle cx="330" cy="60" r="28"/>
+  </g>
+  <!-- Piano keys -->
+  <g transform="translate(430,40)">
+    <rect x="0" y="0" width="320" height="140" fill="#1a1a1a" rx="8"/>
+    <g fill="#e5e7eb">
+      <rect x="12" y="10" width="36" height="120" rx="4"/>
+      <rect x="52" y="10" width="36" height="120" rx="4"/>
+      <rect x="92" y="10" width="36" height="120" rx="4"/>
+      <rect x="132" y="10" width="36" height="120" rx="4"/>
+      <rect x="172" y="10" width="36" height="120" rx="4"/>
+      <rect x="212" y="10" width="36" height="120" rx="4"/>
+      <rect x="252" y="10" width="36" height="120" rx="4"/>
+    </g>
+    <g fill="#111827">
+      <rect x="40" y="10" width="24" height="70" rx="3"/>
+      <rect x="96" y="10" width="24" height="70" rx="3"/>
+      <rect x="152" y="10" width="24" height="70" rx="3"/>
+      <rect x="208" y="10" width="24" height="70" rx="3"/>
+      <rect x="264" y="10" width="24" height="70" rx="3"/>
+    </g>
+  </g>
+  <!-- Violin silhouette -->
+  <g fill="#2f2f2f" opacity="0.9" transform="translate(800,40)">
+    <ellipse cx="40" cy="60" rx="36" ry="30"/>
+    <ellipse cx="85" cy="60" rx="28" ry="24"/>
+    <rect x="105" y="56" width="120" height="8" rx="4"/>
+    <rect x="225" y="54" width="16" height="12" rx="3"/>
+  </g>
+  <!-- Saxophone simplified -->
+  <g fill="#2f2f2f" opacity="0.9" transform="translate(980,40)">
+    <path d="M10,60 C40,10 90,20 100,40 L120,70 C125,80 115,95 100,92 C80,88 70,72 60,80 C40,96 20,95 12,82 Z"/>
+  </g>
+</svg>

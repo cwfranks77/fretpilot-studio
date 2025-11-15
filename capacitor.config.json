@@ -1,0 +1,20 @@
+{
+  "appId": "com.fretpilot.app",
+  "appName": "FretPilot",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#1e1e2f",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
+    }
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

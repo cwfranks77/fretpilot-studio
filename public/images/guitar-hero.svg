@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480" role="img" aria-label="FretPilot Guitar Hero">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1f2e"/>
+      <stop offset="100%" stop-color="#2a3142"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#06c167"/>
+      <stop offset="100%" stop-color="#5b74ff"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <!-- abstract fretboard lines -->
+  <g opacity="0.25">
+    <rect x="120" y="80" width="1040" height="12" rx="6" fill="#3a4358"/>
+    <rect x="120" y="130" width="1040" height="10" rx="5" fill="#354057"/>
+    <rect x="120" y="178" width="1040" height="8" rx="4" fill="#314055"/>
+    <rect x="120" y="224" width="1040" height="8" rx="4" fill="#2c3a50"/>
+    <rect x="120" y="270" width="1040" height="8" rx="4" fill="#27354a"/>
+    <rect x="120" y="316" width="1040" height="8" rx="4" fill="#233245"/>
+  </g>
+  <!-- glowing picks -->
+  <circle cx="220" cy="240" r="90" fill="url(#glow)" opacity="0.18" filter="url(#soft)"/>
+  <circle cx="1080" cy="160" r="120" fill="url(#glow)" opacity="0.12" filter="url(#soft)"/>
+  <!-- guitar silhouette -->
+  <g transform="translate(680,110)" fill="#1f2635">
+    <path d="M0,80 C40,0 140,-10 220,40 C240,54 254,78 252,104 C250,130 226,154 190,156 C168,158 152,170 144,188 C130,218 98,238 66,234 C34,230 6,208 0,180 Z"/>
+    <rect x="-220" y="70" width="220" height="24" rx="12" fill="#3a4358"/>
+    <rect x="-220" y="112" width="220" height="18" rx="9" fill="#3a4358"/>
+    <rect x="-220" y="148" width="220" height="14" rx="7" fill="#3a4358"/>
+  </g>
+  <!-- title -->
+  <g transform="translate(80,360)">
+    <text x="0" y="0" font-family="Inter,Segoe UI,Arial" font-size="56" font-weight="800" fill="#ffffff">FretPilot</text>
+    <text x="0" y="38" font-family="Inter,Segoe UI,Arial" font-size="20" fill="#a9b2c9">Train smarter. Play better. Master faster.</text>
+  </g>
+</svg>

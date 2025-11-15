@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+dist-electron/
+build/
+*.log
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/keystore/
+*.apk
+*.aab
+
+# iOS
+ios/App/Pods/
+ios/App/build/
+*.ipa
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local
+*.key
+*.jks

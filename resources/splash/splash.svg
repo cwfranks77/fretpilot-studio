@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  <rect width="2732" height="2732" fill="#1e1e2f"/>
+  <g fill="#5b74ff" font-family="Arial, sans-serif" font-weight="bold">
+    <text x="1366" y="1200" font-size="300" text-anchor="middle">FRET</text>
+    <text x="1366" y="1600" font-size="300" text-anchor="middle">PILOT</text>
+  </g>
+</svg>
