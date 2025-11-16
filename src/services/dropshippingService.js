@@ -1,28 +1,10 @@
 /**
  * Dropshipping Integration Service
- * Connects FretPilot with Printful, Spocket, and Oberlo for musical instruments
+ * Client-side wrapper for backend dropshipping API
+ * API keys are stored server-side for security
  */
 
-// Dropshipping Platform Configuration
-const DROPSHIP_CONFIG = {
-  printful: {
-    apiKey: import.meta.env.VITE_PRINTFUL_API_KEY || '',
-    enabled: true,
-    baseUrl: 'https://api.printful.com'
-  },
-  spocket: {
-    apiKey: import.meta.env.VITE_SPOCKET_API_KEY || '',
-    enabled: true,
-    baseUrl: 'https://api.spocket.co/api/v2'
-  },
-  modalyst: {
-    apiKey: import.meta.env.VITE_MODALYST_API_KEY || '',
-    enabled: true
-  },
-  stripe: {
-    publicKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY || ''
-  }
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 // Product Categories
 export const PRODUCT_CATEGORIES = {
@@ -242,39 +224,20 @@ export const CURATED_PRODUCTS = [
 
 // Create order with dropshipping supplier
 export async function createDropshipOrder(orderData) {
-  const { items, customer, shippingAddress, paymentMethod } = orderData
-  
   try {
-    // Group items by supplier
-    const supplierOrders = {}
-    
-    items.forEach(item => {
-      if (!supplierOrders[item.supplier]) {
-        supplierOrders[item.supplier] = []
-      }
-      supplierOrders[item.supplier].push(item)
+    const response = await fetch(`${API_URL}/api/dropship/create-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderData)
     })
     
-    // Create orders with each supplier
-    const orderResults = []
-    
-    for (const [supplier, supplierItems] of Object.entries(supplierOrders)) {
-      let result
-      
-      if (supplier === 'Printful') {
-        result = await createPrintfulOrder(supplierItems, customer, shippingAddress)
-      } else if (supplier === 'Spocket') {
-        result = await createSpocketOrder(supplierItems, customer, shippingAddress)
-      }
-      
-      orderResults.push(result)
+    if (!response.ok) {
+      throw new Error('Failed to create dropship order')
     }
     
-    return {
-      success: true,
-      orders: orderResults,
-      totalAmount: items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    }
+    return await response.json()
   } catch (error) {
     console.error('Order creation error:', error)
     return {
@@ -284,92 +247,43 @@ export async function createDropshipOrder(orderData) {
   }
 }
 
-// Create Printful order
-async function createPrintfulOrder(items, customer, shippingAddress) {
-  const orderData = {
-    recipient: {
-      name: `${customer.firstName} ${customer.lastName}`,
-      address1: shippingAddress.address1,
-      city: shippingAddress.city,
-      state_code: shippingAddress.state,
-      country_code: shippingAddress.country,
-      zip: shippingAddress.zip,
-      phone: customer.phone,
-      email: customer.email
-    },
-    items: items.map(item => ({
-      variant_id: item.variantId,
-      quantity: item.quantity
-    }))
-  }
-  
-  const response = await fetch(`${DROPSHIP_CONFIG.printful.baseUrl}/orders`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${DROPSHIP_CONFIG.printful.apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(orderData)
-  })
-  
-  return await response.json()
-}
-
-// Create Spocket order
-async function createSpocketOrder(items, customer, shippingAddress) {
-  const orderData = {
-    order: {
-      customer_email: customer.email,
-      customer_name: `${customer.firstName} ${customer.lastName}`,
-      shipping_address: {
-        address1: shippingAddress.address1,
-        city: shippingAddress.city,
-        province: shippingAddress.state,
-        country: shippingAddress.country,
-        zip: shippingAddress.zip,
-        phone: customer.phone
-      },
-      line_items: items.map(item => ({
-        product_id: item.productId,
-        variant_id: item.variantId,
-        quantity: item.quantity
-      }))
-    }
-  }
-  
-  const response = await fetch(`${DROPSHIP_CONFIG.spocket.baseUrl}/orders`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${DROPSHIP_CONFIG.spocket.apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(orderData)
-  })
-  
-  return await response.json()
-}
-
 // Track order status
 export async function trackOrder(orderId, supplier) {
   try {
-    if (supplier === 'Printful') {
-      const response = await fetch(`${DROPSHIP_CONFIG.printful.baseUrl}/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${DROPSHIP_CONFIG.printful.apiKey}`
-        }
-      })
-      return await response.json()
-    } else if (supplier === 'Spocket') {
-      const response = await fetch(`${DROPSHIP_CONFIG.spocket.baseUrl}/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${DROPSHIP_CONFIG.spocket.apiKey}`
-        }
-      })
-      return await response.json()
+    const response = await fetch(`${API_URL}/api/dropship/track-order/${supplier}/${orderId}`)
+    
+    if (!response.ok) {
+      throw new Error('Failed to track order')
     }
+    
+    return await response.json()
   } catch (error) {
     console.error('Order tracking error:', error)
     return null
+  }
+}
+
+// Get products from dropshipping suppliers
+export async function getDropshipProducts() {
+  try {
+    const response = await fetch(`${API_URL}/api/dropship/products`)
+    
+    if (!response.ok) {
+      // Fallback to curated products if API fails
+      return { products: CURATED_PRODUCTS }
+    }
+    
+    const data = await response.json()
+    
+    // If no products from suppliers, use curated
+    if (!data.products || data.products.length === 0) {
+      return { products: CURATED_PRODUCTS }
+    }
+    
+    return data
+  } catch (error) {
+    console.error('Fetch products error:', error)
+    return { products: CURATED_PRODUCTS }
   }
 }
 

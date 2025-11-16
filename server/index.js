@@ -384,3 +384,385 @@ app.post('/api/subscription/portal', async (req, res) => {
 })
 
 app.listen(PORT, () => console.log(`[server] listening on http://localhost:${PORT}`))
+
+// ============================================
+// BITCOIN / BTCPAY SERVER ENDPOINTS
+// ============================================
+
+const BTCPAY_SERVER_URL = process.env.BTCPAY_SERVER_URL || ''
+const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || ''
+const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || ''
+
+// Create BTCPay Server invoice
+app.post('/api/bitcoin/create-invoice', async (req, res) => {
+  try {
+    const { paymentId, plan, amount, currency = 'USD' } = req.body || {}
+    
+    if (!BTCPAY_SERVER_URL || !BTCPAY_STORE_ID || !BTCPAY_API_KEY) {
+      console.log('[btcpay] not configured, returning demo response')
+      // Return demo response for development
+      return res.json({
+        invoiceId: 'demo_' + paymentId,
+        address: 'bc1q' + Math.random().toString(36).substring(2, 34),
+        btcAmount: amount * 0.000015, // Rough BTC estimate
+        invoiceUrl: null,
+        expiresAt: Date.now() + (15 * 60 * 1000)
+      })
+    }
+    
+    // Create invoice via BTCPay Server API
+    const invoiceData = {
+      amount: amount,
+      currency: currency,
+      orderId: paymentId,
+      metadata: {
+        plan: plan,
+        paymentId: paymentId
+      },
+      checkout: {
+        speedPolicy: 'MediumSpeed', // 0-conf for small amounts
+        paymentMethods: ['BTC'],
+        expirationMinutes: 15,
+        redirectURL: `${process.env.APP_URL || 'http://localhost:5173'}?payment_id=${paymentId}`,
+        defaultLanguage: 'en'
+      }
+    }
+    
+    const response = await fetch(
+      `${BTCPAY_SERVER_URL}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `token ${BTCPAY_API_KEY}`
+        },
+        body: JSON.stringify(invoiceData)
+      }
+    )
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`BTCPay API error: ${response.status} ${errorText}`)
+    }
+    
+    const invoice = await response.json()
+    
+    // Extract payment info from invoice
+    return res.json({
+      invoiceId: invoice.id,
+      address: invoice.cryptoInfo?.[0]?.address || invoice.addresses?.BTC,
+      btcAmount: invoice.cryptoInfo?.[0]?.due || 0,
+      invoiceUrl: invoice.checkoutLink,
+      expiresAt: new Date(invoice.expirationTime).getTime()
+    })
+  } catch (error) {
+    console.error('[btcpay] invoice creation error:', error)
+    return res.status(500).json({ error: 'btcpay_invoice_failed', message: error.message })
+  }
+})
+
+// Check BTCPay invoice status
+app.get('/api/bitcoin/check-invoice/:invoiceId', async (req, res) => {
+  try {
+    const { invoiceId } = req.params
+    
+    if (!BTCPAY_SERVER_URL || !BTCPAY_STORE_ID || !BTCPAY_API_KEY) {
+      // Demo mode - simulate random confirmation
+      const demoStatuses = ['New', 'New', 'New', 'Processing', 'Settled']
+      return res.json({
+        status: demoStatuses[Math.floor(Math.random() * demoStatuses.length)],
+        confirmations: Math.floor(Math.random() * 3)
+      })
+    }
+    
+    const response = await fetch(
+      `${BTCPAY_SERVER_URL}/api/v1/stores/${BTCPAY_STORE_ID}/invoices/${invoiceId}`,
+      {
+        headers: {
+          'Authorization': `token ${BTCPAY_API_KEY}`
+        }
+      }
+    )
+    
+    if (!response.ok) {
+      throw new Error(`BTCPay API error: ${response.status}`)
+    }
+    
+    const invoice = await response.json()
+    
+    // Map BTCPay status to our status
+    // BTCPay statuses: New, Processing, Settled, Invalid, Expired
+    return res.json({
+      status: invoice.status,
+      confirmations: invoice.cryptoInfo?.[0]?.confirmations || 0,
+      amountPaid: invoice.cryptoInfo?.[0]?.paid || 0,
+      transactionId: invoice.cryptoInfo?.[0]?.txId || null
+    })
+  } catch (error) {
+    console.error('[btcpay] check invoice error:', error)
+    return res.status(500).json({ error: 'btcpay_check_failed', message: error.message })
+  }
+})
+
+// Webhook endpoint for BTCPay invoice events
+app.post('/api/bitcoin/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    // Verify webhook signature if configured
+    const webhookSecret = process.env.BTCPAY_WEBHOOK_SECRET
+    if (webhookSecret) {
+      const signature = req.headers['btcpay-sig']
+      // TODO: Implement signature verification
+      // const hmac = crypto.createHmac('sha256', webhookSecret)
+      // hmac.update(req.body)
+      // const digest = hmac.digest('hex')
+      // if (signature !== digest) return res.status(401).json({ error: 'invalid_signature' })
+    }
+    
+    const event = JSON.parse(req.body.toString())
+    console.log('[btcpay] webhook event:', event.type, event.invoiceId)
+    
+    // Handle invoice events
+    switch (event.type) {
+      case 'InvoiceCreated':
+        console.log('[btcpay] invoice created:', event.invoiceId)
+        break
+        
+      case 'InvoiceReceivedPayment':
+        console.log('[btcpay] payment received:', event.invoiceId)
+        // TODO: Update payment status in database
+        break
+        
+      case 'InvoiceProcessing':
+        console.log('[btcpay] invoice processing:', event.invoiceId)
+        break
+        
+      case 'InvoiceSettled':
+        console.log('[btcpay] invoice settled:', event.invoiceId)
+        // TODO: Grant premium access to user
+        // Find user by invoice metadata, update subscription status
+        break
+        
+      case 'InvoiceExpired':
+        console.log('[btcpay] invoice expired:', event.invoiceId)
+        // TODO: Mark payment as expired
+        break
+        
+      case 'InvoiceInvalid':
+        console.log('[btcpay] invoice invalid:', event.invoiceId)
+        break
+    }
+    
+    res.json({ received: true })
+  } catch (error) {
+    console.error('[btcpay] webhook error:', error)
+    return res.status(400).json({ error: 'webhook_error' })
+  }
+})
+
+// ============================================
+// DROPSHIPPING API ENDPOINTS
+// ============================================
+
+const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || ''
+const SPOCKET_API_KEY = process.env.SPOCKET_API_KEY || ''
+
+// Get product catalog from dropshipping suppliers
+app.get('/api/dropship/products', async (req, res) => {
+  try {
+    const products = []
+    
+    // Fetch from Printful
+    if (PRINTFUL_API_KEY) {
+      try {
+        const printfulResponse = await fetch('https://api.printful.com/store/products', {
+          headers: {
+            'Authorization': `Bearer ${PRINTFUL_API_KEY}`
+          }
+        })
+        if (printfulResponse.ok) {
+          const printfulData = await printfulResponse.json()
+          products.push(...(printfulData.result || []).map(p => ({
+            id: `printful_${p.id}`,
+            supplier: 'Printful',
+            ...p
+          })))
+        }
+      } catch (e) {
+        console.error('[dropship] Printful fetch error:', e)
+      }
+    }
+    
+    // Fetch from Spocket
+    if (SPOCKET_API_KEY) {
+      try {
+        const spocketResponse = await fetch('https://api.spocket.co/api/v2/products', {
+          headers: {
+            'Authorization': `Bearer ${SPOCKET_API_KEY}`
+          }
+        })
+        if (spocketResponse.ok) {
+          const spocketData = await spocketResponse.json()
+          products.push(...(spocketData.products || []).map(p => ({
+            id: `spocket_${p.id}`,
+            supplier: 'Spocket',
+            ...p
+          })))
+        }
+      } catch (e) {
+        console.error('[dropship] Spocket fetch error:', e)
+      }
+    }
+    
+    // Return curated fallback if no suppliers configured
+    if (products.length === 0) {
+      return res.json({ products: [], message: 'No dropship suppliers configured' })
+    }
+    
+    res.json({ products })
+  } catch (error) {
+    console.error('[dropship] products error:', error)
+    res.status(500).json({ error: 'fetch_products_failed' })
+  }
+})
+
+// Create dropshipping order
+app.post('/api/dropship/create-order', async (req, res) => {
+  try {
+    const { items, customer, shippingAddress } = req.body || {}
+    
+    if (!items || !customer || !shippingAddress) {
+      return res.status(400).json({ error: 'missing_required_fields' })
+    }
+    
+    // Group items by supplier
+    const supplierOrders = {}
+    items.forEach(item => {
+      if (!supplierOrders[item.supplier]) {
+        supplierOrders[item.supplier] = []
+      }
+      supplierOrders[item.supplier].push(item)
+    })
+    
+    const orderResults = []
+    
+    // Create Printful orders
+    if (supplierOrders.Printful && PRINTFUL_API_KEY) {
+      const printfulOrderData = {
+        recipient: {
+          name: `${customer.firstName} ${customer.lastName}`,
+          address1: shippingAddress.address1,
+          city: shippingAddress.city,
+          state_code: shippingAddress.state,
+          country_code: shippingAddress.country,
+          zip: shippingAddress.zip,
+          phone: customer.phone,
+          email: customer.email
+        },
+        items: supplierOrders.Printful.map(item => ({
+          variant_id: item.variantId,
+          quantity: item.quantity
+        }))
+      }
+      
+      const printfulResponse = await fetch('https://api.printful.com/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${PRINTFUL_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(printfulOrderData)
+      })
+      
+      const printfulResult = await printfulResponse.json()
+      orderResults.push({
+        supplier: 'Printful',
+        success: printfulResponse.ok,
+        orderId: printfulResult.result?.id,
+        data: printfulResult
+      })
+    }
+    
+    // Create Spocket orders
+    if (supplierOrders.Spocket && SPOCKET_API_KEY) {
+      const spocketOrderData = {
+        order: {
+          customer_email: customer.email,
+          customer_name: `${customer.firstName} ${customer.lastName}`,
+          shipping_address: {
+            address1: shippingAddress.address1,
+            city: shippingAddress.city,
+            province: shippingAddress.state,
+            country: shippingAddress.country,
+            zip: shippingAddress.zip,
+            phone: customer.phone
+          },
+          line_items: supplierOrders.Spocket.map(item => ({
+            product_id: item.productId,
+            variant_id: item.variantId,
+            quantity: item.quantity
+          }))
+        }
+      }
+      
+      const spocketResponse = await fetch('https://api.spocket.co/api/v2/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SPOCKET_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(spocketOrderData)
+      })
+      
+      const spocketResult = await spocketResponse.json()
+      orderResults.push({
+        supplier: 'Spocket',
+        success: spocketResponse.ok,
+        orderId: spocketResult.order?.id,
+        data: spocketResult
+      })
+    }
+    
+    const allSuccessful = orderResults.every(r => r.success)
+    
+    res.json({
+      success: allSuccessful,
+      orders: orderResults,
+      totalAmount: items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    })
+  } catch (error) {
+    console.error('[dropship] create order error:', error)
+    res.status(500).json({ error: 'create_order_failed', message: error.message })
+  }
+})
+
+// Track dropshipping order
+app.get('/api/dropship/track-order/:supplier/:orderId', async (req, res) => {
+  try {
+    const { supplier, orderId } = req.params
+    
+    if (supplier === 'Printful' && PRINTFUL_API_KEY) {
+      const response = await fetch(`https://api.printful.com/orders/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${PRINTFUL_API_KEY}`
+        }
+      })
+      const data = await response.json()
+      return res.json(data)
+    }
+    
+    if (supplier === 'Spocket' && SPOCKET_API_KEY) {
+      const response = await fetch(`https://api.spocket.co/api/v2/orders/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${SPOCKET_API_KEY}`
+        }
+      })
+      const data = await response.json()
+      return res.json(data)
+    }
+    
+    res.status(400).json({ error: 'invalid_supplier_or_not_configured' })
+  } catch (error) {
+    console.error('[dropship] track order error:', error)
+    res.status(500).json({ error: 'track_order_failed' })
+  }
+})

@@ -1,37 +1,94 @@
-// Bitcoin Payment Service
-// Integrates with blockchain APIs for real payment verification
+// Bitcoin Payment Service - BTCPay Server Integration
+// Professional Bitcoin payment processing via self-hosted BTCPay Server
 
-const BITCOIN_API_URL = 'https://blockchain.info/q'
-const BITCOIN_EXPLORER = 'https://www.blockchain.com/btc/tx'
+// BTCPay Server configuration (set in environment variables)
+const BTCPAY_SERVER_URL = import.meta.env.VITE_BTCPAY_SERVER_URL || 'https://your-btcpay-server.com'
+const BTCPAY_STORE_ID = import.meta.env.VITE_BTCPAY_STORE_ID || ''
+const BTCPAY_API_KEY = import.meta.env.VITE_BTCPAY_API_KEY || ''
+
+// Fallback to backend API for production security
+const BACKEND_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 // Payment tracking storage
 let activePayments = new Map()
 
 export async function createBitcoinPayment(plan) {
-  // Generate unique payment address (in production, use HD wallet or payment processor API)
   const paymentId = generatePaymentId()
-  const amount = plan === 'monthly' ? 0.00015 : 0.00075
   
-  // In production, generate address from:
-  // - BTCPay Server API
-  // - Coinbase Commerce
-  // - Your own HD wallet
-  const address = generateDemoAddress()
+  // Plan pricing in USD (converted to BTC by BTCPay)
+  const pricing = {
+    monthly: 9.99,
+    yearly: 99.99,
+    lifetime: 299.99
+  }
   
+  try {
+    // Create invoice via backend API (recommended for production)
+    const response = await fetch(`${BACKEND_API_URL}/api/bitcoin/create-invoice`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        paymentId,
+        plan,
+        amount: pricing[plan] || 9.99,
+        currency: 'USD'
+      })
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to create BTCPay invoice')
+    }
+    
+    const invoiceData = await response.json()
+    
+    const payment = {
+      id: paymentId,
+      plan,
+      amount: invoiceData.btcAmount,
+      amountUSD: pricing[plan],
+      address: invoiceData.address,
+      invoiceId: invoiceData.invoiceId,
+      invoiceUrl: invoiceData.invoiceUrl,
+      status: 'pending',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + (15 * 60 * 1000), // 15 minutes
+      confirmations: 0,
+      requiredConfirmations: 1
+    }
+    
+    activePayments.set(paymentId, payment)
+    savePayments()
+    
+    return payment
+  } catch (error) {
+    console.error('BTCPay invoice creation error:', error)
+    
+    // Fallback to demo mode if BTCPay unavailable
+    console.warn('Using demo Bitcoin payment - NOT FOR PRODUCTION')
+    return createDemoPayment(paymentId, plan, pricing[plan])
+  }
+}
+
+function createDemoPayment(paymentId, plan, amountUSD) {
   const payment = {
     id: paymentId,
     plan,
-    amount,
-    address,
+    amount: amountUSD * 0.000015, // Rough BTC estimate
+    amountUSD,
+    address: generateDemoAddress(),
+    invoiceId: 'demo_' + paymentId,
+    invoiceUrl: null,
     status: 'pending',
     createdAt: Date.now(),
+    expiresAt: Date.now() + (15 * 60 * 1000),
     confirmations: 0,
-    requiredConfirmations: 1
+    requiredConfirmations: 1,
+    isDemoMode: true
   }
   
   activePayments.set(paymentId, payment)
-  
-  // Save to localStorage for persistence
   savePayments()
   
   return payment
@@ -43,36 +100,58 @@ export async function checkPaymentStatus(paymentId) {
     throw new Error('Payment not found')
   }
   
+  // Check if payment expired
+  if (payment.expiresAt && Date.now() > payment.expiresAt) {
+    payment.status = 'expired'
+    savePayments()
+    return {
+      confirmed: false,
+      expired: true,
+      payment
+    }
+  }
+  
   try {
-    // Check blockchain for transactions to this address
-    const response = await fetch(`${BITCOIN_API_URL}/getreceivedbyaddress/${payment.address}`)
-    const receivedBTC = await response.text()
-    const received = parseFloat(receivedBTC) || 0
+    // Check invoice status via backend API
+    const response = await fetch(`${BACKEND_API_URL}/api/bitcoin/check-invoice/${payment.invoiceId}`)
     
-    if (received >= payment.amount) {
-      // Get confirmation count
-      const txResponse = await fetch(`https://blockchain.info/q/addressbalance/${payment.address}`)
-      const balance = await txResponse.text()
-      
-      if (parseFloat(balance) >= payment.amount * 100000000) {
-        payment.status = 'confirmed'
-        payment.confirmations = 1 // Simplified
-        savePayments()
-        return {
-          confirmed: true,
-          payment
-        }
+    if (!response.ok) {
+      throw new Error('Failed to check invoice status')
+    }
+    
+    const invoiceStatus = await response.json()
+    
+    // Update payment based on BTCPay invoice status
+    payment.confirmations = invoiceStatus.confirmations || 0
+    
+    // BTCPay invoice statuses: New, Processing, Settled, Invalid, Expired
+    if (invoiceStatus.status === 'Settled' || invoiceStatus.status === 'Processing') {
+      payment.status = 'confirmed'
+      savePayments()
+      return {
+        confirmed: true,
+        payment
+      }
+    } else if (invoiceStatus.status === 'Expired' || invoiceStatus.status === 'Invalid') {
+      payment.status = invoiceStatus.status.toLowerCase()
+      savePayments()
+      return {
+        confirmed: false,
+        expired: true,
+        payment
       }
     }
     
+    // Still pending
     return {
       confirmed: false,
       payment
     }
   } catch (error) {
     console.error('Payment check error:', error)
-    // Fallback for testing - simulate random confirmation
-    if (Math.random() > 0.7) {
+    
+    // Demo fallback for testing
+    if (payment.isDemoMode && Math.random() > 0.85) {
       payment.status = 'confirmed'
       payment.confirmations = 1
       savePayments()
@@ -81,6 +160,7 @@ export async function checkPaymentStatus(paymentId) {
         payment
       }
     }
+    
     return {
       confirmed: false,
       payment
@@ -91,12 +171,25 @@ export async function checkPaymentStatus(paymentId) {
 export function getPaymentQRCode(address, amount) {
   // Generate Bitcoin URI for QR code
   const uri = `bitcoin:${address}?amount=${amount}`
-  // Return QR code data URL (in production, use QR library)
-  return generateQRCodeDataURL(uri)
+  
+  // Use QRCode.js library for production QR generation
+  // Install: npm install qrcode
+  // For now, return simple data URL or redirect to BTCPay invoice page
+  
+  return {
+    uri,
+    dataUrl: generateQRCodeDataURL(uri),
+    // BTCPay invoices have built-in QR codes, use invoiceUrl instead
+    useInvoiceUrl: true
+  }
 }
 
-export function getPaymentExplorerLink(address) {
-  return `${BITCOIN_EXPLORER}/${address}`
+export function getPaymentExplorerLink(address, txId = null) {
+  // Use mempool.space for better UX
+  if (txId) {
+    return `https://mempool.space/tx/${txId}`
+  }
+  return `https://mempool.space/address/${address}`
 }
 
 export function getAllActivePayments() {
