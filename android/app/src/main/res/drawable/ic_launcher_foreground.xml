@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Glowing brand pick layered -->
+    <group android:translateX="54" android:translateY="54">
+        <path android:pathData="M-20,-10l30,10l-30,10z" android:fillColor="#FFD700" android:fillAlpha="0.85" />
+        <path android:pathData="M-16,-6l22,6l-22,6z" android:fillColor="#FF8C00" android:fillAlpha="0.9" />
+        <path android:pathData="M-12,-2l14,4l-14,4z" android:fillColor="#FFFFFF" android:fillAlpha="0.95" />
+    </group>
+</vector>

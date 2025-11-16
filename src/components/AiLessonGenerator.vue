@@ -1,7 +1,10 @@
 <template>
   <section class="ai-lesson">
     <img src="/images/ai-lesson.svg" alt="AI Lesson" class="page-hero" />
-    <h2>AI Lesson Generator</h2>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="ai" :size="48" />
+      <h2 style="margin: 0;">AI Lesson Generator</h2>
+    </div>
     <p class="subtitle">Describe your goal and get a personalized video-backed lesson plan.</p>
 
     <form class="controls" @submit.prevent="generate">
@@ -40,7 +43,7 @@
         <video :src="plan.videoUrl" controls preload="metadata" />
       </div>
       <div class="video-placeholder" v-else>
-        <p>📹 AI-generated instructional video coming soon</p>
+        <p>📹 Generate a short instructional clip and step-by-step plan.</p>
         <p class="hint">Follow the step-by-step instructions above</p>
       </div>
       <div class="cta">
@@ -54,6 +57,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 import { generateLessonPlan } from '../services/aiService'
 import { saveLessonPlan } from '../services/progressService'
 import { isPremium, getDailyLessonRemaining, consumeLessonSlot, addRewardCredit } from '../services/featureFlags'

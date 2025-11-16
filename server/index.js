@@ -3,6 +3,8 @@
 
 const express = require('express')
 const cors = require('cors')
+const { handleVendorPO } = require('./vendor')
+const dropshipWebhooks = require('./dropship-webhooks')
 const app = express()
 const PORT = process.env.PORT || 5175
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
@@ -13,6 +15,9 @@ if (STRIPE_SECRET_KEY) {
 
 app.use(express.json({ limit: '10mb' }))
 app.use(cors())
+
+// Mount dropshipping webhook routes
+app.use(dropshipWebhooks)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 
@@ -45,17 +50,59 @@ app.post('/api/payments/checkout', (req, res) => {
   return res.json({ url: 'https://example.com/checkout/session' })
 })
 
-// Create Stripe Checkout Session (test mode if key present)
+// Basic product catalog (server authority) - keep price integrity
+// In real production, replace with DB fetch.
+const PRODUCT_CATALOG = {
+  1: { name: 'Fender Stratocaster', unit_amount: 129999 },
+  2: { name: 'Gibson Les Paul', unit_amount: 249999 },
+  3: { name: 'Taylor 214ce Acoustic', unit_amount: 89999 },
+  4: { name: 'Fender Blues Junior IV', unit_amount: 59999 },
+  5: { name: 'Marshall DSL40CR', unit_amount: 79999 },
+  8: { name: 'Ernie Ball Strings (3-Pack)', unit_amount: 1999 },
+  10:{ name: 'Gator Hardshell Case', unit_amount: 14999 },
+  11:{ name: 'Yamaha P-125 Digital Piano', unit_amount: 69999 },
+  12:{ name: 'Pearl Export Drum Kit', unit_amount: 84999 },
+  13:{ name: 'Pioneer DDJ-400 Controller', unit_amount: 24999 },
+  14:{ name: 'KRK Rokit 5 G4 Monitors (Pair)', unit_amount: 39999 },
+  15:{ name: 'Shure SM58 Vocal Microphone', unit_amount: 10999 },
+  16:{ name: 'Hohner Panther Diatonic Accordion', unit_amount: 59999 },
+  17:{ name: 'Focusrite Scarlett 2i2 Audio Interface', unit_amount: 17999 },
+  18:{ name: 'Audio-Technica AT2020 Condenser', unit_amount: 9999 },
+  19:{ name: 'Akai MPK Mini Plus MIDI Controller', unit_amount: 16999 },
+  20:{ name: 'Native Instruments Traktor Kontrol S2', unit_amount: 33999 }
+}
+
+// Create Stripe Checkout Session (secure server-side price resolution)
 app.post('/api/stripe/create-checkout-session', async (req, res) => {
   try {
-    const { lineItems = [], successUrl = 'http://localhost:5173/?checkout_success=1', cancelUrl = 'http://localhost:5173/?checkout_cancel=1' } = req.body || {}
+    const { cart = [], successUrl = 'http://localhost:5173/?checkout_success=1', cancelUrl = 'http://localhost:5173/?checkout_cancel=1' } = req.body || {}
     if (!stripe) {
       return res.json({ url: 'https://example.com/checkout/dev-success' })
+    }
+    // Build line items from server catalog only (ignore client amounts)
+    const line_items = []
+    for (const item of cart) {
+      // skip affiliate items (no direct checkout)
+      if (item.fulfillment === 'affiliate') continue
+      const catalog = PRODUCT_CATALOG[item.id]
+      if (!catalog) continue
+      const quantity = Math.max(1, parseInt(item.quantity, 10) || 1)
+      line_items.push({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: catalog.name },
+          unit_amount: catalog.unit_amount
+        },
+        quantity
+      })
+    }
+    if (line_items.length === 0) {
+      return res.status(400).json({ error: 'empty_checkout' })
     }
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: lineItems,
+      line_items,
       success_url: successUrl,
       cancel_url: cancelUrl
     })
@@ -75,10 +122,15 @@ app.post('/api/email/send', (req, res) => {
 })
 
 // Vendor purchase order stub
-app.post('/api/vendor/po', (req, res) => {
-  // eslint-disable-next-line no-console
-  console.log('[vendor] PO', req.body)
-  res.json({ ok: true })
+app.post('/api/vendor/po', async (req, res) => {
+  try {
+    const result = await handleVendorPO(req.body)
+    return res.json(result)
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[vendor] PO error', e)
+    return res.status(500).json({ ok: false, error: 'vendor_po_failed' })
+  }
 })
 
 app.get('/api/user/progress', (req, res) => {

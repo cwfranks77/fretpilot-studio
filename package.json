@@ -1,8 +1,9 @@
 {
-  "name": "fretpilot",
-  "version": "0.1.0",
+  "name": "fretpilot-studio-school",
+  "version": "1.0.0",
   "description": "Interactive guitar chord trainer for learning and practice",
   "author": "FretPilot",
+  "homepage": "https://fretpilotstudio.com",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -26,7 +27,8 @@
     "cors": "^2.8.5",
     "stripe": "^16.0.0",
     "html2canvas": "^1.4.1",
-    "vue": "^3.3.0"
+    "vue": "^3.3.0",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^5.5.0",

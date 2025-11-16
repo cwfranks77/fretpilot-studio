@@ -4,7 +4,7 @@
 # ========================================
 
 # Step 1: Navigate to project folder
-cd C:\Users\ninja\Fretquest
+cd C:\Users\ninja\FretPilot
 
 Write-Host "`n🎸 FretPilot GitHub Setup Starting..." -ForegroundColor Cyan
 Write-Host "====================================`n" -ForegroundColor Cyan

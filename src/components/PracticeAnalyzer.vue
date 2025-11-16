@@ -1,7 +1,10 @@
 <template>
   <section class="practice-analyzer">
     <img class="top-illustration" src="/images/practice-tips.svg" alt="Practice tips" />
-    <h2>Practice Analyzer (Beta)</h2>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="practice" :size="48" />
+      <h2 style="margin: 0;">Practice Analyzer (Beta)</h2>
+    </div>
     <p class="subtitle">Record a short riff (up to 20s). We analyze timing & consistency and suggest micro-drills.</p>
 
     <div class="controls">

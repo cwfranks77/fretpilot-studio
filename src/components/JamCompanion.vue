@@ -1,7 +1,10 @@
 <template>
   <section class="jam-companion">
     <img class="top-illustration" src="/images/jam-session.svg" alt="Jam session" />
-    <h2>Jam Companion (Prototype)</h2>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="jam" :size="48" />
+      <h2 style="margin: 0;">Jam Companion (Prototype)</h2>
+    </div>
     <p class="subtitle">Generate a backing groove to practice over. (AI audio generation placeholder)</p>
     <form class="controls" @submit.prevent="generate">
       <label>Key
@@ -31,6 +34,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 import { generateJamTrack } from '../services/aiService'
 import { saveJamTrack } from '../services/progressService'
 

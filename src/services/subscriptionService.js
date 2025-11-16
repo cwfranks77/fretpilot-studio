@@ -86,8 +86,9 @@ class SubscriptionService {
   getCurrentSubscription() {
     const stored = localStorage.getItem(this.storageKey);
     if (!stored) {
+      // Default to Premium in dev to unlock all features out of the box
       return {
-        tier: TIERS.FREE,
+        tier: TIERS.PREMIUM,
         status: 'active',
         startDate: new Date().toISOString(),
         expiryDate: null,

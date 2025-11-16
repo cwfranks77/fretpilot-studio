@@ -64,20 +64,9 @@
 
       <div class="video-ready" v-if="videoReady">
         <h2>✅ Your Video is Ready!</h2>
-        
+
         <div class="video-preview">
-          <div class="video-player">
-            <canvas ref="videoCanvas" class="video-canvas"></canvas>
-            <div class="video-controls">
-              <button @click="toggleVideoPlay" class="play-pause-btn">
-                {{ videoPlaying ? '⏸️' : '▶️' }}
-              </button>
-              <div class="progress-bar-video">
-                <div class="progress-fill-video" :style="{ width: videoProgress + '%' }"></div>
-              </div>
-              <span class="video-time">{{ formatVideoTime(videoCurrentTime) }} / {{ formatVideoTime(videoDuration) }}</span>
-            </div>
-          </div>
+          <video class="native-player" :src="videoUrl" controls playsinline preload="metadata"></video>
         </div>
 
         <div class="video-actions">
@@ -126,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import AnimatedHero from './AnimatedHero.vue'
 import { generateAIVideo } from '../services/aiService'
 
@@ -190,14 +179,7 @@ async function generateVideo() {
       actualDuration.value = result.duration
       generating.value = false
       videoReady.value = true
-      videoDuration.value = parseInt(result.duration) * 60 || 180
-      
-      // Start rendering animated video
-      nextTick(() => {
-        if (videoCanvas.value) {
-          renderAnimatedLesson()
-        }
-      })
+      videoDuration.value = (parseInt(result.duration) || 3) * 60
       
       // Save to recent
       const newVideo = {

@@ -1,7 +1,10 @@
 <template>
   <div class="library-page">
     <img src="/images/chord-library.svg" alt="Chord Library" class="page-hero" />
-    <h2>📚 Chord Library</h2>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="chord" :size="48" />
+      <h2 style="margin: 0;">📚 Chord Library</h2>
+    </div>
     <p class="subtitle">500+ chords with fingering diagrams</p>
 
     <div class="filters">
@@ -66,6 +69,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 
 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const rootFilter = ref('')

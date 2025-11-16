@@ -12,7 +12,7 @@
 Open PowerShell in your project folder and run:
 
 ```powershell
-cd C:\Users\ninja\Fretquest
+cd C:\Users\ninja\FretPilot
 
 # Initialize git (if not already done)
 git init

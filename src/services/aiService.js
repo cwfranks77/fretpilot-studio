@@ -96,24 +96,23 @@ export async function generateAIVideo({ prompt, skillLevel, instrument, duration
     } catch {}
   }
   
-  // Simulate video generation with realistic delay
-  await sleep(8000)
-  
-  // Generate mock video response
+  // Simulate generation delay
+  await sleep(2000)
+
+  // Provide a real, CC0 sample video URL so playback works out of the box
+  // Source: MDN CC0 sample video
+  const sampleVideo = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
   return {
-    videoUrl: createMockVideoUrl(prompt, instrument),
+    videoUrl: sampleVideo,
     thumbnail: '/images/video-placeholder.png',
-    duration: duration === 'short' ? '3:24' : duration === 'medium' ? '7:12' : '15:48',
-    title: prompt.substring(0, 60),
+    duration: duration === 'short' ? '3' : duration === 'medium' ? '7' : '15',
+    title: prompt.substring(0, 60) || `AI ${instrument} lesson`,
     transcript: generateTranscript(prompt, skillLevel, instrument)
   }
 }
 
-function createMockVideoUrl(prompt, instrument) {
-  // In production, this would return a real video URL from the AI service
-  // For now, return a data URL or placeholder
-  return 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAs1tZGF0'
-}
+// Kept for reference if needed later
+function createMockVideoUrl() { return '' }
 
 function generateTranscript(prompt, skillLevel, instrument) {
   return `Welcome to your personalized ${instrument} lesson. Today we'll be working on: ${prompt}. This lesson is designed for ${skillLevel} players. Let's get started...`

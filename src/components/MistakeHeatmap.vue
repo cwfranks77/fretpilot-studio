@@ -1,6 +1,9 @@
 <template>
   <section class="heatmap">
-    <h3>Mistake Heatmap</h3>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="heatmap" :size="36" />
+      <h3 style="margin: 0;">Mistake Heatmap</h3>
+    </div>
     <p class="hint">Darker cells indicate more timing/pitch issues at that string/fret.</p>
     <div class="board" role="img" aria-label="Fretboard heatmap">
       <div class="row header">
@@ -17,6 +20,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 const props = defineProps({
   heatmap: { type: Array, required: true }, // array[6][13] 0..1
 })

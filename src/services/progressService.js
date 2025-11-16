@@ -29,3 +29,19 @@ export function listSaved() {
   const db = read()
   return db
 }
+
+// Basic per-lesson progress tracking used by AIVideoLessons.vue
+export function updateLessonProgress(lessonId, updates = {}) {
+  if (!lessonId) return
+  const db = read()
+  db.lessonProgress = db.lessonProgress || {}
+  const prev = db.lessonProgress[lessonId] || {}
+  db.lessonProgress[lessonId] = { ...prev, ...updates, updatedAt: Date.now() }
+  write(db)
+}
+
+export function getLessonProgress(lessonId) {
+  if (!lessonId) return null
+  const db = read()
+  return (db.lessonProgress || {})[lessonId] || null
+}

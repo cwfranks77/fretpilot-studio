@@ -3,8 +3,8 @@
     <AnimatedHero src="/images/instruments-montage.svg" alt="Music Store" :float="true" :shimmer="true" :overlay="true" height="220px" />
 
     <div class="container">
-      <h1>🎸 FretPilot Music Store & School</h1>
-      <p class="subtitle">Premium instruments and accessories delivered to your door</p>
+      <h1>🎸 FretPilot Music Store</h1>
+      <p class="subtitle">Name-brand instruments, pro audio, home & car systems delivered to your door</p>
 
       <!-- Shopping Cart Summary -->
       <div class="cart-summary" v-if="cart.length > 0" @click="showCart = true">
@@ -198,6 +198,13 @@ import { postJSON, API_BASE } from '../services/config'
 import { makeOrder, saveOrder } from '../services/orderService'
 import { sendOrderConfirmation } from '../services/emailService'
 import { submitDropshipPO } from '../services/vendorService'
+import { 
+  CURATED_PRODUCTS, 
+  createDropshipOrder, 
+  trackOrder,
+  fetchSpocketProducts,
+  fetchPrintfulProducts 
+} from '../services/dropshippingService'
 
 const selectedCategory = ref('all')
 const cart = ref([])
@@ -216,12 +223,23 @@ const shipping = ref({
 const categories = [
   { id: 'all', name: 'All', icon: '🎵' },
   { id: 'guitars', name: 'Guitars', icon: '🎸' },
+  { id: 'bass', name: 'Bass', icon: '🎸' },
   { id: 'amps', name: 'Amplifiers', icon: '🔊' },
-  { id: 'pedals', name: 'Pedals', icon: '🎛️' },
+  { id: 'pedals', name: 'Effects', icon: '🎛️' },
+  { id: 'keyboards', name: 'Keys & Synths', icon: '🎹' },
+  { id: 'drums', name: 'Drums', icon: '🥁' },
+  { id: 'dj', name: 'DJ & Production', icon: '🎧' },
+  { id: 'studio', name: 'Recording', icon: '🎚️' },
+  { id: 'mics', name: 'Microphones', icon: '🎤' },
+  { id: 'live', name: 'Live Sound', icon: '📢' },
+  { id: 'homeaudio', name: 'Home Audio', icon: '🔉' },
+  { id: 'caraudio', name: 'Car Audio', icon: '🚗' },
+  { id: 'orchestral', name: 'Orchestral', icon: '🎻' },
   { id: 'accessories', name: 'Accessories', icon: '🎯' }
 ]
 
 const products = ref([
+  // GUITARS
   {
     id: 1,
     category: 'guitars',
@@ -231,49 +249,121 @@ const products = ref([
     discount: 15,
     rating: 5,
     reviews: 342,
-    description: 'Classic electric guitar with versatile tone and iconic design',
+    description: 'Classic electric guitar with versatile tone',
     image: '/images/products/strat.svg',
     stock: 12,
-    vendor: 'FretPilot',
-    fulfillment: 'fretpilot',
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
     shipFrom: 'USA',
-    etaDays: 5
+    etaDays: 3
   },
   {
     id: 2,
     category: 'guitars',
-    name: 'Gibson Les Paul',
+    name: 'Gibson Les Paul Standard',
     brand: 'Gibson',
     price: 2499.99,
-    discount: 10,
     rating: 5,
     reviews: 289,
     description: 'Premium mahogany body with rich, warm tone',
     image: '/images/products/lespaul.svg',
     stock: 8,
-    vendor: 'Gibson Partner',
-    fulfillment: 'dropship',
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
     shipFrom: 'USA',
-    etaDays: 7
+    etaDays: 3
   },
   {
     id: 3,
     category: 'guitars',
-    name: 'Taylor 214ce Acoustic',
-    brand: 'Taylor',
+    name: 'PRS SE Custom 24',
+    brand: 'PRS',
     price: 899.99,
     rating: 5,
     reviews: 445,
-    description: 'Acoustic-electric with beautiful tone and playability',
+    description: 'Versatile guitar with coil-tap humbuckers',
     image: '/images/products/taylor.svg',
     stock: 15,
-    vendor: 'Taylor Partner',
-    fulfillment: 'dropship',
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
     shipFrom: 'USA',
-    etaDays: 6
+    etaDays: 3
   },
   {
     id: 4,
+    category: 'guitars',
+    name: 'Ibanez RG Series',
+    brand: 'Ibanez',
+    price: 699.99,
+    rating: 5,
+    reviews: 521,
+    description: 'Fast neck and powerful pickups for metal',
+    image: '/images/products/strat.svg',
+    stock: 18,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 5,
+    category: 'guitars',
+    name: 'Jackson Soloist',
+    brand: 'Jackson',
+    price: 1199.99,
+    rating: 5,
+    reviews: 310,
+    description: 'Shred-ready with EMG pickups',
+    image: '/images/products/lespaul.svg',
+    stock: 10,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // BASS
+  {
+    id: 6,
+    category: 'bass',
+    name: 'Fender Precision Bass',
+    brand: 'Fender',
+    price: 1099.99,
+    rating: 5,
+    reviews: 412,
+    description: 'Classic P-Bass tone and feel',
+    image: '/images/products/strat.svg',
+    stock: 14,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 7,
+    category: 'bass',
+    name: 'Music Man StingRay',
+    brand: 'Music Man',
+    price: 1899.99,
+    rating: 5,
+    reviews: 287,
+    description: 'Punchy active electronics and growl',
+    image: '/images/products/lespaul.svg',
+    stock: 8,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // AMPS
+  {
+    id: 8,
     category: 'amps',
     name: 'Fender Blues Junior IV',
     brand: 'Fender',
@@ -284,64 +374,586 @@ const products = ref([
     description: '15W tube amp with classic Fender tone',
     image: '/images/products/amp.svg',
     stock: 20,
-    vendor: 'FretPilot',
-    fulfillment: 'fretpilot',
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
     shipFrom: 'USA',
-    etaDays: 5
+    etaDays: 3
   },
   {
-    id: 5,
+    id: 9,
     category: 'amps',
     name: 'Marshall DSL40CR',
     brand: 'Marshall',
     price: 799.99,
     rating: 5,
     reviews: 423,
-    description: '40W combo amp with legendary Marshall crunch',
+    description: '40W combo with legendary Marshall crunch',
     image: '/images/products/marshall.svg',
     stock: 10,
-    vendor: 'Marshall Partner',
-    fulfillment: 'dropship',
-    shipFrom: 'UK',
-    etaDays: 9
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
   },
   {
-    id: 6,
+    id: 10,
+    category: 'amps',
+    name: 'Orange Crush 35RT',
+    brand: 'Orange',
+    price: 299.99,
+    rating: 5,
+    reviews: 312,
+    description: 'British tone with built-in reverb and tuner',
+    image: '/images/products/amp.svg',
+    stock: 25,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // PEDALS
+  {
+    id: 11,
     category: 'pedals',
     name: 'Boss DS-1 Distortion',
     brand: 'Boss',
     price: 59.99,
     rating: 5,
     reviews: 1240,
-    description: 'Classic distortion pedal used by pros worldwide',
+    description: 'Classic distortion used by pros worldwide',
     image: '/images/products/pedal.svg',
     stock: 50,
     vendor: 'Amazon',
     fulfillment: 'affiliate',
-    affiliateUrl: 'https://example.com/affiliate/boss-ds1',
+    affiliateUrl: 'https://amazon.com',
     shipFrom: 'Various',
-    etaDays: 3
+    etaDays: 2
   },
   {
-    id: 7,
+    id: 12,
     category: 'pedals',
     name: 'Electro-Harmonix Big Muff',
     brand: 'Electro-Harmonix',
     price: 89.99,
-    discount: 10,
     rating: 5,
     reviews: 892,
-    description: 'Legendary fuzz pedal with thick sustain',
+    description: 'Legendary fuzz with thick sustain',
     image: '/images/products/muff.svg',
     stock: 35,
     vendor: 'Sweetwater',
     fulfillment: 'affiliate',
-    affiliateUrl: 'https://example.com/affiliate/bigmuff',
+    affiliateUrl: 'https://sweetwater.com',
     shipFrom: 'USA',
-    etaDays: 4
+    etaDays: 3
   },
   {
-    id: 8,
+    id: 13,
+    category: 'pedals',
+    name: 'Strymon Timeline Delay',
+    brand: 'Strymon',
+    price: 449.99,
+    rating: 5,
+    reviews: 567,
+    description: 'Pro-level delay with studio quality',
+    image: '/images/products/pedal.svg',
+    stock: 18,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // KEYBOARDS
+  {
+    id: 14,
+    category: 'keyboards',
+    name: 'Yamaha P-125 Digital Piano',
+    brand: 'Yamaha',
+    price: 699.99,
+    rating: 5,
+    reviews: 910,
+    description: 'Natural piano feel with Graded Hammer keys',
+    image: '/images/products/keyboard.svg',
+    stock: 18,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 15,
+    category: 'keyboards',
+    name: 'Korg Minilogue XD',
+    brand: 'Korg',
+    price: 649.99,
+    rating: 5,
+    reviews: 487,
+    description: 'Analog polyphonic synthesizer',
+    image: '/images/products/keyboard.svg',
+    stock: 22,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 16,
+    category: 'keyboards',
+    name: 'Nord Stage 3',
+    brand: 'Nord',
+    price: 3999.99,
+    rating: 5,
+    reviews: 245,
+    description: 'Professional stage piano and synth',
+    image: '/images/products/keyboard.svg',
+    stock: 5,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // DRUMS
+  {
+    id: 17,
+    category: 'drums',
+    name: 'Pearl Export 5-Piece Kit',
+    brand: 'Pearl',
+    price: 849.99,
+    rating: 5,
+    reviews: 502,
+    description: 'Complete kit with hardware and cymbals',
+    image: '/images/products/drums.svg',
+    stock: 9,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 5
+  },
+  {
+    id: 18,
+    category: 'drums',
+    name: 'Zildjian A Custom Cymbal Set',
+    brand: 'Zildjian',
+    price: 699.99,
+    rating: 5,
+    reviews: 389,
+    description: 'Pro cymbals with brilliant finish',
+    image: '/images/products/drums.svg',
+    stock: 15,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // DJ & PRODUCTION
+  {
+    id: 19,
+    category: 'dj',
+    name: 'Pioneer DDJ-400',
+    brand: 'Pioneer',
+    price: 249.99,
+    rating: 5,
+    reviews: 1540,
+    description: 'Compact 2-channel controller for rekordbox',
+    image: '/images/products/dj.svg',
+    stock: 30,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 20,
+    category: 'dj',
+    name: 'Native Instruments Traktor S4',
+    brand: 'Native Instruments',
+    price: 999.99,
+    rating: 5,
+    reviews: 740,
+    description: '4-channel system with jog wheels',
+    image: '/images/products/dj.svg',
+    stock: 22,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 21,
+    category: 'dj',
+    name: 'Technics SL-1200MK7',
+    brand: 'Technics',
+    price: 1099.99,
+    rating: 5,
+    reviews: 612,
+    description: 'Legendary DJ turntable',
+    image: '/images/products/dj.svg',
+    stock: 12,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // RECORDING
+  {
+    id: 22,
+    category: 'studio',
+    name: 'Focusrite Scarlett 2i2',
+    brand: 'Focusrite',
+    price: 179.99,
+    rating: 5,
+    reviews: 3200,
+    description: '2-in/2-out USB interface with Air mode',
+    image: '/images/products/interface.svg',
+    stock: 75,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'Various',
+    etaDays: 2
+  },
+  {
+    id: 23,
+    category: 'studio',
+    name: 'Universal Audio Apollo Twin X',
+    brand: 'Universal Audio',
+    price: 899.99,
+    rating: 5,
+    reviews: 487,
+    description: 'Pro interface with UAD plugins',
+    image: '/images/products/interface.svg',
+    stock: 18,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 24,
+    category: 'studio',
+    name: 'KRK Rokit 5 G4 Monitors',
+    brand: 'KRK',
+    price: 399.99,
+    rating: 5,
+    reviews: 820,
+    description: 'Accurate near-field monitoring with DSP',
+    image: '/images/products/monitors.svg',
+    stock: 40,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 25,
+    category: 'studio',
+    name: 'Yamaha HS8 Studio Monitors',
+    brand: 'Yamaha',
+    price: 699.99,
+    rating: 5,
+    reviews: 1240,
+    description: 'Industry-standard studio monitors',
+    image: '/images/products/monitors.svg',
+    stock: 35,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // MICROPHONES
+  {
+    id: 26,
+    category: 'mics',
+    name: 'Shure SM58 Vocal Microphone',
+    brand: 'Shure',
+    price: 109.99,
+    rating: 5,
+    reviews: 5000,
+    description: 'Industry-standard cardioid dynamic',
+    image: '/images/products/mic.svg',
+    stock: 120,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'Various',
+    etaDays: 2
+  },
+  {
+    id: 27,
+    category: 'mics',
+    name: 'Audio-Technica AT2020',
+    brand: 'Audio-Technica',
+    price: 99.99,
+    rating: 5,
+    reviews: 4100,
+    description: 'Large diaphragm condenser for studios',
+    image: '/images/products/mic.svg',
+    stock: 110,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'Various',
+    etaDays: 2
+  },
+  {
+    id: 28,
+    category: 'mics',
+    name: 'Rode NT1-A',
+    brand: 'Rode',
+    price: 229.99,
+    rating: 5,
+    reviews: 2340,
+    description: 'Ultra-low noise studio condenser',
+    image: '/images/products/mic.svg',
+    stock: 45,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // LIVE SOUND
+  {
+    id: 29,
+    category: 'live',
+    name: 'QSC K12.2 Powered Speaker',
+    brand: 'QSC',
+    price: 799.99,
+    rating: 5,
+    reviews: 612,
+    description: '2000W powered PA speaker',
+    image: '/images/products/monitors.svg',
+    stock: 18,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 30,
+    category: 'live',
+    name: 'Behringer X32 Digital Mixer',
+    brand: 'Behringer',
+    price: 2499.99,
+    rating: 5,
+    reviews: 890,
+    description: '40-channel digital mixing console',
+    image: '/images/products/interface.svg',
+    stock: 8,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 5
+  },
+  // HOME AUDIO
+  {
+    id: 31,
+    category: 'homeaudio',
+    name: 'Klipsch Reference Premiere',
+    brand: 'Klipsch',
+    price: 1499.99,
+    rating: 5,
+    reviews: 487,
+    description: '5.1 home theater speaker system',
+    image: '/images/products/monitors.svg',
+    stock: 12,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 32,
+    category: 'homeaudio',
+    name: 'Denon AVR-X3800H',
+    brand: 'Denon',
+    price: 1199.99,
+    rating: 5,
+    reviews: 612,
+    description: '9.4-channel 8K AV receiver',
+    image: '/images/products/amp.svg',
+    stock: 15,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 33,
+    category: 'homeaudio',
+    name: 'Sonos Arc Soundbar',
+    brand: 'Sonos',
+    price: 899.99,
+    rating: 5,
+    reviews: 1540,
+    description: 'Premium Dolby Atmos soundbar',
+    image: '/images/products/monitors.svg',
+    stock: 25,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 2
+  },
+  {
+    id: 34,
+    category: 'homeaudio',
+    name: 'SVS SB-1000 Pro Subwoofer',
+    brand: 'SVS',
+    price: 599.99,
+    rating: 5,
+    reviews: 789,
+    description: 'Sealed 12" powered subwoofer',
+    image: '/images/products/amp.svg',
+    stock: 18,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // CAR AUDIO
+  {
+    id: 35,
+    category: 'caraudio',
+    name: 'JL Audio 12W7AE-3',
+    brand: 'JL Audio',
+    price: 899.99,
+    rating: 5,
+    reviews: 412,
+    description: '12" high-performance subwoofer',
+    image: '/images/products/amp.svg',
+    stock: 14,
+    vendor: 'Crutchfield',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://crutchfield.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 36,
+    category: 'caraudio',
+    name: 'Alpine iLX-W650 Receiver',
+    brand: 'Alpine',
+    price: 399.99,
+    rating: 5,
+    reviews: 567,
+    description: '7" CarPlay/Android Auto receiver',
+    image: '/images/products/interface.svg',
+    stock: 22,
+    vendor: 'Crutchfield',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://crutchfield.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 37,
+    category: 'caraudio',
+    name: 'Rockford Fosgate P300-12',
+    brand: 'Rockford Fosgate',
+    price: 299.99,
+    rating: 5,
+    reviews: 823,
+    description: 'Powered 12" subwoofer enclosure',
+    image: '/images/products/amp.svg',
+    stock: 28,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 2
+  },
+  {
+    id: 38,
+    category: 'caraudio',
+    name: 'Kenwood Excelon KFC-XP184C',
+    brand: 'Kenwood',
+    price: 179.99,
+    rating: 5,
+    reviews: 312,
+    description: '7" component speaker system',
+    image: '/images/products/monitors.svg',
+    stock: 35,
+    vendor: 'Crutchfield',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://crutchfield.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // ORCHESTRAL
+  {
+    id: 39,
+    category: 'orchestral',
+    name: 'Yamaha YVS-100 Violin',
+    brand: 'Yamaha',
+    price: 4999.99,
+    rating: 5,
+    reviews: 78,
+    description: 'Silent electric violin with authentic tone',
+    image: '/images/products/taylor.svg',
+    stock: 5,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 5
+  },
+  {
+    id: 40,
+    category: 'orchestral',
+    name: 'Hohner Panther Accordion',
+    brand: 'Hohner',
+    price: 599.99,
+    rating: 5,
+    reviews: 210,
+    description: '3-row diatonic accordion',
+    image: '/images/products/accordion.svg',
+    stock: 14,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 5
+  },
+  {
+    id: 41,
+    category: 'orchestral',
+    name: 'Roland Aerophone AE-20',
+    brand: 'Roland',
+    price: 1299.99,
+    rating: 5,
+    reviews: 145,
+    description: 'Digital wind instrument with breath control',
+    image: '/images/products/keyboard.svg',
+    stock: 8,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  // ACCESSORIES
+  {
+    id: 42,
     category: 'accessories',
     name: 'Ernie Ball Strings (3-Pack)',
     brand: 'Ernie Ball',
@@ -351,13 +963,14 @@ const products = ref([
     description: 'Super Slinky electric guitar strings',
     image: '/images/products/strings.svg',
     stock: 200,
-    vendor: 'FretPilot',
-    fulfillment: 'fretpilot',
-    shipFrom: 'USA',
-    etaDays: 4
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'Various',
+    etaDays: 2
   },
   {
-    id: 9,
+    id: 43,
     category: 'accessories',
     name: 'Dunlop Jazz III Picks (24-Pack)',
     brand: 'Dunlop',
@@ -369,26 +982,197 @@ const products = ref([
     stock: 150,
     vendor: 'Amazon',
     fulfillment: 'affiliate',
-    affiliateUrl: 'https://example.com/affiliate/jazz3',
+    affiliateUrl: 'https://amazon.com',
     shipFrom: 'Various',
-    etaDays: 3
+    etaDays: 2
   },
   {
-    id: 10,
+    id: 44,
     category: 'accessories',
     name: 'Gator Hardshell Case',
     brand: 'Gator',
     price: 149.99,
-    discount: 25,
     rating: 5,
     reviews: 678,
     description: 'Premium protection for your instrument',
     image: '/images/products/case.svg',
     stock: 45,
-    vendor: 'Gator Partner',
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 45,
+    category: 'accessories',
+    name: 'Mogami Gold Studio Cable',
+    brand: 'Mogami',
+    price: 59.99,
+    rating: 5,
+    reviews: 1240,
+    description: '10ft premium instrument cable',
+    image: '/images/products/strings.svg',
+    stock: 85,
+    vendor: 'Sweetwater',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://sweetwater.com',
+    shipFrom: 'USA',
+    etaDays: 3
+  },
+  {
+    id: 46,
+    category: 'accessories',
+    name: 'Hercules GS414B Guitar Stand',
+    brand: 'Hercules',
+    price: 39.99,
+    rating: 5,
+    reviews: 2100,
+    description: 'Auto-grip multi-guitar stand',
+    image: '/images/products/case.svg',
+    stock: 120,
+    vendor: 'Amazon',
+    fulfillment: 'affiliate',
+    affiliateUrl: 'https://amazon.com',
+    shipFrom: 'Various',
+    etaDays: 2
+  },
+  // DROPSHIP PRODUCTS - Fulfilled by Spocket/Printful
+  {
+    id: 47,
+    category: 'accessories',
+    name: 'Premium Guitar Strings 6-Pack',
+    brand: 'FretPilot Select',
+    price: 29.99,
+    rating: 5,
+    reviews: 845,
+    description: 'Phosphor bronze acoustic strings - dropshipped from supplier',
+    image: '/images/products/case.svg',
+    stock: 500,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'strings-6pack-001'
+  },
+  {
+    id: 48,
+    category: 'accessories',
+    name: 'Professional Guitar Capo',
+    brand: 'FretPilot Select',
+    price: 14.99,
+    rating: 5,
+    reviews: 1234,
+    description: 'Quick-change trigger capo - dropshipped',
+    image: '/images/products/case.svg',
+    stock: 800,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'capo-quick-001'
+  },
+  {
+    id: 49,
+    category: 'pedals',
+    name: 'Mini Distortion Pedal',
+    brand: 'FretPilot Select',
+    price: 39.99,
+    rating: 4,
+    reviews: 567,
+    description: 'Compact distortion effect pedal - dropshipped',
+    image: '/images/products/pedals.svg',
+    stock: 300,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'pedal-distortion-mini'
+  },
+  {
+    id: 50,
+    category: 'guitars',
+    name: 'Custom T-Shirt with Guitar Design',
+    brand: 'FretPilot Merch',
+    price: 24.99,
+    rating: 5,
+    reviews: 423,
+    description: 'Premium print-on-demand t-shirt - Printed by Printful',
+    image: '/images/products/strat.svg',
+    stock: 9999,
+    vendor: 'Printful',
     fulfillment: 'dropship',
     shipFrom: 'USA',
-    etaDays: 6
+    etaDays: 5,
+    variantId: 'tshirt-guitar-design'
+  },
+  {
+    id: 51,
+    category: 'accessories',
+    name: 'Guitar Pick Variety Pack (50 pcs)',
+    brand: 'FretPilot Select',
+    price: 12.99,
+    rating: 5,
+    reviews: 2341,
+    description: 'Assorted thickness picks - dropshipped',
+    image: '/images/products/case.svg',
+    stock: 1000,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'picks-variety-50'
+  },
+  {
+    id: 52,
+    category: 'accessories',
+    name: 'Premium Guitar Strap - Leather',
+    brand: 'FretPilot Select',
+    price: 34.99,
+    rating: 5,
+    reviews: 678,
+    description: 'Genuine leather guitar strap - dropshipped',
+    image: '/images/products/case.svg',
+    stock: 400,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'strap-leather-001'
+  },
+  {
+    id: 53,
+    category: 'studio',
+    name: 'USB Studio Condenser Microphone',
+    brand: 'FretPilot Select',
+    price: 79.99,
+    rating: 4,
+    reviews: 890,
+    description: 'Plug-and-play USB mic for recording - dropshipped',
+    image: '/images/products/mic.svg',
+    stock: 250,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'mic-usb-condenser'
+  },
+  {
+    id: 54,
+    category: 'accessories',
+    name: 'Digital Clip-On Tuner',
+    brand: 'FretPilot Select',
+    price: 19.99,
+    rating: 5,
+    reviews: 1567,
+    description: 'Chromatic tuner with bright display - dropshipped',
+    image: '/images/products/case.svg',
+    stock: 600,
+    vendor: 'Spocket',
+    fulfillment: 'dropship',
+    shipFrom: 'China',
+    etaDays: 7,
+    variantId: 'tuner-clipon-digital'
   }
 ])
 
@@ -404,7 +1188,6 @@ const cartSubtotal = computed(() => {
 })
 
 const shippingCost = computed(() => {
-  // FretPilot-fulfilled: free over $100; Dropship: $9.99 per dropship item; Affiliate items are not carted
   const fretpilotSubtotal = cart.value
     .filter(i => i.fulfillment === 'fretpilot')
     .reduce((sum, i) => sum + (i.price * i.quantity), 0)
@@ -467,13 +1250,12 @@ async function placeOrder() {
 
   if (checkoutMethod.value === 'bitcoin') {
     try {
-      const totalBTC = (cartTotal.value / 66000).toFixed(8) // Approximate BTC conversion
+      const totalBTC = (cartTotal.value / 66000).toFixed(8)
       alert(`Bitcoin Payment\n\nTotal: ${totalBTC} BTC\n\nGenerating payment address...`)
       
       const payment = await createBitcoinPayment('custom')
       alert(`Send exactly ${totalBTC} BTC to:\n\n${payment.address}\n\nOrder will be processed after confirmation.`)
       
-      // Save order (pending until BTC confirmed by user payment flow)
       const order = makeOrder({
         items: cart.value,
         shipping: shipping.value,
@@ -489,44 +1271,76 @@ async function placeOrder() {
       alert('Bitcoin payment setup failed. Please try again.')
     }
   } else {
-    // Card payment via Stripe Checkout (dev fallback if server not configured)
     try {
-      const lineItems = cart.value
-        .filter(i => i.fulfillment !== 'affiliate')
-        .map(i => ({
-          price_data: {
-            currency: 'usd',
-            product_data: { name: i.name },
-            unit_amount: Math.round(i.price * 100)
-          },
-          quantity: i.quantity
+      // Prepare dropship order data
+      const dropshipItems = cart.value
+        .filter(item => item.fulfillment === 'dropship')
+        .map(item => ({
+          productId: item.id,
+          variantId: item.variantId || item.id,
+          quantity: item.quantity,
+          price: item.price,
+          supplier: item.vendor
         }))
+
+      // Create order with dropshipping suppliers (Printful, Spocket, etc.)
+      if (dropshipItems.length > 0) {
+        const dropshipResult = await createDropshipOrder({
+          items: dropshipItems,
+          customer: {
+            firstName: shipping.value.name.split(' ')[0],
+            lastName: shipping.value.name.split(' ').slice(1).join(' ') || '',
+            email: localStorage.getItem('userEmail') || 'customer@fretpilot.com',
+            phone: shipping.value.phone
+          },
+          shippingAddress: {
+            address1: shipping.value.address,
+            city: shipping.value.city,
+            state: shipping.value.state,
+            zip: shipping.value.zip,
+            country: 'US'
+          },
+          paymentMethod: 'card'
+        })
+
+        if (!dropshipResult.success) {
+          throw new Error('Dropship order creation failed')
+        }
+
+        // Save dropship order IDs for tracking
+        console.log('Dropship orders created:', dropshipResult.orders)
+      }
+
+      // Handle Stripe checkout for payment
       const successUrl = window.location.origin + '/?checkout_success=1'
       const cancelUrl = window.location.origin + '/?checkout_cancel=1'
-      const { url } = await postJSON('/api/stripe/create-checkout-session', { lineItems, successUrl, cancelUrl })
+      const { url } = await postJSON('/api/stripe/create-checkout-session', { cart: cart.value, successUrl, cancelUrl })
+      
       if (url && url.includes('example.com')) {
-        // Dev fallback: simulate success
+        // Dev mode - simulate successful order
         const order = makeOrder({
           items: cart.value,
           shipping: shipping.value,
           total: cartTotal.value,
           paymentMethod: 'card',
           status: 'paid',
-          fulfillmentSummary: summarizeFulfillment(cart.value)
+          fulfillmentSummary: summarizeFulfillment(cart.value),
+          dropshipOrders: dropshipItems.length > 0 ? 'submitted' : 'none'
         })
         saveOrder(order)
         await submitDropshipPO(order)
         await sendOrderConfirmation(order)
         clearCart()
         showCheckout.value = false
-        alert('Order placed in dev mode. (Stripe not configured)')
+        alert('Order placed! Your dropship items are being processed by our suppliers.')
       } else if (url) {
         window.location.href = url
       } else {
         throw new Error('No checkout URL')
       }
     } catch (e) {
-      alert('Unable to start card checkout. Is the server running?')
+      console.error('Order error:', e)
+      alert('Unable to complete order. Please check your connection and try again.')
     }
   }
 }
@@ -562,8 +1376,6 @@ function clearCart() {
   saveCart()
 }
 
-// legacy saveOrder removed; using orderService.saveOrder instead
-
 onMounted(() => {
   loadCart()
 })
@@ -575,13 +1387,6 @@ onMounted(() => {
   color: #fff;
   min-height: 100vh;
   padding-bottom: 60px;
-}
-
-.page-hero {
-  max-width: 450px;
-  margin: 0 auto;
-  display: block;
-  filter: drop-shadow(0 4px 12px rgba(30, 144, 255, 0.3));
 }
 
 .container {
@@ -827,6 +1632,7 @@ h1 {
   border-color: #06c167;
   color: #06c167;
 }
+
 .add-to-cart-btn:hover {
   background: #09a557;
   transform: translateY(-2px);

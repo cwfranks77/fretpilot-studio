@@ -1,7 +1,10 @@
 <template>
   <div class="metronome-page">
     <img src="/images/metronome.svg" alt="Metronome" class="page-hero" />
-    <h2>🎵 Metronome & Tuner</h2>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0;">
+      <FeatureIcons icon="metronome" :size="48" />
+      <h2 style="margin: 0;">🎵 Metronome & Tuner</h2>
+    </div>
     <p class="subtitle">Keep perfect time and stay in tune</p>
 
     <div class="tool-tabs">
@@ -70,6 +73,7 @@
 
 <script setup>
 import { ref, onUnmounted } from 'vue'
+import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 
 const mode = ref('metronome')
 const bpm = ref(120)

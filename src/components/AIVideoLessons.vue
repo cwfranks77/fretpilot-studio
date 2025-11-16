@@ -313,8 +313,8 @@
 
 <script>
 import subscriptionService, { TIERS } from '../services/subscriptionService';
-import aiService from '../services/aiService';
-import progressService from '../services/progressService';
+import * as aiService from '../services/aiService';
+import * as progressService from '../services/progressService';
 
 export default {
   name: 'AIVideoLessons',
@@ -596,8 +596,8 @@ export default {
           duration: '15:30',
           difficulty: 'beginner',
           category: 'technique',
-          thumbnail: '/api/placeholder/400/225',
-          videoUrl: '/videos/chord-transitions.mp4',
+          thumbnail: '/images/video-placeholder.png',
+          videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
           isPremium: false,
           progress: 0,
           completed: false
@@ -610,8 +610,8 @@ export default {
           duration: '22:15',
           difficulty: 'advanced',
           category: 'technique',
-          thumbnail: '/api/placeholder/400/225',
-          videoUrl: '/videos/fingerpicking.mp4',
+          thumbnail: '/images/video-placeholder.png',
+          videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
           isPremium: true,
           progress: 0,
           completed: false
@@ -624,8 +624,8 @@ export default {
           duration: '35:00',
           difficulty: 'intermediate',
           category: 'improvisation',
-          thumbnail: '/api/placeholder/400/225',
-          videoUrl: '/videos/blues-improv.mp4',
+          thumbnail: '/images/video-placeholder.png',
+          videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-10s.mp4',
           isPremium: true,
           progress: 45,
           completed: false
