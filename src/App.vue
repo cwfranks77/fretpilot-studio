@@ -207,7 +207,16 @@ onMounted(async () => {
 html,body,#app { height:100%; margin:0; background:#000 }
 .app-shell { display:flex; flex-direction:column; min-height:100%; background:#000 }
 .topbar {
-  display:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+  background:#0a0a0a;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  position:sticky;
+  top:0;
+  z-index:10;
 }
 .brand { font-weight:700 }
 .nav { display:flex; gap:8px }

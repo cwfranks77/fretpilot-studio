@@ -1,13 +1,14 @@
 <template>
   <div class="login-wrapper">
     <div class="panel">
-      <h1>🔐 FretPilot Login</h1>
-      <p class="tagline">Enter a username to personalize your session.</p>
+      <h1>🔐 Sign up or Sign in</h1>
+      <p class="tagline">Create a lightweight local account for personalized features and orders.</p>
       <form @submit.prevent="doLogin">
         <input v-model.trim="username" placeholder="Username" autocomplete="username" />
+        <input v-model.trim="email" placeholder="Email (for receipts)" type="email" autocomplete="email" />
         <button :disabled="!username">Continue</button>
       </form>
-      <p class="foot">No password needed (local only). Future cloud sync coming soon.</p>
+      <p class="foot">No password needed (local only). You can add email to receive order confirmations.</p>
     </div>
   </div>
 </template>
@@ -16,11 +17,15 @@
 import { ref } from 'vue'
 
 const username = ref('')
+const email = ref('')
 
 function doLogin() {
   if(!username.value) return
-  const payload = { user: username.value, ts: Date.now() }
+  const payload = { user: username.value, email: email.value || undefined, ts: Date.now() }
   localStorage.setItem('fretpilot-auth', JSON.stringify(payload))
+  if (email.value) {
+    localStorage.setItem('userEmail', email.value)
+  }
   // Dispatch a custom event so App shell can react immediately
   window.dispatchEvent(new CustomEvent('fretpilot-auth-changed', { detail: payload }))
 }
