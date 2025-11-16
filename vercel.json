@@ -6,7 +6,10 @@
   "framework": "vite",
   "redirects": [
     {
-      "source": "https://www.fretpilotstudio.com/(.*)",
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "www.fretpilotstudio.com" }
+      ],
       "destination": "https://fretpilotstudio.com/$1",
       "permanent": true
     }
