@@ -89,6 +89,21 @@
       </button>
     </div>
 
+    <div class="store-promo">
+      <div class="promo-card">
+        <div class="promo-left">
+          <h2>Shop The Franks Standard</h2>
+          <p>Premium guitars, pro audio, and musician gear. Quality is our standard.</p>
+          <a class="promo-btn" href="https://thefranksstandard.com" target="_blank" rel="noopener">
+            🛒 Visit Store
+          </a>
+        </div>
+        <div class="promo-right">
+          <img src="/images/guitar-hero.svg" alt="The Franks Standard" />
+        </div>
+      </div>
+    </div>
+
     <div class="gallery">
       <img src="/images/practice-tips.svg" alt="Practice tips" />
       <img src="/images/jam-session.svg" alt="Jam session" />
@@ -255,6 +270,36 @@ const quota = computed(() => getDailyLessonRemaining())
 
 .gallery { display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:24px 0 }
 .gallery img { width:100%; border-radius:12px; border:1px solid #1a1a1a; background:#0a0a0a }
+
+/* Store promo */
+.store-promo { margin: 30px 0 10px 0; }
+.promo-card {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15));
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 24px;
+  border-radius: 12px;
+}
+.promo-left h2 { margin: 0 0 8px 0; color: #fff; }
+.promo-left p { margin: 0 0 16px 0; color: #cfd6e6 }
+.promo-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 0;
+}
+.promo-right img { width: 100%; opacity: 0.8 }
+@media (max-width: 800px) {
+  .promo-card { grid-template-columns: 1fr; }
+  .promo-right { display: none }
+}
 
 @media (max-width: 768px) {
   .hero-title {

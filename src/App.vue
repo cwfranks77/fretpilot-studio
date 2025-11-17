@@ -17,7 +17,14 @@
           <FeatureIcons icon="jam" :size="18" /> Video Platform
         </button>
         <button :class="{ active: view==='studio' }" @click="view='studio'">🎙️ Studio</button>
-        <button :class="{ active: view==='store' }" @click="view='store'">🛒 Store</button>
+          <a
+            :class="{ active: false }"
+            href="https://thefranksstandard.com"
+            target="_blank"
+            rel="noopener"
+            class="link-button"
+            title="Shop The Franks Standard"
+          >🛒 Store</a>
         <button :class="{ active: view==='practice' }" @click="view='practice'" style="display: flex; align-items: center; gap: 4px;">
           <FeatureIcons icon="practice" :size="18" /> Practice
         </button>
@@ -88,7 +95,7 @@
           <a href="/about.html" target="_blank">About Us</a>
           <a href="/privacy.html" target="_blank">Privacy Policy</a>
           <a href="/terms.html" target="_blank">Terms of Service</a>
-          <a href="mailto:support@fretpilot.com">Contact Support</a>
+            <a href="mailto:support@fretpilotstudio.com">Contact Support</a>
         </div>
         <p class="footer-copyright">© 2025 FretPilot Studio & School. Premium AI-powered music education & gear.</p>
       </div>
@@ -106,7 +113,9 @@ import PracticeAnalyzer from './components/PracticeAnalyzer.vue'
 import JamCompanion from './components/JamCompanion.vue'
 import MultiplayerJam from './components/MultiplayerJam.vue'
 import MusicStudio from './components/MusicStudio.vue'
-import MusicStore from './components/MusicStore.vue'
+  // Store is now its own domain (https://thefranksstandard.com)
+  // Keeping import available if needed for in-app fallback usage
+  import MusicStore from './components/MusicStore.vue'
 import MetronomeTuner from './components/MetronomeTuner.vue'
 import ChordLibrary from './components/ChordLibrary.vue'
 import PremiumGate from './components/PremiumGate.vue'

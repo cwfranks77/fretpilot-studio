@@ -12,9 +12,19 @@
       ],
       "destination": "https://fretpilotstudio.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "www.thefranksstandard.com" }
+      ],
+      "destination": "https://thefranksstandard.com/$1",
+      "permanent": true
     }
   ],
   "rewrites": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "thefranksstandard.com" }], "destination": "/store.html" },
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.thefranksstandard.com" }], "destination": "/store.html" },
     { "source": "/store", "destination": "/store.html" },
     { "source": "/store/(.*)", "destination": "/store.html" },
     { "source": "/(.*)", "destination": "/index.html" }
