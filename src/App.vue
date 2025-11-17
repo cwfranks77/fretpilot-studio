@@ -229,8 +229,8 @@ html,body,#app { height:100%; margin:0; background:#000 }
 }
 .brand { font-weight:700 }
 .nav { display:flex; gap:8px }
-.nav button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer }
-.nav button.active { background:#2a2a2a; color:#fff }
+.nav button, .nav a.link-button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; }
+.nav button.active, .nav a.link-button.active { background:#2a2a2a; color:#fff }
 .nav button.payment-btn { 
   background: linear-gradient(135deg, #00d4ff, #0066ff);
   color: #fff;
