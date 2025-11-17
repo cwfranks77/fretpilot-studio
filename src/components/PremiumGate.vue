@@ -115,9 +115,6 @@
       </div>
     </div>
 
-    <div class="cta">
-      <button class="dev" @click="devPremium">Dev: Toggle Premium</button>
-    </div>
     <p class="note">
       💳 On Android: Secure payments via Google Play Billing<br>
       💳 On Web: Secure card payments via Stripe<br>
@@ -129,7 +126,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { enableDevPremium, setPremium } from '../services/featureFlags'
+import { setPremium } from '../services/featureFlags'
 import { createBitcoinPayment, checkPaymentStatus as checkBitcoinPaymentStatus, startPaymentMonitoring, stopPaymentMonitoring, getPaymentQRCode } from '../services/bitcoinPaymentService'
 import { purchaseProduct, isGooglePlayBillingAvailable, SUBSCRIPTION_PRODUCTS, getProducts } from '../services/googlePlayBilling'
 
@@ -243,12 +240,6 @@ async function checkPaymentStatus() {
   } catch (error) {
     alert('Failed to check payment status. Please try again.')
   }
-}
-
-function devPremium() {
-  const v = confirm('Enable developer premium override?')
-  enableDevPremium(v)
-  alert('Premium override set. Reload the app.')
 }
 
 onMounted(() => {
