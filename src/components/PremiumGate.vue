@@ -119,10 +119,10 @@
       <button class="dev" @click="devPremium">Dev: Toggle Premium</button>
     </div>
     <p class="note">
-      💳 On Android: Payments go directly to your Navy Federal account via Google Play (Google takes 15%)<br>
-      💳 On Web: Card payments use Stripe for physical store items<br>
+      💳 On Android: Secure payments via Google Play Billing<br>
+      💳 On Web: Secure card payments via Stripe<br>
       ₿ Bitcoin payments available on all platforms<br>
-      Use "Dev: Toggle Premium" for testing without payment
+      All transactions are encrypted and secure
     </p>
   </section>
 </template>
@@ -198,7 +198,7 @@ async function initiatePurchase(plan) {
       
       if (result.success) {
         setPremium(true)
-        alert('✅ Premium activated! Payments go directly to your Navy Federal account via Google Play.')
+        alert('✅ Premium activated! Welcome to FretPilot Premium.')
         location.reload()
       } else {
         alert('Purchase failed: ' + (result.error || 'Unknown error'))
