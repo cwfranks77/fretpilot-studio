@@ -3,8 +3,8 @@
     <AnimatedHero src="/images/instruments-montage.svg" alt="Music Store" :float="true" :shimmer="true" :overlay="true" height="220px" />
 
     <div class="container">
-      <h1>🎸 FretPilot Music Store</h1>
-      <p class="subtitle">Name-brand instruments, pro audio, home & car systems delivered to your door</p>
+      <h1>🎸 The Franks Standard</h1>
+      <p class="subtitle">Premium instruments, pro audio & musician gear - Curated by musicians, for musicians</p>
 
       <!-- Shopping Cart Summary -->
       <div class="cart-summary" v-if="cart.length > 0" @click="showCart = true">
@@ -1042,7 +1042,7 @@ const products = ref([
     id: 47,
     category: 'guitars',
     name: 'Custom Premium Electric Guitar',
-    brand: 'FretPilot Custom Shop',
+    brand: 'The Franks Standard',
     price: 1499.99,
     rating: 5,
     reviews: 245,
@@ -1059,7 +1059,7 @@ const products = ref([
     id: 48,
     category: 'studio',
     name: 'Professional Audio Interface Bundle',
-    brand: 'FretPilot Pro Audio',
+    brand: 'The Franks Standard Pro Audio',
     price: 599.99,
     rating: 5,
     reviews: 432,
@@ -1076,7 +1076,7 @@ const products = ref([
     id: 49,
     category: 'pedals',
     name: 'Boutique Overdrive Pedal',
-    brand: 'FretPilot Signature Series',
+    brand: 'The Franks Standard Signature Series',
     price: 279.99,
     rating: 5,
     reviews: 567,
@@ -1093,7 +1093,7 @@ const products = ref([
     id: 50,
     category: 'apparel',
     name: 'Premium Embroidered Hoodie',
-    brand: 'FretPilot Signature',
+    brand: 'The Franks Standard Signature',
     price: 89.99,
     rating: 5,
     reviews: 823,
@@ -1110,7 +1110,7 @@ const products = ref([
     id: 51,
     category: 'accessories',
     name: 'Professional Guitar Hard Case',
-    brand: 'FretPilot Pro Gear',
+    brand: 'The Franks Standard Pro Gear',
     price: 249.99,
     rating: 5,
     reviews: 341,
@@ -1127,7 +1127,7 @@ const products = ref([
     id: 52,
     category: 'accessories',
     name: 'Handcrafted Leather Guitar Strap',
-    brand: 'FretPilot Artisan',
+    brand: 'The Franks Standard Artisan',
     price: 149.99,
     rating: 5,
     reviews: 278,
@@ -1144,7 +1144,7 @@ const products = ref([
     id: 53,
     category: 'studio',
     name: 'Studio Monitoring System',
-    brand: 'FretPilot Pro Audio',
+    brand: 'The Franks Standard Pro Audio',
     price: 899.99,
     rating: 5,
     reviews: 190,
@@ -1161,7 +1161,7 @@ const products = ref([
     id: 54,
     category: 'guitars',
     name: 'Custom Acoustic Guitar Package',
-    brand: 'FretPilot Custom Shop',
+    brand: 'The Franks Standard',
     price: 1899.99,
     rating: 5,
     reviews: 156,
@@ -1178,7 +1178,7 @@ const products = ref([
     id: 55,
     category: 'apparel',
     name: 'Luxury Leather Jacket - Musician Edition',
-    brand: 'FretPilot Signature',
+    brand: 'The Franks Standard Signature',
     price: 499.99,
     rating: 5,
     reviews: 89,
@@ -1195,7 +1195,7 @@ const products = ref([
     id: 56,
     category: 'pedals',
     name: 'Multi-Effects Processor Pro',
-    brand: 'FretPilot Pro Gear',
+    brand: 'The Franks Standard Pro Gear',
     price: 749.99,
     rating: 5,
     reviews: 423,

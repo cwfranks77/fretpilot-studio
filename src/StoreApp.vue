@@ -3,8 +3,8 @@
     <header class="store-header">
       <div class="header-content">
         <div class="brand">
-          <h1>🎸 FretPilot Music Store</h1>
-          <p class="tagline">Premium Guitars & Pro Audio Equipment</p>
+          <h1>🎸 The Franks Standard</h1>
+          <p class="tagline">Premium Instruments & Pro Audio - Est. 2025</p>
         </div>
         <nav class="header-nav">
           <a href="/" class="app-link">Launch FretPilot App</a>
@@ -20,8 +20,8 @@
     <footer class="store-footer">
       <div class="footer-content">
         <div class="footer-section">
-          <h3>About FretPilot</h3>
-          <p>Premium music gear and pro audio equipment for musicians who demand the best.</p>
+          <h3>About The Franks Standard</h3>
+          <p>Premium music gear and pro audio equipment curated for musicians who demand the best. Quality is our standard.</p>
         </div>
         <div class="footer-section">
           <h3>Customer Service</h3>
@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2025 FretPilot Studio. All rights reserved.</p>
+        <p>&copy; 2025 The Franks Standard. All rights reserved. | Powered by FretPilot</p>
       </div>
     </footer>
   </div>
