@@ -35,7 +35,7 @@
           <h3>Connect</h3>
           <ul>
             <li><a href="https://fretpilotstudio.com">Main Site</a></li>
-            <li><a href="/">FretPilot App</a></li>
+            <li><a href="https://fretpilotstudio.com">FretPilot App</a></li>
           </ul>
         </div>
       </div>
