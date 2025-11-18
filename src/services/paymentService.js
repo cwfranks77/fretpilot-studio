@@ -136,30 +136,34 @@ export async function createStripeCheckout(planId) {
   
   try {
     // Call your backend to create checkout session
-    const response = await fetch('/api/payments/create-checkout-session', {
+    // Use server endpoint that creates a secure Stripe Checkout Session
+    const response = await fetch('/api/stripe/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({
-        priceId: plan.stripePriceId,
-        planId: planId,
+        cart: [{ id: planId, quantity: 1 }],
+        // success/cancel URLs handled server-side with fallbacks
         successUrl: `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/payment-cancelled`
       })
     })
     
     const session = await response.json()
-    
-    // Redirect to Stripe Checkout
-    const result = await stripe.redirectToCheckout({
-      sessionId: session.id
-    })
-    
-    if (result.error) {
-      throw new Error(result.error.message)
+    if (session && session.url) {
+      // Server may return a direct URL (dev fallback or Stripe session URL)
+      window.location.href = session.url
+      return
     }
+    if (session && session.id) {
+      // Redirect to Stripe Checkout via JS
+      const result = await stripe.redirectToCheckout({ sessionId: session.id })
+      if (result.error) throw new Error(result.error.message)
+      return
+    }
+    throw new Error('Invalid checkout session response')
   } catch (error) {
     console.error('Stripe checkout error:', error)
     throw error

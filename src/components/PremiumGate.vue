@@ -201,17 +201,13 @@ async function initiatePurchase(plan) {
         alert('Purchase failed: ' + (result.error || 'Unknown error'))
       }
     } else {
-      // Stripe fallback for web
-      const labelMap = {
-        monthly: `${productPrices.value.monthly}/month`,
-        yearly: `${productPrices.value.yearly}/year`,
-        lifetime: `${productPrices.value.lifetime} lifetime`
-      }
-      const label = labelMap[plan] || 'Selected plan'
-      alert(`Opening Stripe checkout for ${label}...\n\nIn production, this will:\n• Open secure Stripe checkout\n• Process payment\n• Activate premium features\n• Send confirmation email`)
-      
-      // In production:
-      // openStripeCheckout(plan)
+      // Web: Navigate to unified checkout screen
+      try {
+        // Persist plan selection so checkout can pre-select
+        localStorage.setItem('fretpilot-selected-plan', plan)
+      } catch (_) {}
+      // Notify app shell to switch to payment view
+      window.dispatchEvent(new CustomEvent('fretpilot-upgrade', { detail: { plan } }))
     }
   }
 }

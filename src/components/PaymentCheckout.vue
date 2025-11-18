@@ -157,6 +157,11 @@ const googlePayAvailable = ref(false)
 const applePayAvailable = ref(false)
 
 onMounted(async () => {
+  // Preselect plan if user came from PremiumGate
+  try {
+    const sel = localStorage.getItem('fretpilot-selected-plan')
+    if (sel && plans.value[sel]) selectedPlan.value = sel
+  } catch (_) {}
   // Check available payment methods
   applePayAvailable.value = await isApplePayAvailable()
   

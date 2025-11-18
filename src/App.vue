@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import HomePage from './components/HomePage.vue'
 import FretPilotTrainer from './components/FretPilotTrainer.vue'
 import AiLessonGenerator from './components/AiLessonGenerator.vue'
@@ -197,9 +197,20 @@ function handleUpgradeTier(data) {
   alert(`Redirecting to checkout for ${data.tier}...`)
 }
 
+// Listener defined once so add/remove works correctly
+function handleUpgradeEvent(e) {
+  try {
+    const sel = e && e.detail && e.detail.plan
+    if (sel) localStorage.setItem('fretpilot-selected-plan', sel)
+  } catch (_) {}
+  view.value = 'payment'
+}
+
 onMounted(async () => {
   readAuth()
   window.addEventListener('fretpilot-auth-changed', readAuth)
+  // Listen for upgrade requests from components (e.g., PremiumGate)
+  window.addEventListener('fretpilot-upgrade', handleUpgradeEvent)
   initAnalytics()
   await initAds()
   await showBanner()
@@ -208,6 +219,12 @@ onMounted(async () => {
     quota.value = getDailyLessonRemaining()
     readAuth()
   }, 3000)
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  window.removeEventListener('fretpilot-upgrade', handleUpgradeEvent)
+  window.removeEventListener('fretpilot-auth-changed', readAuth)
 })
 </script>
 
