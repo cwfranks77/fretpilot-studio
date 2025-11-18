@@ -3,8 +3,13 @@
     <header class="store-header">
       <div class="header-content">
         <div class="brand">
-          <h1>🎸 The Franks Standard</h1>
-          <p class="tagline">Premium Instruments & Pro Audio - Est. 2025</p>
+          <div class="logo-container">
+            <img src="/resources/brand-assets/TFS_temple_logo.svg" alt="The Franks Standard Logo" class="brand-logo">
+          </div>
+          <div class="brand-text">
+            <h1>THE FRANKS STANDARD</h1>
+            <p class="tagline">PREMIUM INSTRUMENTS. SERVICE STANDARD.</p>
+          </div>
         </div>
         <nav class="header-nav">
           <a href="/" class="app-link">Launch FretPilot App</a>
@@ -86,19 +91,47 @@ const cartTotal = computed(() => {
   gap: 1rem;
 }
 
-.brand h1 {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.logo-container {
+  flex: 0 0 auto;
+}
+
+.brand-logo {
+  height: 80px;
+  width: auto;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.brand-text h1 {
+  font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
   font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 2px;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5f5f5 0%, #d4af37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .tagline {
-  margin: 0.25rem 0 0 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  margin: 0;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #d4af37;
 }
 
 .header-nav {

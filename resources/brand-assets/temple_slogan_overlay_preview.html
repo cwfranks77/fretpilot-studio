@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temple Slogan Overlay Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #0a0f17; color: #eaeef3; }
+    header { padding: 16px 24px; border-bottom: 1px solid #263244; display: flex; gap: 16px; align-items: center; }
+    .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .controls { display: flex; gap: 16px; align-items: center; }
+    .range { display: flex; align-items: center; gap: 8px; }
+    .stage-wrap { display: grid; place-items: center; padding: 20px; }
+    .stage { position: relative; max-width: min(92vw, 1505px); }
+    .stage img { width: 100%; height: auto; display: block; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+    .overlay { position: absolute; inset: 0; pointer-events: none; }
+    .overlay svg { position: absolute; left: 50%; transform: translateX(-50%); width: var(--overlay-scale, 100%); }
+    footer { padding: 14px 24px; border-top: 1px solid #263244; opacity: .8; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="btn" id="pick">Choose Picture…</button>
+    <div class="controls">
+      <div class="range">
+        <label for="y">Vertical</label>
+        <input type="range" id="y" min="0" max="100" value="43" />
+      </div>
+      <div class="range">
+        <label for="scale">Overlay Width</label>
+        <input type="range" id="scale" min="60" max="110" value="100" />
+      </div>
+      <button class="btn" id="export" disabled>Export PNG</button>
+    </div>
+  </header>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage" aria-live="polite">
+      <img id="photo" alt="Temple photo" />
+      <div class="overlay" id="overlay"></div>
+    </div>
+  </div>
+
+  <footer>
+    Tip: This doesn’t modify your original picture. It overlays the slogan and lets you export a new composite PNG.
+  </footer>
+
+  <script>
+    const photo = document.getElementById('photo');
+    const overlay = document.getElementById('overlay');
+    const pick = document.getElementById('pick');
+    const exportBtn = document.getElementById('export');
+    const yRange = document.getElementById('y');
+    const scaleRange = document.getElementById('scale');
+
+    const overlayUrl = './TFS_temple_slogan_overlay.svg';
+
+    function updateOverlayY() {
+      const pct = Number(yRange.value);
+      const stage = document.getElementById('stage');
+      const svg = overlay.querySelector('svg');
+      if (!svg || !stage) return;
+      const h = stage.getBoundingClientRect().height;
+      svg.style.top = Math.round(h * (pct / 100)) + 'px';
+    }
+
+    function updateOverlayScale() {
+      overlay.style.setProperty('--overlay-scale', scaleRange.value + '%');
+    }
+
+    yRange.addEventListener('input', updateOverlayY);
+    scaleRange.addEventListener('input', updateOverlayScale);
+
+    pick.addEventListener('click', async () => {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.onchange = () => {
+        const file = inp.files?.[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        photo.src = url;
+        exportBtn.disabled = false;
+        // Load overlay SVG into DOM once
+        fetch(overlayUrl).then(r => r.text()).then(txt => {
+          overlay.innerHTML = txt;
+          updateOverlayScale();
+          updateOverlayY();
+        });
+      };
+      inp.click();
+    });
+
+    exportBtn.addEventListener('click', async () => {
+      const stage = document.getElementById('stage');
+      if (!photo.complete) return;
+
+      const rect = photo.getBoundingClientRect();
+      const canvas = document.createElement('canvas');
+      canvas.width = photo.naturalWidth;
+      canvas.height = photo.naturalHeight;
+      const ctx = canvas.getContext('2d');
+
+      // Draw photo
+      ctx.drawImage(photo, 0, 0, canvas.width, canvas.height);
+
+      // Draw overlay text by rendering an SVG scaled to canvas
+      const svgEl = overlay.querySelector('svg');
+      if (svgEl) {
+        const cloned = svgEl.cloneNode(true);
+        // Scale overlay width according to control
+        const scalePct = Number(scaleRange.value) / 100;
+        const svgW = 1505 * scalePct;
+        const svgH = 768 * scalePct;
+        cloned.setAttribute('width', svgW);
+        cloned.setAttribute('height', svgH);
+        // Convert to data URL
+        const svgText = new XMLSerializer().serializeToString(cloned);
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          const topPx = parseInt(cloned.style.top || '0', 10);
+          const yPct = Number(yRange.value) / 100;
+          const yPx = photo.naturalHeight * yPct;
+          ctx.drawImage(img, (canvas.width - svgW) / 2, yPx, svgW, svgH);
+          URL.revokeObjectURL(svgUrl);
+          download(canvas);
+        };
+        img.src = svgUrl;
+      } else {
+        download(canvas);
+      }
+    });
+
+    function download(canvas) {
+      const a = document.createElement('a');
+      a.download = 'the-franks-standard-temple-slogan.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>

@@ -17,14 +17,7 @@
           <FeatureIcons icon="jam" :size="18" /> Video Platform
         </button>
         <button :class="{ active: view==='studio' }" @click="view='studio'">🎙️ Studio</button>
-          <a
-            :class="{ active: false }"
-            href="https://thefranksstandard.com"
-            target="_blank"
-            rel="noopener"
-            class="link-button"
-            title="Shop The Franks Standard"
-          >🛒 Store</a>
+        <button :class="{ active: view==='store' }" @click="view='store'">🛒 Store</button>
         <button :class="{ active: view==='practice' }" @click="view='practice'" style="display: flex; align-items: center; gap: 4px;">
           <FeatureIcons icon="practice" :size="18" /> Practice
         </button>

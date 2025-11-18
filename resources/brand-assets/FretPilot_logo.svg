@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="120" viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="120" rx="24" fill="#181C24"/>
+  <text x="32" y="72" font-family="Montserrat, Arial, sans-serif" font-size="56" font-weight="bold" fill="#00FFD0" letter-spacing="-2">Fret</text>
+  <text x="170" y="72" font-family="Montserrat, Arial, sans-serif" font-size="56" font-weight="bold" fill="#FFFFFF" letter-spacing="-2">Pilot</text>
+  <circle cx="360" cy="60" r="32" fill="#00FFD0"/>
+  <rect x="350" y="50" width="20" height="20" rx="6" fill="#181C24"/>
+  <rect x="355" y="55" width="10" height="10" rx="2" fill="#00FFD0"/>
+</svg>

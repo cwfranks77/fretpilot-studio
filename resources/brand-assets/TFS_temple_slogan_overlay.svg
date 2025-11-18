@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1505 768" width="1505" height="768">
+  <title>Overlay – Premium Instruments. Service Standard.</title>
+  <!-- Transparent background: this file is an overlay only -->
+  <defs>
+    <!-- Carved stone text effect -->
+    <filter id="engrave" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="blur"/>
+      <feOffset in="blur" dx="0" dy="1" result="offset1"/>
+      <feComposite in="offset1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner1"/>
+      <feColorMatrix in="inner1" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.8 0" result="darken"/>
+      <feMerge>
+        <feMergeNode in="darken"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Position assuming the frieze band in the photo; adjust with CSS transform if needed -->
+  <g font-family="'Cinzel', Georgia, 'Times New Roman', serif" font-weight="800" font-size="34" letter-spacing="2" text-anchor="middle" fill="#3a2e22" filter="url(#engrave)">
+    <text x="752.5" y="330">PREMIUM INSTRUMENTS. SERVICE STANDARD.</text>
+  </g>
+</svg>

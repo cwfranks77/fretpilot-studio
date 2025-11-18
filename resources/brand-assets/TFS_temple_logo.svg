@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <title>The Franks Standard – Temple Logo with Slogan and Founder</title>
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="100%" stop-color="#1A2942"/>
+    </linearGradient>
+
+    <!-- Stone gradients -->
+    <linearGradient id="stoneGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d6dbe0"/>
+      <stop offset="50%" stop-color="#b7c0c9"/>
+      <stop offset="100%" stop-color="#8d97a3"/>
+    </linearGradient>
+
+    <linearGradient id="stoneEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#cbd2d9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#5e6a78" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <linearGradient id="columnGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e3e7eb"/>
+      <stop offset="45%" stop-color="#cbd2d9"/>
+      <stop offset="55%" stop-color="#b4bdc7"/>
+      <stop offset="100%" stop-color="#8c98a5"/>
+    </linearGradient>
+
+    <linearGradient id="capGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f2f5"/>
+      <stop offset="100%" stop-color="#a5afba"/>
+    </linearGradient>
+
+    <linearGradient id="stepGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cbd2d9"/>
+      <stop offset="100%" stop-color="#7c8997"/>
+    </linearGradient>
+
+    <!-- Gold accent (subtle) -->
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2e7b9"/>
+      <stop offset="50%" stop-color="#e3c76a"/>
+      <stop offset="100%" stop-color="#b5943b"/>
+    </linearGradient>
+
+    <!-- Subtle shadow -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Inner shadow for pediment -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="3"/>
+      <feGaussianBlur stdDeviation="6" result="offset-blur"/>
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
+      <feFlood flood-color="#000" flood-opacity="0.25" result="color"/>
+      <feComposite operator="in" in="color" in2="inverse" result="inner-shadow"/>
+      <feComposite operator="over" in="inner-shadow" in2="SourceGraphic"/>
+    </filter>
+
+    <!-- Stone texture overlay -->
+    <filter id="stoneTexture" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="7" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
+      <feComponentTransfer in="mono" result="dim">
+        <feFuncA type="table" tableValues="0 0.15"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="dim" mode="multiply"/>
+    </filter>
+
+    <!-- Text shadow -->
+    <filter id="textShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+
+    <!-- Column flute pattern -->
+    <pattern id="flutes" width="16" height="1" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="16" height="1" fill="url(#columnGrad)"/>
+      <rect x="5" y="0" width="2" height="1" fill="#9aa3ad" opacity="0.55"/>
+      <rect x="9" y="0" width="2" height="1" fill="#7a8694" opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bgGrad)"/>
+
+  <!-- Temple Group -->
+  <g id="temple" filter="url(#softShadow)">
+    <!-- Steps -->
+    <g id="steps" transform="translate(120, 560)">
+      <rect x="0" y="70" width="960" height="28" rx="6" fill="url(#stepGrad)" filter="url(#stoneTexture)"/>
+      <rect x="20" y="40" width="920" height="28" rx="6" fill="url(#stepGrad)" filter="url(#stoneTexture)"/>
+      <rect x="40" y="10" width="880" height="28" rx="6" fill="url(#stepGrad)" filter="url(#stoneTexture)"/>
+    </g>
+
+    <!-- Columns -->
+    <g id="columns" transform="translate(0, 90)">
+      <!-- positions: 220, 380, 540, 700, 860 (five large pillars) -->
+      <g transform="translate(220, 200)">
+        <rect x="-10" y="-40" width="120" height="38" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+        <rect x="0" y="0" width="100" height="320" fill="url(#flutes)" filter="url(#stoneTexture)"/>
+        <rect x="-12" y="320" width="124" height="36" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+      </g>
+      <g transform="translate(380, 200)">
+        <rect x="-10" y="-40" width="120" height="38" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+        <rect x="0" y="0" width="100" height="320" fill="url(#flutes)" filter="url(#stoneTexture)"/>
+        <rect x="-12" y="320" width="124" height="36" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+      </g>
+      <g transform="translate(540, 200)">
+        <rect x="-10" y="-40" width="120" height="38" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+        <rect x="0" y="0" width="100" height="320" fill="url(#flutes)" filter="url(#stoneTexture)"/>
+        <rect x="-12" y="320" width="124" height="36" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+      </g>
+      <g transform="translate(700, 200)">
+        <rect x="-10" y="-40" width="120" height="38" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+        <rect x="0" y="0" width="100" height="320" fill="url(#flutes)" filter="url(#stoneTexture)"/>
+        <rect x="-12" y="320" width="124" height="36" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+      </g>
+      <g transform="translate(860, 200)">
+        <rect x="-10" y="-40" width="120" height="38" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+        <rect x="0" y="0" width="100" height="320" fill="url(#flutes)" filter="url(#stoneTexture)"/>
+        <rect x="-12" y="320" width="124" height="36" rx="6" fill="url(#capGrad)" filter="url(#stoneTexture)"/>
+      </g>
+    </g>
+
+    <!-- Entablature (architrave + frieze) -->
+    <g id="entablature" transform="translate(140, 140)">
+      <rect x="0" y="0" width="920" height="70" rx="8" fill="url(#stoneGrad)" filter="url(#stoneTexture)"/>
+      <rect x="0" y="70" width="920" height="36" rx="6" fill="url(#stoneEdge)" opacity="0.5"/>
+      <!-- Title text -->
+      <text x="460" y="47" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', Georgia, serif" font-size="44" font-weight="900" letter-spacing="3" fill="#0A1628" filter="url(#textShadow)">THE FRANKS STANDARD</text>
+    </g>
+
+    <!-- Pediment (3-sided structure/roof) -->
+    <g id="pediment" transform="translate(140, 70)">
+      <polygon points="0,70 460,0 920,70" fill="url(#stoneGrad)" filter="url(#innerShadow)"/>
+      <!-- Pediment trim -->
+      <polygon points="-10,80 460,6 930,80" fill="url(#stoneEdge)" opacity="0.6"/>
+    </g>
+
+    <!-- Slogan plaque under entablature -->
+    <g id="slogan" transform="translate(240, 350)">
+      <rect x="0" y="-44" width="720" height="64" rx="10" fill="url(#stoneGrad)" filter="url(#stoneTexture)"/>
+      <rect x="0" y="-44" width="720" height="64" rx="10" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.9"/>
+      <text x="360" y="-6" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', Georgia, serif" font-size="28" font-weight="800" letter-spacing="1" fill="#0A1628" filter="url(#textShadow)">PREMIUM INSTRUMENTS. SERVICE STANDARD.</text>
+    </g>
+
+    <!-- Founder name on base plaque -->
+    <g id="founder" transform="translate(300, 620)">
+      <rect x="0" y="0" width="600" height="46" rx="8" fill="url(#stoneGrad)" filter="url(#stoneTexture)"/>
+      <rect x="0" y="0" width="600" height="46" rx="8" fill="none" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0.95"/>
+      <text x="300" y="30" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', Georgia, serif" font-size="20" font-weight="800" letter-spacing="2" fill="#0A1628" filter="url(#textShadow)">FOUNDED BY: CHARLES W. FRANKS</text>
+    </g>
+  </g>
+
+  <!-- Subtle floor shadow -->
+  <ellipse cx="600" cy="710" rx="420" ry="38" fill="#000" opacity="0.18"/>
+</svg>
