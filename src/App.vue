@@ -226,12 +226,17 @@ onUnmounted(() => {
 
 <style>
 /* Global lightweight reset - Dark Room Theme */
+* {
+  box-sizing: border-box;
+}
 html { 
   overflow-y: scroll; /* Force scrollbar to prevent layout shift */
   scrollbar-gutter: stable; /* Reserve space for scrollbar */
+  width: 100%;
 }
-html,body,#app { height:100%; margin:0; background:#000 }
-.app-shell { display:flex; flex-direction:column; min-height:100%; background:#000; overflow-x: hidden; }
+html,body,#app { height:100%; margin:0; padding:0; background:#000; }
+body { width: 100%; position: relative; }
+.app-shell { display:flex; flex-direction:column; min-height:100%; background:#000; overflow-x: hidden; width: 100%; }
 .topbar {
   display:flex;
   align-items:center;
