@@ -306,12 +306,15 @@ body { width: 100%; position: relative; }
   color: rgba(255,255,255,0.08);
   animation: floatNote 14s linear infinite;
   pointer-events: none;
+  will-change: transform, top;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 .music-bg::after { content: "♫"; left: 80%; animation-duration: 18s; animation-delay: 2s; }
 .music-bg::before { left: 10%; }
 @keyframes floatNote {
-  0% { top: 110%; transform: translateX(0) rotate(0deg); }
-  100% { top: -10%; transform: translateX(-40px) rotate(360deg); }
+  0% { top: 110%; transform: translateX(0) rotate(0deg) translateZ(0); }
+  100% { top: -10%; transform: translateX(-40px) rotate(360deg) translateZ(0); }
 }
 
 /* Footer */
