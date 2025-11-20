@@ -96,20 +96,12 @@
     </div>
 
     <!-- Video Player -->
-    <div v-if="!selectedInstrument && !currentLesson" class="no-selection">
+    <div v-if="!selectedInstrument" class="no-selection">
       <div class="empty-state">
         <div class="empty-icon">🎼</div>
         <h3>Select an instrument to get started</h3>
         <p>Choose from popular instruments above or search for any instrument you'd like to learn</p>
       </div>
-    </div>
-
-    <div v-if="selectedInstrument && !currentLesson" class="lessons-list">
-      <h2>{{ selectedInstrument.name }} Lessons</h2>
-      <p class="coming-soon-msg">
-        📹 Lesson content for {{ selectedInstrument.name }} is being prepared. 
-        <br>In production, this would display available video lessons for this instrument.
-      </p>
     </div>
 
     <div v-if="currentLesson" class="video-player-container">
@@ -316,8 +308,13 @@
 
       <!-- All Lessons -->
       <div class="all-lessons">
-        <h2>📚 All Lessons</h2>
-        <div class="lesson-grid">
+        <h2>📚 {{ selectedInstrument ? selectedInstrument.name : 'All' }} Lessons</h2>
+        <div v-if="selectedInstrument && selectedInstrument.id !== 'guitar' && filteredLessons.length === 0" class="coming-soon-notice">
+          <div class="empty-icon">🎬</div>
+          <p>{{ selectedInstrument.name }} lessons are coming soon! We're currently building out our {{ selectedInstrument.name }} curriculum.</p>
+          <p class="beta-note">This is a beta feature. Lessons for guitar are available now.</p>
+        </div>
+        <div v-else class="lesson-grid">
           <div 
             v-for="lesson in filteredLessons" 
             :key="lesson.id"
@@ -472,8 +469,14 @@ export default {
 
     selectInstrument(instrument) {
       this.selectedInstrument = instrument;
-      // In production, this would load lessons for the selected instrument
       console.log('Selected instrument:', instrument.name);
+      
+      // For guitar, lessons are already loaded
+      // For other instruments, lessons would be fetched from API in production
+      if (instrument.id !== 'guitar') {
+        // Future: Load instrument-specific lessons
+        // this.lessons = await fetchLessonsForInstrument(instrument.id);
+      }
     },
 
     loadSubscription() {
@@ -1529,6 +1532,34 @@ export default {
 /* Lesson Library */
 .lesson-library {
   margin-top: 30px;
+}
+
+.coming-soon-notice {
+  text-align: center;
+  padding: 60px 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.coming-soon-notice .empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.coming-soon-notice p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.coming-soon-notice .beta-note {
+  font-size: 0.95rem;
+  color: #888;
+  font-style: italic;
+  margin-top: 20px;
 }
 
 .filters {
