@@ -1,4 +1,4 @@
-# FretPilot – Complete AI Guitar Learning Platform
+# FretPilot – Complete AI Guitar Learning & Gear Platform
 
 **AI-Powered Video Lessons • Practice Tracking • Music Store • Live Jam Companion**
 
@@ -7,6 +7,50 @@ FretPilot is a comprehensive guitar learning application featuring AI-powered vi
 > **🎸 NEW: Dropshipping Store Integration!**  
 > Sell musical instruments & accessories with zero inventory using Spocket & Printful.  
 > **Quick Setup:** See `QUICK_START_DROPSHIPPING.md` | **Full Guide:** See `DROPSHIPPING_SETUP_GUIDE.md`
+
+---
+
+## 🔐 Recovery & Backup (2025-11-20)
+
+Your project state has been safety-snapshotted:
+
+- Backup branch: `backup/2025-11-20-pre-recovery`
+- Safety tag: `safety-2025-11-20`
+
+To restore at any time:
+
+```powershell
+git fetch --all
+git checkout backup/2025-11-20-pre-recovery  # Branch restore
+# or
+git checkout safety-2025-11-20               # Tag (read‑only snapshot)
+```
+
+If you want to create a fresh working branch from the snapshot:
+
+```powershell
+git checkout -b recovery-work safety-2025-11-20
+```
+
+### What Was Verified
+All core source files are still present:
+- Vue components under `src/components` (e.g. `AIVideoLessons.vue`, `MusicStore.vue`, `FretPilotTrainer.vue`)
+- Android Gradle build files (`android/app/build.gradle`, `android/variables.gradle`)
+- Domain routing logic for `thefranksstandard.com` in `index.html` / built `dist/index.html`
+- Store components (`MusicStore.vue`) and related marketing docs referencing TheFranksStandard
+
+### Clarification About TheFranksStandard
+There is no separate detached repository; the storefront logic is integrated into this mono-repo via conditional host redirect and the `MusicStore` component. If you later decide to split it:
+
+```powershell
+mkdir franksstandard-storefront
+cd franksstandard-storefront
+npm create vite@latest franksstandard-storefront -- --template react-ts
+```
+
+Then migrate shared assets (product catalog, branding, pricing rules) into a dedicated module while keeping a Git submodule or a package for shared utilities.
+
+---
 
 ---
 
