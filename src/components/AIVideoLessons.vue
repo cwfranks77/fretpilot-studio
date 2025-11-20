@@ -253,6 +253,15 @@
 
     <!-- Lesson Library -->
     <div v-else class="lesson-library">
+      <!-- Demo Content Warning -->
+      <div class="demo-warning">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <h3>🎬 Beta Demo Content</h3>
+          <p>The videos below are placeholder content to demonstrate the platform functionality. Real instructional guitar lessons are currently being produced and will replace these demo videos soon.</p>
+        </div>
+      </div>
+
       <div class="filters">
         <input 
           v-model="searchQuery" 
@@ -734,13 +743,14 @@ export default {
     },
 
     async loadLessons() {
-      // In real app, load from API
+      // PLACEHOLDER: These videos are sample content for demo purposes
+      // In production, these would be replaced with actual guitar instructional videos
       this.lessons = [
         {
           id: 1,
-          title: 'Beginner Chord Transitions',
-          description: 'Master smooth transitions between basic chords',
-          instructor: 'Sarah Johnson',
+          title: '🚧 DEMO: Beginner Chord Transitions (Video Content Coming Soon)',
+          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
+          instructor: 'Coming Soon',
           duration: '15:30',
           difficulty: 'beginner',
           category: 'technique',
@@ -752,9 +762,9 @@ export default {
         },
         {
           id: 2,
-          title: 'Advanced Fingerpicking Patterns',
-          description: 'Learn complex fingerpicking with AI-guided feedback',
-          instructor: 'Mike Chen',
+          title: '🚧 DEMO: Advanced Fingerpicking Patterns (Video Content Coming Soon)',
+          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
+          instructor: 'Coming Soon',
           duration: '22:15',
           difficulty: 'advanced',
           category: 'technique',
@@ -766,9 +776,9 @@ export default {
         },
         {
           id: 3,
-          title: 'Blues Improvisation Masterclass',
-          description: 'AI-powered improvisation with real-time feedback',
-          instructor: 'David Williams',
+          title: '🚧 DEMO: Blues Improvisation Masterclass (Video Content Coming Soon)',
+          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
+          instructor: 'Coming Soon',
           duration: '35:00',
           difficulty: 'intermediate',
           category: 'improvisation',
@@ -1532,6 +1542,36 @@ export default {
 /* Lesson Library */
 .lesson-library {
   margin-top: 30px;
+}
+
+.demo-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 25px 30px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(255, 193, 7, 0.2);
+}
+
+.demo-warning .warning-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.demo-warning .warning-content h3 {
+  margin: 0 0 10px 0;
+  color: #856404;
+  font-size: 1.3rem;
+}
+
+.demo-warning .warning-content p {
+  margin: 0;
+  color: #856404;
+  line-height: 1.6;
+  font-size: 1rem;
 }
 
 .coming-soon-notice {
