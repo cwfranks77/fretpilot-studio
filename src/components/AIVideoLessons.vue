@@ -2,12 +2,40 @@
   <div class="ai-video-lessons">
     <!-- Header -->
     <div class="header">
-      <h1>🎸 AI Video Lessons</h1>
+      <h1>🎵 AI Music Lessons</h1>
+      <p class="subtitle">Learn any instrument with AI-powered guidance</p>
       <div class="subscription-badge" :class="subscriptionTier">
         {{ tierLimits.name }}
         <span v-if="subscriptionTier === 'free'" class="upgrade-hint">
           {{ dailyRemaining }}/{{ tierLimits.videosPerDay }} lessons today
         </span>
+      </div>
+    </div>
+
+    <!-- Instrument Selector -->
+    <div class="instrument-selector">
+      <h2>Choose Your Instrument</h2>
+      <div class="search-box">
+        <input 
+          v-model="instrumentSearch" 
+          @input="filterInstruments"
+          placeholder="Search for any instrument (guitar, piano, drums, violin, etc.)"
+          class="search-input"
+        />
+      </div>
+      
+      <div class="instruments-grid">
+        <div 
+          v-for="instrument in filteredInstruments" 
+          :key="instrument.id"
+          class="instrument-card"
+          :class="{ active: selectedInstrument?.id === instrument.id }"
+          @click="selectInstrument(instrument)"
+        >
+          <div class="instrument-icon">{{ instrument.icon }}</div>
+          <div class="instrument-name">{{ instrument.name }}</div>
+          <div class="instrument-lessons">{{ instrument.lessonCount }} lessons</div>
+        </div>
       </div>
     </div>
 
@@ -68,13 +96,23 @@
     </div>
 
     <!-- Video Player -->
-    <div v-if="currentLesson" class="video-player-container">
-      <!-- Content Notice -->
-      <div class="content-notice">
-        ⚠️ <strong>Demo Mode:</strong> These are placeholder videos. Replace with actual guitar lesson content before launch.
-        <br>Upload your guitar instruction videos and update the videoUrl fields in the lessons array.
+    <div v-if="!selectedInstrument && !currentLesson" class="no-selection">
+      <div class="empty-state">
+        <div class="empty-icon">🎼</div>
+        <h3>Select an instrument to get started</h3>
+        <p>Choose from popular instruments above or search for any instrument you'd like to learn</p>
       </div>
-      
+    </div>
+
+    <div v-if="selectedInstrument && !currentLesson" class="lessons-list">
+      <h2>{{ selectedInstrument.name }} Lessons</h2>
+      <p class="coming-soon-msg">
+        📹 Lesson content for {{ selectedInstrument.name }} is being prepared. 
+        <br>In production, this would display available video lessons for this instrument.
+      </p>
+    </div>
+
+    <div v-if="currentLesson" class="video-player-container">
       <div class="video-wrapper">
         <video 
           ref="videoPlayer"
@@ -333,6 +371,12 @@ export default {
   name: 'AIVideoLessons',
   data() {
     return {
+      // Instruments
+      instrumentSearch: '',
+      selectedInstrument: null,
+      allInstruments: [],
+      filteredInstruments: [],
+      
       // Subscription
       subscriptionTier: 'free',
       tierLimits: {},
@@ -391,10 +435,47 @@ export default {
   },
   mounted() {
     this.loadSubscription();
+    this.loadInstruments();
     this.loadLessons();
     this.loadRecommendations();
   },
   methods: {
+    loadInstruments() {
+      // Popular instruments with emoji icons
+      this.allInstruments = [
+        { id: 'guitar', name: 'Guitar', icon: '🎸', lessonCount: 150 },
+        { id: 'piano', name: 'Piano', icon: '🎹', lessonCount: 200 },
+        { id: 'drums', name: 'Drums', icon: '🥁', lessonCount: 85 },
+        { id: 'violin', name: 'Violin', icon: '🎻', lessonCount: 75 },
+        { id: 'bass', name: 'Bass Guitar', icon: '🎸', lessonCount: 60 },
+        { id: 'saxophone', name: 'Saxophone', icon: '🎷', lessonCount: 45 },
+        { id: 'trumpet', name: 'Trumpet', icon: '🎺', lessonCount: 40 },
+        { id: 'flute', name: 'Flute', icon: '🪈', lessonCount: 35 },
+        { id: 'ukulele', name: 'Ukulele', icon: '🎸', lessonCount: 55 },
+        { id: 'cello', name: 'Cello', icon: '🎻', lessonCount: 30 },
+        { id: 'clarinet', name: 'Clarinet', icon: '🎵', lessonCount: 25 },
+        { id: 'harmonica', name: 'Harmonica', icon: '🎵', lessonCount: 20 },
+        { id: 'banjo', name: 'Banjo', icon: '🪕', lessonCount: 18 },
+        { id: 'accordion', name: 'Accordion', icon: '🪗', lessonCount: 15 },
+        { id: 'mandolin', name: 'Mandolin', icon: '🎵', lessonCount: 12 },
+        { id: 'vocals', name: 'Singing/Vocals', icon: '🎤', lessonCount: 100 }
+      ];
+      this.filteredInstruments = this.allInstruments;
+    },
+
+    filterInstruments() {
+      const search = this.instrumentSearch.toLowerCase();
+      this.filteredInstruments = this.allInstruments.filter(inst =>
+        inst.name.toLowerCase().includes(search)
+      );
+    },
+
+    selectInstrument(instrument) {
+      this.selectedInstrument = instrument;
+      // In production, this would load lessons for the selected instrument
+      console.log('Selected instrument:', instrument.name);
+    },
+
     loadSubscription() {
       const sub = subscriptionService.getCurrentSubscription();
       this.subscriptionTier = sub.tier;
@@ -760,18 +841,27 @@ export default {
 
 /* Header */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .header h1 {
-  font-size: 2rem;
-  margin: 0;
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0 0 20px 0;
 }
 
 .subscription-badge {
+  display: inline-block;
   padding: 8px 16px;
   border-radius: 20px;
   font-weight: 600;
@@ -797,6 +887,136 @@ export default {
   margin-left: 8px;
   opacity: 0.8;
   font-size: 0.85rem;
+}
+
+/* Instrument Selector */
+.instrument-selector {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.instrument-selector h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.search-box {
+  margin-bottom: 25px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.instruments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+}
+
+.instrument-card {
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 20px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.instrument-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.instrument-card.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.instrument-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.instrument-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.instrument-lessons {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.instrument-card.active .instrument-lessons {
+  opacity: 0.9;
+}
+
+/* No Selection State */
+.no-selection {
+  background: white;
+  border-radius: 20px;
+  padding: 80px 40px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.empty-state .empty-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Lessons List */
+.lessons-list {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.lessons-list h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.coming-soon-msg {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
 /* Upgrade Prompt */
