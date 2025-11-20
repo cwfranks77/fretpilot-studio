@@ -75,7 +75,11 @@
           :src="currentLesson.videoUrl"
           @timeupdate="handleTimeUpdate"
           @ended="handleVideoEnd"
+          @error="handleVideoError"
           controls
+          controlsList="nodownload"
+          preload="metadata"
+          playsinline
           class="video-element"
         />
         
@@ -517,6 +521,15 @@ export default {
       }
     },
 
+    handleVideoError(event) {
+      console.error('Video playback error:', event);
+      this.realtimeFeedback = '⚠️ Video failed to load. Using fallback content...';
+      // Fallback to a working video
+      if (this.currentLesson && this.$refs.videoPlayer) {
+        this.$refs.videoPlayer.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+      }
+    },
+
     updateAdaptiveDifficulty() {
       // Analyze performance and adjust difficulty
       const performance = this.lessonProgress / (this.currentTime / 60); // progress per minute
@@ -597,7 +610,7 @@ export default {
           difficulty: 'beginner',
           category: 'technique',
           thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
           isPremium: false,
           progress: 0,
           completed: false
@@ -611,7 +624,7 @@ export default {
           difficulty: 'advanced',
           category: 'technique',
           thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
           isPremium: true,
           progress: 0,
           completed: false
@@ -625,7 +638,7 @@ export default {
           difficulty: 'intermediate',
           category: 'improvisation',
           thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-10s.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
           isPremium: true,
           progress: 45,
           completed: false
