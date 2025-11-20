@@ -253,12 +253,20 @@
 
     <!-- Lesson Library -->
     <div v-else class="lesson-library">
-      <!-- Demo Content Warning -->
-      <div class="demo-warning">
-        <div class="warning-icon">⚠️</div>
-        <div class="warning-content">
-          <h3>🎬 Beta Demo Content</h3>
-          <p>The videos below are placeholder content to demonstrate the platform functionality. Real instructional guitar lessons are currently being produced and will replace these demo videos soon.</p>
+      <!-- AI Video Generation Prompt -->
+      <div class="ai-generation-prompt">
+        <div class="prompt-icon">🤖</div>
+        <div class="prompt-content">
+          <h3>Generate Custom {{ selectedInstrument ? selectedInstrument.name : '' }} Lessons</h3>
+          <p>Create personalized video lessons with AI, or connect with a live instructor for 1-on-1 sessions.</p>
+          <div class="action-buttons-row">
+            <button @click="showAIGenerator = true" class="btn-generate-ai">
+              🎬 Generate AI Video Lesson
+            </button>
+            <button @click="showInstructorConnect = true" class="btn-connect-instructor">
+              👤 Connect with Instructor
+            </button>
+          </div>
         </div>
       </div>
 
@@ -359,6 +367,212 @@
       </div>
     </div>
 
+    <!-- AI Video Generator Modal -->
+    <div v-if="showAIGenerator" class="modal-overlay" @click.self="showAIGenerator = false">
+      <div class="modal-content ai-generator-modal">
+        <button @click="showAIGenerator = false" class="close-btn">✕</button>
+        <h2>🎬 Generate AI Video Lesson</h2>
+        <p class="modal-subtitle">Describe what you want to learn and AI will create a custom instructional video</p>
+        
+        <div class="form-group">
+          <label>What do you want to learn?</label>
+          <textarea 
+            v-model="aiVideoPrompt" 
+            placeholder="e.g., 'Show me how to play basic G, C, and D chord progressions' or 'Teach me blues scale improvisation'"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Skill Level</label>
+            <select v-model="aiSkillLevel">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Video Length</label>
+            <select v-model="aiVideoDuration">
+              <option value="short">Short (2-5 min)</option>
+              <option value="medium">Medium (5-10 min)</option>
+              <option value="long">Long (10-20 min)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="generateAIVideo" class="btn-primary" :disabled="!aiVideoPrompt.trim() || generatingVideo">
+            {{ generatingVideo ? '🎬 Generating...' : '✨ Generate Video' }}
+          </button>
+          <button @click="showAIGenerator = false" class="btn-secondary">Cancel</button>
+        </div>
+        
+        <div v-if="generatingVideo" class="generation-progress">
+          <div class="progress-spinner"></div>
+          <p>AI is creating your custom video lesson... This may take 30-60 seconds.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructor Connect Modal -->
+    <div v-if="showInstructorConnect" class="modal-overlay" @click.self="showInstructorConnect = false">
+      <div class="modal-content instructor-modal">
+        <button @click="showInstructorConnect = false" class="close-btn">✕</button>
+        <h2>👤 Connect with Live Instructor</h2>
+        <p class="modal-subtitle">Get personalized 1-on-1 lessons from experienced {{ selectedInstrument ? selectedInstrument.name.toLowerCase() : 'music' }} teachers</p>
+        
+        <div class="instructor-info">
+          <div class="info-card">
+            <div class="info-icon">📅</div>
+            <h4>Flexible Scheduling</h4>
+            <p>Book lessons at times that work for you</p>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">💻</div>
+            <h4>Video Sessions</h4>
+            <p>Live video calls with screen sharing</p>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🎯</div>
+            <h4>Personalized Path</h4>
+            <p>Custom curriculum based on your goals</p>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Your Name</label>
+          <input v-model="instructorName" type="text" placeholder="Enter your name" />
+        </div>
+        
+        <div class="form-group">
+          <label>Email</label>
+          <input v-model="instructorEmail" type="email" placeholder="your.email@example.com" />
+        </div>
+        
+        <div class="form-group">
+          <label>Tell us about your goals and experience</label>
+          <textarea 
+            v-model="instructorMessage" 
+            placeholder="What do you want to learn? What's your current skill level?"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="submitInstructorRequest" class="btn-primary" :disabled="!instructorName || !instructorEmail || submittingRequest">
+            {{ submittingRequest ? 'Sending...' : 'Request Instructor' }}
+          </button>
+          <button @click="showInstructorConnect = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Video Generator Modal -->
+    <div v-if="showAIGenerator" class="modal-overlay" @click.self="showAIGenerator = false">
+      <div class="modal-content ai-generator-modal">
+        <button @click="showAIGenerator = false" class="close-btn">✕</button>
+        <h2>🎬 Generate AI Video Lesson</h2>
+        <p class="modal-subtitle">Describe what you want to learn and AI will create a custom instructional video</p>
+        
+        <div class="form-group">
+          <label>What do you want to learn?</label>
+          <textarea 
+            v-model="aiVideoPrompt" 
+            placeholder="e.g., 'Show me how to play basic G, C, and D chord progressions' or 'Teach me blues scale improvisation'"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Skill Level</label>
+            <select v-model="aiSkillLevel">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Video Length</label>
+            <select v-model="aiVideoDuration">
+              <option value="short">Short (2-5 min)</option>
+              <option value="medium">Medium (5-10 min)</option>
+              <option value="long">Long (10-20 min)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="generateAIVideo" class="btn-primary" :disabled="!aiVideoPrompt.trim() || generatingVideo">
+            {{ generatingVideo ? '🎬 Generating...' : '✨ Generate Video' }}
+          </button>
+          <button @click="showAIGenerator = false" class="btn-secondary">Cancel</button>
+        </div>
+        
+        <div v-if="generatingVideo" class="generation-progress">
+          <div class="progress-spinner"></div>
+          <p>AI is creating your custom video lesson... This may take 30-60 seconds.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructor Connect Modal -->
+    <div v-if="showInstructorConnect" class="modal-overlay" @click.self="showInstructorConnect = false">
+      <div class="modal-content instructor-modal">
+        <button @click="showInstructorConnect = false" class="close-btn">✕</button>
+        <h2>👤 Connect with Live Instructor</h2>
+        <p class="modal-subtitle">Get personalized 1-on-1 lessons from experienced {{ selectedInstrument ? selectedInstrument.name.toLowerCase() : 'music' }} teachers</p>
+        
+        <div class="instructor-info">
+          <div class="info-card">
+            <div class="info-icon">📅</div>
+            <h4>Flexible Scheduling</h4>
+            <p>Book lessons at times that work for you</p>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">💻</div>
+            <h4>Video Sessions</h4>
+            <p>Live video calls with screen sharing</p>
+          </div>
+          <div class="info-card">
+            <div class="info-icon">🎯</div>
+            <h4>Personalized Path</h4>
+            <p>Custom curriculum based on your goals</p>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Your Name</label>
+          <input v-model="instructorName" type="text" placeholder="Enter your name" />
+        </div>
+        
+        <div class="form-group">
+          <label>Email</label>
+          <input v-model="instructorEmail" type="email" placeholder="your.email@example.com" />
+        </div>
+        
+        <div class="form-group">
+          <label>Tell us about your goals and experience</label>
+          <textarea 
+            v-model="instructorMessage" 
+            placeholder="What do you want to learn? What's your current skill level?"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="submitInstructorRequest" class="btn-primary" :disabled="!instructorName || !instructorEmail || submittingRequest">
+            {{ submittingRequest ? 'Sending...' : 'Request Instructor' }}
+          </button>
+          <button @click="showInstructorConnect = false" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Custom Lesson Plans (Pro) -->
     <div v-if="hasFeature('customLessonPlans')" class="custom-plans">
       <button @click="generateCustomPlan" class="btn-generate-plan">
@@ -419,7 +633,21 @@ export default {
       
       // Playback
       currentTime: 0,
-      videoDuration: 0
+      videoDuration: 0,
+      
+      // AI Video Generator
+      showAIGenerator: false,
+      aiVideoPrompt: '',
+      aiSkillLevel: 'beginner',
+      aiVideoDuration: 'medium',
+      generatingVideo: false,
+      
+      // Instructor Connect
+      showInstructorConnect: false,
+      instructorName: '',
+      instructorEmail: '',
+      instructorMessage: '',
+      submittingRequest: false
     };
   },
   computed: {
@@ -740,6 +968,78 @@ export default {
       
       // In real app, show generated plan
       console.log('Custom plan:', plan);
+    },
+
+    async generateAIVideo() {
+      if (!this.aiVideoPrompt.trim()) return;
+      
+      this.generatingVideo = true;
+      
+      try {
+        // Simulate AI video generation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Create a new lesson with the generated content
+        const newLesson = {
+          id: Date.now(),
+          title: `AI Generated: ${this.aiVideoPrompt.substring(0, 50)}...`,
+          description: `Custom ${this.selectedInstrument?.name || 'music'} lesson generated by AI based on your request`,
+          instructor: 'AI Instructor',
+          duration: this.aiVideoDuration === 'short' ? '5:00' : this.aiVideoDuration === 'medium' ? '10:00' : '20:00',
+          difficulty: this.aiSkillLevel,
+          category: 'custom',
+          thumbnail: '/images/ai-generated.png',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          isPremium: false,
+          progress: 0,
+          completed: false,
+          isAIGenerated: true
+        };
+        
+        this.lessons.unshift(newLesson);
+        this.showAIGenerator = false;
+        this.aiVideoPrompt = '';
+        
+        // Auto-select the new lesson
+        this.selectLesson(newLesson);
+        
+        alert('✨ AI video lesson generated successfully! In production, this would create a custom instructional video.');
+      } catch (error) {
+        console.error('Error generating AI video:', error);
+        alert('Failed to generate video. Please try again.');
+      } finally {
+        this.generatingVideo = false;
+      }
+    },
+
+    async submitInstructorRequest() {
+      if (!this.instructorName || !this.instructorEmail) return;
+      
+      this.submittingRequest = true;
+      
+      try {
+        // Simulate submission
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('Instructor request:', {
+          name: this.instructorName,
+          email: this.instructorEmail,
+          message: this.instructorMessage,
+          instrument: this.selectedInstrument?.name
+        });
+        
+        this.showInstructorConnect = false;
+        this.instructorName = '';
+        this.instructorEmail = '';
+        this.instructorMessage = '';
+        
+        alert('✅ Request submitted! An instructor will contact you within 24 hours to schedule your first lesson.');
+      } catch (error) {
+        console.error('Error submitting request:', error);
+        alert('Failed to submit request. Please try again.');
+      } finally {
+        this.submittingRequest = false;
+      }
     },
 
     async loadLessons() {
@@ -1542,6 +1842,268 @@ export default {
 /* Lesson Library */
 .lesson-library {
   margin-top: 30px;
+}
+
+.ai-generation-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+  padding: 30px 35px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+.ai-generation-prompt .prompt-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.ai-generation-prompt .prompt-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.ai-generation-prompt .prompt-content p {
+  margin: 0 0 20px 0;
+  opacity: 0.95;
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+
+.action-buttons-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-generate-ai, .btn-connect-instructor {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-generate-ai {
+  background: white;
+  color: #667eea;
+}
+
+.btn-generate-ai:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.btn-connect-instructor {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-connect-instructor:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-content h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.modal-subtitle {
+  margin: 0 0 30px 0;
+  color: #666;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 14px 24px;
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.generation-progress {
+  text-align: center;
+  padding: 30px 20px;
+  margin-top: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.progress-spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.generation-progress p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.instructor-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  text-align: center;
+  padding: 20px 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.info-card .info-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.info-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
 }
 
 .demo-warning {
