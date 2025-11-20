@@ -209,7 +209,10 @@ h2 { text-align: center; margin-bottom: 5px; }
 
 .chord-detail-modal {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0,0,0,0.8);
   display: flex;
   align-items: center;

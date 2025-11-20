@@ -296,30 +296,13 @@ body { width: 100%; position: relative; }
   cursor: pointer;
 }
 
-/* Music themed animated background */
+/* Clean gradient background */
 .music-bg {
   background: radial-gradient(1200px 600px at 10% 0%, rgba(0,64,255,0.08), transparent),
               radial-gradient(1000px 500px at 90% 20%, rgba(0,200,140,0.08), transparent),
               linear-gradient(180deg, #0a0a0f 0%, #0b0d15 100%);
   position: relative;
   overflow-x: hidden;
-}
-.music-bg::before, .music-bg::after {
-  content: "♪";
-  position: absolute;
-  font-size: 56px;
-  color: rgba(255,255,255,0.08);
-  animation: floatNote 14s linear infinite;
-  pointer-events: none;
-  will-change: transform, top;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-.music-bg::after { content: "♫"; left: 80%; animation-duration: 18s; animation-delay: 2s; }
-.music-bg::before { left: 10%; }
-@keyframes floatNote {
-  0% { top: 110%; transform: translateX(0) rotate(0deg) translateZ(0); }
-  100% { top: -10%; transform: translateX(-40px) rotate(360deg) translateZ(0); }
 }
 
 /* Footer */

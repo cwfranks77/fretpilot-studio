@@ -917,7 +917,10 @@ onUnmounted(() => {
 /* Modals */
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
   display: flex;
@@ -1230,7 +1233,7 @@ onUnmounted(() => {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
+  width: 100%;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);

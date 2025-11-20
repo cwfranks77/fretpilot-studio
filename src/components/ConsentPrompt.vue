@@ -36,7 +36,7 @@ function decline(){ setConsent(false); initAnalytics(false); visible.value = fal
 </script>
 
 <style scoped>
-.consent { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10 }
+.consent { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10 }
 .box { width:min(520px, 96%); background:#0a0a0a; color:#e7ecf7; padding:16px; border-radius:12px; border:1px solid #1a1a1a }
 .actions { margin-top:12px; display:flex; gap:10px }
 button { background:#5b74ff; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer }
