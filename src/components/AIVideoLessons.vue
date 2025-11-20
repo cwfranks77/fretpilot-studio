@@ -69,6 +69,12 @@
 
     <!-- Video Player -->
     <div v-if="currentLesson" class="video-player-container">
+      <!-- Content Notice -->
+      <div class="content-notice">
+        ⚠️ <strong>Demo Mode:</strong> These are placeholder videos. Replace with actual guitar lesson content before launch.
+        <br>Upload your guitar instruction videos and update the videoUrl fields in the lessons array.
+      </div>
+      
       <div class="video-wrapper">
         <video 
           ref="videoPlayer"
@@ -84,7 +90,6 @@
           playsinline
           crossorigin="anonymous"
           class="video-element"
-        />
         />
         
         <!-- AI Overlay (Premium+) -->
@@ -980,6 +985,21 @@ export default {
   padding: 20px;
   margin-bottom: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.content-notice {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.content-notice strong {
+  font-weight: 700;
 }
 
 .video-wrapper {
