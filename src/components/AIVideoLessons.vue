@@ -72,15 +72,19 @@
       <div class="video-wrapper">
         <video 
           ref="videoPlayer"
+          :key="currentLesson.id"
           :src="currentLesson.videoUrl"
           @timeupdate="handleTimeUpdate"
           @ended="handleVideoEnd"
           @error="handleVideoError"
+          @loadedmetadata="handleVideoLoaded"
           controls
           controlsList="nodownload"
-          preload="metadata"
+          preload="auto"
           playsinline
+          crossorigin="anonymous"
           class="video-element"
+        />
         />
         
         <!-- AI Overlay (Premium+) -->
@@ -422,6 +426,13 @@ export default {
       this.lessonProgress = lesson.progress || 0;
       this.currentDifficulty = lesson.suggestedDifficulty || 3;
       
+      // Force video reload
+      this.$nextTick(() => {
+        if (this.$refs.videoPlayer) {
+          this.$refs.videoPlayer.load();
+        }
+      });
+      
       // Start AI analysis
       if (this.hasFeature('aiAnalysis')) {
         this.startAIAnalysis();
@@ -432,6 +443,10 @@ export default {
       
       // Update remaining count
       this.dailyRemaining = canView.remaining;
+    },
+
+    handleVideoLoaded() {
+      console.log('Video loaded successfully:', this.currentLesson?.title);
     },
 
     async startAIAnalysis() {
@@ -522,11 +537,42 @@ export default {
     },
 
     handleVideoError(event) {
-      console.error('Video playback error:', event);
-      this.realtimeFeedback = '⚠️ Video failed to load. Using fallback content...';
-      // Fallback to a working video
-      if (this.currentLesson && this.$refs.videoPlayer) {
-        this.$refs.videoPlayer.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+      const video = event.target;
+      const error = video.error;
+      let errorMsg = 'Video failed to load. ';
+      
+      if (error) {
+        switch(error.code) {
+          case error.MEDIA_ERR_ABORTED:
+            errorMsg += 'Playback aborted.';
+            break;
+          case error.MEDIA_ERR_NETWORK:
+            errorMsg += 'Network error.';
+            break;
+          case error.MEDIA_ERR_DECODE:
+            errorMsg += 'Decode error.';
+            break;
+          case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMsg += 'Video format not supported.';
+            break;
+          default:
+            errorMsg += 'Unknown error.';
+        }
+      }
+      
+      console.error('Video error:', errorMsg, this.currentLesson?.videoUrl);
+      this.realtimeFeedback = '⚠️ ' + errorMsg + ' Trying alternate source...';
+      
+      // Try fallback video
+      if (this.currentLesson && video.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
+        setTimeout(() => {
+          this.currentLesson.videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+          this.$nextTick(() => {
+            if (this.$refs.videoPlayer) {
+              this.$refs.videoPlayer.load();
+            }
+          });
+        }, 1000);
       }
     },
 
