@@ -30,6 +30,7 @@
         <button :class="{ active: view==='orders' }" @click="view='orders'">📦 Orders</button>
         <button :class="{ active: view==='premium' }" @click="view='premium'">Premium</button>
         <button :class="{ active: view==='payment' }" @click="view='payment'" class="payment-btn">💳 Upgrade</button>
+        <button :class="{ active: view==='contact' }" @click="view='contact'">✉️ Contact</button>
       </nav>
       <div class="status">
         <template v-if="loggedIn">
@@ -65,6 +66,7 @@
           <OrderHistory v-else-if="view==='orders'" />
           <PaymentCheckout v-else-if="view==='payment'" />
           <PaymentSuccess v-else-if="view==='payment-success'" />
+          <ContactOpenDoor v-else-if="view==='contact'" @close="view='home'" />
           <MetronomeTuner v-else-if="view==='metronome'" />
           <ChordLibrary v-else-if="view==='library'" />
           <div v-else-if="view==='scales'" class="coming-soon">
@@ -122,6 +124,7 @@ import ConsentPrompt from './components/ConsentPrompt.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 import MainLogo from './assets/logos/MainLogo.vue'
 import FeatureIcons from './assets/logos/FeatureIcons.vue'
+import ContactOpenDoor from './components/ContactOpenDoor.vue'
 import { initAds, showBanner } from './services/adService'
 import { isPremium as ffIsPremium, getDailyLessonRemaining } from './services/featureFlags'
 import { initAnalytics } from './services/analyticsService'

@@ -3,11 +3,40 @@
 
 const express = require('express')
 const cors = require('cors')
+const fs = require('fs')
+const path = require('path')
 const { handleVendorPO } = require('./vendor')
 const dropshipWebhooks = require('./dropship-webhooks')
+const { sendContactEmail, sanitizeField } = require('./contact')
 const app = express()
 const PORT = process.env.PORT || 5175
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
+// Limited invite code management (self-destruct after N unique claims)
+const LIMITED_INVITE_CODE = process.env.INVITE_LIMITED_CODE || ''
+const LIMITED_INVITE_MAX = parseInt(process.env.INVITE_LIMITED_MAX || '10', 10)
+const inviteDataFile = path.join(__dirname, 'data', 'inviteCodes.json')
+function loadInviteData() {
+  try {
+    if (!fs.existsSync(inviteDataFile)) {
+      const dir = path.dirname(inviteDataFile)
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      fs.writeFileSync(inviteDataFile, JSON.stringify({ codes: {} }, null, 2))
+    }
+    return JSON.parse(fs.readFileSync(inviteDataFile, 'utf8'))
+  } catch (e) { return { codes: {} } }
+}
+function saveInviteData(data) {
+  try { fs.writeFileSync(inviteDataFile, JSON.stringify(data, null, 2)) } catch (_) {}
+}
+function initLimitedCode(data) {
+  if (!LIMITED_INVITE_CODE) return
+  if (!data.codes[LIMITED_INVITE_CODE]) {
+    data.codes[LIMITED_INVITE_CODE] = { max: LIMITED_INVITE_MAX, used: [], active: true }
+  }
+}
+// Initialize file structure on boot
+const _bootData = loadInviteData(); initLimitedCode(_bootData); saveInviteData(_bootData)
+
 let stripe = null
 if (STRIPE_SECRET_KEY) {
   try { stripe = require('stripe')(STRIPE_SECRET_KEY) } catch (e) { stripe = null }
@@ -20,6 +49,57 @@ app.use(cors())
 app.use(dropshipWebhooks)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
+
+// Limited invite status endpoint
+app.get('/api/invite/status', (req, res) => {
+  try {
+    const { code } = req.query
+    if (!code || code !== LIMITED_INVITE_CODE) return res.status(404).json({ ok: false, error: 'unknown_code' })
+    const data = loadInviteData(); initLimitedCode(data)
+    const entry = data.codes[code]
+    return res.json({ ok: true, code, remaining: Math.max(0, entry.max - entry.used.length), used: entry.used.length, active: entry.active })
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: 'status_failed' })
+  }
+})
+
+// Claim limited invite. Expects POST with JSON { code, email }
+app.post('/api/invite/claim', (req, res) => {
+  try {
+    const { code, email } = req.body || {}
+    if (!code || code !== LIMITED_INVITE_CODE) return res.status(404).json({ ok: false, error: 'unknown_code' })
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email || '')) return res.status(400).json({ ok: false, error: 'invalid_email' })
+    const data = loadInviteData(); initLimitedCode(data)
+    const entry = data.codes[code]
+    if (!entry.active) return res.status(410).json({ ok: false, error: 'code_inactive' })
+    if (entry.used.includes(email.toLowerCase())) {
+      return res.json({ ok: true, granted: true, remaining: Math.max(0, entry.max - entry.used.length) })
+    }
+    if (entry.used.length >= entry.max) {
+      entry.active = false; saveInviteData(data)
+      return res.status(409).json({ ok: false, error: 'limit_reached' })
+    }
+    entry.used.push(email.toLowerCase())
+    if (entry.used.length >= entry.max) entry.active = false
+    saveInviteData(data)
+    return res.json({ ok: true, granted: true, remaining: Math.max(0, entry.max - entry.used.length), exhausted: !entry.active })
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: 'claim_failed' })
+  }
+})
+
+// Admin deactivate limited code (simple shared secret)
+app.post('/api/invite/deactivate', (req, res) => {
+  const token = process.env.INVITE_ADMIN_TOKEN || ''
+  const { code, auth } = req.body || {}
+  if (!token || !auth || auth !== token) return res.status(403).json({ ok: false, error: 'forbidden' })
+  if (code !== LIMITED_INVITE_CODE) return res.status(404).json({ ok: false, error: 'unknown_code' })
+  const data = loadInviteData(); initLimitedCode(data)
+  data.codes[code].active = false
+  saveInviteData(data)
+  return res.json({ ok: true, deactivated: true })
+})
 
 app.post('/api/lessons/generate', (req, res) => {
   const { goal, level, style } = req.body || {}
@@ -119,6 +199,89 @@ app.post('/api/email/send', (req, res) => {
   // eslint-disable-next-line no-console
   console.log('[email] send', req.body)
   res.json({ ok: true })
+})
+
+// ============================================
+// CONTACT / OPEN DOOR ENDPOINT
+// ============================================
+// Provides testers & customers a simple way to reach support/dev directly.
+// In dev (no SMTP configured) messages are appended to server/logs/contact.log
+// Environment vars (optional for email):
+// CONTACT_SMTP_HOST, CONTACT_SMTP_PORT, CONTACT_SMTP_SECURE, CONTACT_SMTP_USER, CONTACT_SMTP_PASS, CONTACT_TO
+
+const CONTACT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
+const CONTACT_RATE_LIMIT_MAX = 8 // max messages per IP per window
+const contactRateStore = new Map() // ip -> { count, resetAt }
+
+function rateLimited(ip) {
+  const now = Date.now()
+  let entry = contactRateStore.get(ip)
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + CONTACT_RATE_LIMIT_WINDOW_MS }
+    contactRateStore.set(ip, entry)
+  }
+  entry.count += 1
+  return entry.count > CONTACT_RATE_LIMIT_MAX
+}
+
+app.post('/api/contact', async (req, res) => {
+  try {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+    if (rateLimited(ip)) {
+      return res.status(429).json({ ok: false, error: 'rate_limited' })
+    }
+
+    const { name = '', email = '', subject = '', message = '', _hp = '' } = req.body || {}
+
+    // Honeypot (bots will usually fill hidden field)
+    if (_hp) {
+      return res.status(400).json({ ok: false, error: 'bot_detected' })
+    }
+
+    // Basic validation
+    const cleanName = sanitizeField(name).slice(0, 80)
+    const cleanEmail = sanitizeField(email).slice(0, 120)
+    const cleanSubject = sanitizeField(subject).slice(0, 120)
+    const cleanMessage = sanitizeField(message).slice(0, 5000)
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!cleanName || !cleanEmail || !cleanMessage) {
+      return res.status(400).json({ ok: false, error: 'missing_fields' })
+    }
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ ok: false, error: 'invalid_email' })
+    }
+    if (cleanMessage.length < 5) {
+      return res.status(400).json({ ok: false, error: 'message_too_short' })
+    }
+
+    const payload = {
+      name: cleanName,
+      email: cleanEmail,
+      subject: cleanSubject || 'Contact Message',
+      message: cleanMessage,
+      ip,
+      ts: new Date().toISOString()
+    }
+
+    // Attempt email send if configured, else log to file
+    const emailResult = await sendContactEmail(payload)
+
+    // Always append to local log as audit trail
+    try {
+      const logDir = path.join(__dirname, 'logs')
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir)
+      const logLine = JSON.stringify(payload) + '\n'
+      fs.appendFile(path.join(logDir, 'contact.log'), logLine, () => {})
+    } catch (e) {
+      console.error('[contact] log write failed', e)
+    }
+
+    return res.json({ ok: true, delivered: emailResult.sent, mode: emailResult.mode })
+  } catch (e) {
+    console.error('[contact] endpoint error', e)
+    return res.status(500).json({ ok: false, error: 'contact_failed' })
+  }
 })
 
 // Vendor purchase order stub

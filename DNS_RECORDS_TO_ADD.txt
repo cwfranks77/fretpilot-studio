@@ -1,0 +1,55 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NAMECHEAP DNS RECORDS - COPY THESE EXACTLY
+Domain: fretpilotstudio.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: ADD MX RECORDS (for receiving email via ImprovMX)
+────────────────────────────────────────────────────────────────────
+
+Record 1:
+Type: MX Record
+Host: @
+Value: mx1.improvmx.com
+Priority: 10
+TTL: Automatic
+
+Record 2:
+Type: MX Record
+Host: @
+Value: mx2.improvmx.com
+Priority: 20
+TTL: Automatic
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2: ADD SPF RECORD (authorizes ImprovMX + SendGrid to send)
+────────────────────────────────────────────────────────────────────
+
+Type: TXT Record
+Host: @
+Value: v=spf1 include:spf.improvmx.com include:sendgrid.net ~all
+TTL: Automatic
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3: ADD DMARC RECORD (email policy + monitoring)
+────────────────────────────────────────────────────────────────────
+
+Type: TXT Record
+Host: _dmarc
+Value: v=DMARC1; p=quarantine; rua=mailto:dmarc@fretpilotstudio.com; pct=100
+TTL: Automatic
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOTES:
+- Add these in Namecheap Advanced DNS > HOST RECORDS section
+- Click "ADD NEW RECORD" button for each one
+- Delete any old MX records that aren't improvmx.com
+- Save each record with the green checkmark
+- DNS propagation: 15-60 minutes
+
+AFTER DNS PROPAGATES:
+Run verification: npm run check:email-dns
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

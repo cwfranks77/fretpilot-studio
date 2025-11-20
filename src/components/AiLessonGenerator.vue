@@ -31,7 +31,7 @@
         </select>
       </label>
       <button :disabled="loading" type="submit">{{ loading? 'Generating…' : 'Generate Lesson' }}</button>
-      <button v-if="!premium && quota<=0" type="button" class="reward" @click="unlockWithAd">Watch Ad to Unlock +1</button>
+      <button v-if="false && !premium && quota<=0" type="button" class="reward" @click="unlockWithAd">Watch Ad to Unlock +1</button>
     </form>
 
     <div v-if="plan" class="plan">

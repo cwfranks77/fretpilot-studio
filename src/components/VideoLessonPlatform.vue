@@ -54,14 +54,21 @@
     <!-- Current Video Player -->
     <div v-if="currentVideo" class="player-container">
       <div class="main-player">
-        <video 
-          ref="videoPlayer"
-          :src="currentVideo.videoUrl"
-          @timeupdate="handleTimeUpdate"
-          @ended="handleVideoEnd"
-          controls
-          class="video-element"
-        ></video>
+        <div v-if="currentVideo.videoUrl" class="video-wrapper">
+          <video 
+            ref="videoPlayer"
+            :src="currentVideo.videoUrl"
+            @timeupdate="handleTimeUpdate"
+            @ended="handleVideoEnd"
+            @error="handleVideoError"
+            controls
+            class="video-element"
+          ></video>
+        </div>
+        <div v-else class="video-placeholder">
+          <img src="/images/video-placeholder.png" alt="Video coming soon" />
+          <p>Video playback will be available soon. If this seems wrong, please contact support.</p>
+        </div>
         
         <!-- Interactive Tab Overlay -->
         <div v-if="showTab && currentVideo.tabData" class="tab-overlay">
@@ -252,6 +259,10 @@ const enableMistakeDetection = ref(false)
 const mistakeFeedback = ref(null)
 const videoProgress = ref(0)
 
+function handleVideoError() {
+  console.error('Video failed to load. Check videoUrl and file path.')
+}
+
 // Sample video library (in production, fetch from API)
 const videos = ref([
   {
@@ -263,8 +274,8 @@ const videos = ref([
     genre: 'rock',
     technique: 'scales',
     views: 12500,
-    thumbnail: '/images/video-thumb-1.jpg',
-    videoUrl: '/videos/pentatonic-lesson.mp4',
+    thumbnail: '/images/video-placeholder.png',
+    videoUrl: '',
     progress: 45,
     learningPoints: [
       'All 5 pentatonic positions',
@@ -299,8 +310,8 @@ const videos = ref([
     genre: 'blues',
     technique: 'chords',
     views: 8400,
-    thumbnail: '/images/video-thumb-2.jpg',
-    videoUrl: '/videos/blues-shuffle.mp4',
+    thumbnail: '/images/video-placeholder.png',
+    videoUrl: '',
     progress: 0,
     learningPoints: [
       'Classic 12-bar progression',
@@ -325,8 +336,8 @@ const videos = ref([
     genre: 'metal',
     technique: 'sweep',
     views: 15200,
-    thumbnail: '/images/video-thumb-3.jpg',
-    videoUrl: '/videos/sweep-picking.mp4',
+    thumbnail: '/images/video-placeholder.png',
+    videoUrl: '',
     progress: 100,
     learningPoints: [
       'Economy of motion',
@@ -644,9 +655,28 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.video-element {
+.video-wrapper, .video-element {
   width: 100%;
   display: block;
+}
+
+.video-placeholder {
+  width: 100%;
+  min-height: 400px;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: #999;
+  padding: 30px;
+  text-align: center;
+}
+
+.video-placeholder img {
+  max-width: 200px;
+  opacity: 0.6;
 }
 
 .tab-overlay {

@@ -4,22 +4,27 @@
 let initialized = false
 
 export async function initAds() {
+  // DISABLED: Ads turned off until real AdMob account is configured with payment
+  // Test ads don't generate revenue, so we're skipping initialization for now
+  console.info('Ads disabled (awaiting production AdMob setup).')
+  return false
+  
+  /* Uncomment when ready with real ad units:
   try {
-    // Dynamic import to avoid bundling for non-mobile
     const { Capacitor } = await import('@capacitor/core')
     if (!Capacitor.isNativePlatform()) return false
 
     const admob = await import('@capacitor-community/admob')
     const { AdMob, TrackingAuthorizationStatus } = admob
     await AdMob.requestTrackingAuthorization?.()
-    await AdMob.initialize({ initializeForTesting: true })
+    await AdMob.initialize({ initializeForTesting: false }) // Change to false for production
     initialized = true
     return true
   } catch (e) {
-    // Likely running on web/electron where plugin isn't available
     console.info('Ads not initialized (non-mobile or plugin missing).')
     return false
   }
+  */
 }
 
 export async function showBanner() {
@@ -50,9 +55,9 @@ export async function showInterstitial() {
 
 export async function showReward() {
   if (!initialized) {
-    // Dev/web fallback: simulate rewarded ad
-    const ok = typeof window !== 'undefined' ? window.confirm('Simulate rewarded ad?') : false
-    return ok ? { type: 'simulated', amount: 1 } : null
+    // Ads disabled - no simulation, no reward
+    console.info('Rewarded ads disabled until production AdMob setup.')
+    return null
   }
   try {
     const admob = await import('@capacitor-community/admob')

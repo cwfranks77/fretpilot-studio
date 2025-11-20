@@ -1,0 +1,13 @@
+FretPilot Studio & School provides adaptive AI-generated lessons, mistake heatmap visualization, jam companion tracks, an integrated tuner and metronome, and mastery analytics—engineered to accelerate deliberate guitar improvement.
+
+Features:
+• AI Lesson Generator – Curates evolving practice sequences from your performance gaps
+• Mistake Heatmap – Precision fretboard visualization of error concentration
+• Practice Analyzer – Timing, consistency, and clarity metrics
+• Jam Companion – Adaptive backing tracks that respond to your error density
+• Metronome + Tuner – Unified timing and pitch center
+• Progress Engine – Tracks mastery velocity, streak continuity, drill completion
+• Chord Library – Structured chord explorer with inversions
+• Consent-First Privacy – Analytics disabled until you opt in
+
+Designed for players serious about intentional improvement. Refine. Evolve. Own your craft.

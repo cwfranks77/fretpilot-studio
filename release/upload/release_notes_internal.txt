@@ -1,0 +1,20 @@
+FretPilot Studio & School v1.0.0 Internal Test
+
+Core Features:
+- AI Lesson Generator
+- Mistake Heatmap
+- Practice Analyzer
+- Jam Companion adaptive tracks
+- Metronome + Tuner hub
+- Progress streak & mastery tracking
+- Chord Library explorer
+- Consent-based analytics
+
+Known Issues (non-blocking):
+- KI-001: Tuner latency on very low frequencies (<60Hz)
+- KI-002: Heatmap rare fret offset after rapid tuning
+- KI-003: Jam Companion double slowdown on clustered errors
+
+Data Safety: Transient audio (no storage); metrics local; analytics opt-in.
+
+Installation: Upload AAB to Internal Testing track.
