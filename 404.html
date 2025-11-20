@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting…</title>
+    <meta http-equiv="refresh" content="0; url=/" />
+    <script>
+      // SPA fallback for GitHub Pages / static hosts: redirect any 404 to index.html
+      (function () {
+        var l = window.location;
+        // If already at root, nothing to do
+        if (l.pathname === '/' || l.pathname === '/index.html') return;
+        l.replace('/');
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to the app…</p>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#f7931a"/>
+  <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="60" font-weight="bold">₿</text>
+  <text x="100" y="150" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="16">QR Code</text>
+</svg>

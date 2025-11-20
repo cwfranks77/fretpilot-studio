@@ -1,0 +1,15 @@
+# Vercel deployment exclusions
+node_modules/
+dist-electron/
+android/
+ios/
+build/
+*.log
+.git/
+.vscode/
+electron-app/
+release/
+*.apk
+*.aab
+*.exe
+*.ipa
