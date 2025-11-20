@@ -3,7 +3,7 @@
     <div class="hero">
       <img class="hero-image animate-float" src="/images/guitar-hero.svg" alt="FretPilot hero" />
       <h1 class="hero-title">🎸 FretPilot</h1>
-      <p class="hero-tagline">AI-Powered Guitar Mastery Platform</p>
+      <p class="hero-tagline">AI-Powered Music Learning Platform</p>
       <p class="hero-subtitle">Train smarter. Play better. Master faster.</p>
     </div>
 
