@@ -226,9 +226,12 @@ onUnmounted(() => {
 
 <style>
 /* Global lightweight reset - Dark Room Theme */
-html { overflow-y: scroll; } /* Force scrollbar to prevent layout shift */
+html { 
+  overflow-y: scroll; /* Force scrollbar to prevent layout shift */
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
+}
 html,body,#app { height:100%; margin:0; background:#000 }
-.app-shell { display:flex; flex-direction:column; min-height:100%; background:#000 }
+.app-shell { display:flex; flex-direction:column; min-height:100%; background:#000; overflow-x: hidden; }
 .topbar {
   display:flex;
   align-items:center;
