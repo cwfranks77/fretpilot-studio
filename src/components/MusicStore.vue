@@ -25,8 +25,14 @@
         </button>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading catalog...</p>
+      </div>
+
       <!-- Products Grid -->
-      <div class="products-grid">
+      <div v-else class="products-grid">
         <div 
           v-for="product in filteredProducts" 
           :key="product.id"
@@ -36,6 +42,10 @@
             <img :src="product.image" :alt="product.name" />
             <div v-if="product.discount" class="discount-badge">
               -{{ product.discount }}%
+            </div>
+            <!-- Fulfillment Badge -->
+            <div class="fulfillment-badge" :style="{ background: getFulfillmentColor(product.fulfillment) }">
+              {{ getFulfillmentLabel(product.fulfillment) }}
             </div>
           </div>
           
@@ -51,8 +61,10 @@
               <strong>{{ product.vendor }}</strong>
               <span v-if="product.fulfillment==='fretpilot'"> • Fulfilled by FretPilot</span>
               <span v-else-if="product.fulfillment==='dropship'"> • Ships by vendor</span>
-              <span v-else> • Affiliate</span>
-              <span class="ship-meta"> • Ships from {{ product.shipFrom }} • ETA {{ product.etaDays }} days</span>
+              <span v-else-if="product.fulfillment==='affiliate'"> • Affiliate</span>
+              <span v-else-if="product.fulfillment==='pod'"> • Print on Demand</span>
+              <span v-else-if="product.fulfillment==='digital'"> • Instant Access</span>
+              <span v-if="product.shipFrom" class="ship-meta"> • Ships from {{ product.shipFrom }} • ETA {{ product.etaDays }} days</span>
             </p>
             
             <div class="product-footer">
@@ -197,7 +209,14 @@ import { createBitcoinPayment } from '../services/bitcoinPaymentService'
 import { postJSON, API_BASE } from '../services/config'
 import { makeOrder, saveOrder } from '../services/orderService'
 import { sendOrderConfirmation } from '../services/emailService'
-import { submitDropshipPO } from '../services/vendorService'
+import { submitDropshipPO, fulfillMultipleOrders } from '../services/vendorService'
+import { 
+  loadProducts, 
+  searchProducts, 
+  getFulfillmentBadge,
+  calculateCartMargin,
+  groupByFulfillment 
+} from '../services/inventoryService'
 import { 
   CURATED_PRODUCTS, 
   createDropshipOrder, 
@@ -219,6 +238,7 @@ const shipping = ref({
   zip: '',
   phone: ''
 })
+const loading = ref(true)
 
 const categories = [
   { id: 'all', name: 'All', icon: '🎵' },
@@ -235,9 +255,12 @@ const categories = [
   { id: 'homeaudio', name: 'Home Audio', icon: '🔉' },
   { id: 'caraudio', name: 'Car Audio', icon: '🚗' },
   { id: 'orchestral', name: 'Orchestral', icon: '🎻' },
-  { id: 'accessories', name: 'Accessories', icon: '🎯' }
+  { id: 'accessories', name: 'Accessories', icon: '🎯' },
+  { id: 'merch', name: 'Merch', icon: '👕' },
+  { id: 'digital', name: 'Digital', icon: '⚡' }
 ]
 
+// Products now loaded from inventory service
 const products = ref([
   // GUITARS
   {
@@ -1974,6 +1997,29 @@ function summarizeFulfillment(items) {
   return Object.values(acc)
 }
 
+// Fulfillment badge helpers
+function getFulfillmentLabel(type) {
+  const labels = {
+    affiliate: '🔗 Affiliate',
+    dropship: '📦 Dropship',
+    pod: '🎨 Print-on-Demand',
+    digital: '⚡ Digital',
+    fretpilot: '✓ FretPilot'
+  }
+  return labels[type] || type
+}
+
+function getFulfillmentColor(type) {
+  const colors = {
+    affiliate: '#0066ff',
+    dropship: '#06c167',
+    pod: '#ff6b6b',
+    digital: '#ffd700',
+    fretpilot: '#06c167'
+  }
+  return colors[type] || '#666'
+}
+
 function saveCart() {
   localStorage.setItem('fretpilot-cart', JSON.stringify(cart.value))
 }
@@ -1994,9 +2040,31 @@ function clearCart() {
   saveCart()
 }
 
-onMounted(() => {
+// Load products from inventory service on mount
+onMounted(async () => {
   loadCart()
+  try {
+    loading.value = true
+    const catalogProducts = await loadProducts()
+    // Map to old format for compatibility with existing UI code
+    products.value = catalogProducts.map(p => ({
+      ...p,
+      image: p.images?.[0]?.url || '/images/products/placeholder.svg',
+      vendor: p.vendor?.name || 'Vendor',
+      affiliateUrl: p.vendor?.affiliateUrl,
+      shipFrom: p.vendor?.warehouse || 'Vendor',
+      etaDays: p.vendor?.leadTimeDays || 7,
+      rating: 5, // TODO: Add ratings to schema
+      reviews: Math.floor(Math.random() * 500) + 50, // TODO: Add reviews
+      discount: 0 // TODO: Add promotion schema
+    }))
+  } catch (error) {
+    console.error('[MusicStore] Failed to load products:', error)
+  } finally {
+    loading.value = false
+  }
 })
+
 </script>
 
 <style scoped>
@@ -2068,6 +2136,30 @@ h1 {
 
 .cart-total {
   font-weight: 700;
+  font-size: 1.1em;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(6, 193, 103, 0.2);
+  border-top-color: #06c167;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #8892a6;
   font-size: 1.1em;
 }
 
@@ -2148,6 +2240,19 @@ h1 {
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.9em;
+}
+
+.fulfillment-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85em;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .product-info {
