@@ -1,0 +1,216 @@
+═══════════════════════════════════════════════════════════
+ANDROID SCREENSHOT CAPTURE GUIDE - FRETPILOT STUDIO
+═══════════════════════════════════════════════════════════
+
+GOOGLE PLAY STORE REQUIREMENTS:
+- Minimum: 2 screenshots
+- Recommended: 4-8 screenshots
+- Format: PNG or JPEG
+- Dimensions: 16:9 or 9:16 aspect ratio
+- Min resolution: 320px on shortest side
+- Max resolution: 3840px on longest side
+- Ideal: 1080x1920 (portrait) or 1920x1080 (landscape)
+
+═══════════════════════════════════════════════════════════
+METHOD 1: CAPTURE FROM ANDROID DEVICE
+═══════════════════════════════════════════════════════════
+
+Using Physical Device (Recommended):
+
+1. Install the APK on your Android phone:
+   - Copy android/app/build/outputs/apk/release/app-release.apk to device
+   - Enable "Install unknown apps" in Settings
+   - Open and install the APK
+
+2. Navigate to each key screen:
+   - Home/Dashboard
+   - AI Lesson Generator
+   - Interactive Fretboard Trainer
+   - Chord Library
+   - Practice Analytics/Heatmap
+   - Jam Companion
+   - Metronome & Tuner
+   - Premium/Features screen (optional)
+
+3. Take screenshots:
+   - Press Power + Volume Down simultaneously
+   - Screenshots save to: Pictures/Screenshots or DCIM/Screenshots
+   - Transfer to computer via USB or cloud
+
+4. Retrieve screenshots:
+   PowerShell (from device via USB):
+   adb pull /sdcard/Pictures/Screenshots/ ./screenshots/
+
+═══════════════════════════════════════════════════════════
+METHOD 2: CAPTURE FROM ANDROID EMULATOR
+═══════════════════════════════════════════════════════════
+
+Using Android Studio Emulator:
+
+1. Launch Android Studio
+2. Open your project: C:\Users\ninja\Fretquest
+3. Start Android Emulator:
+   - Tools → Device Manager → Create Virtual Device
+   - Choose Pixel 6 or similar (1080x2400 resolution)
+   - System Image: API 33 (Android 13) or API 34 (Android 14)
+   - Launch emulator
+
+4. Install and run app:
+   - Build → Select Build Variant → release
+   - Run → Run 'app' → Select emulator
+   - Or drag-drop APK onto emulator
+
+5. Capture screenshots:
+   - Click camera icon in emulator toolbar (right side)
+   - Or: Ctrl+S (Windows) to capture current screen
+   - Saves to: C:\Users\ninja\AppData\Local\Temp\AVD\ or Desktop
+
+6. Alternative: Use scrcpy (better quality):
+   - Install: choco install scrcpy (if you have Chocolatey)
+   - Run: scrcpy --record screenshot.png
+   - Press Ctrl+S to capture
+
+═══════════════════════════════════════════════════════════
+METHOD 3: AUTOMATED SCREENSHOT SCRIPT (ADVANCED)
+═══════════════════════════════════════════════════════════
+
+Use your existing capture_screenshots.js script:
+
+PowerShell:
+cd C:\Users\ninja\Fretquest
+node scripts/capture_screenshots.js
+
+(Requires Puppeteer or similar web automation - may need adjustment for Android)
+
+═══════════════════════════════════════════════════════════
+RECOMMENDED SCREENSHOTS TO CAPTURE
+═══════════════════════════════════════════════════════════
+
+Screenshot 1: Home Dashboard
+- Show all 8 feature cards
+- Clean, welcoming interface
+- Highlight "Get Started" or main CTA
+
+Screenshot 2: AI Lesson Generator
+- Show lesson generation interface
+- Display sample generated lesson
+- Highlight "Personalized" or "AI-Powered" text
+
+Screenshot 3: Interactive Fretboard Trainer
+- Fretboard with highlighted notes
+- Practice mode active
+- Show interactive elements
+
+Screenshot 4: Chord Library
+- Grid of chord thumbnails
+- Search/filter options visible
+- Show chord diagram detail (optional)
+
+Screenshot 5: Practice Analytics
+- Heatmap showing practice patterns
+- Progress charts or statistics
+- Visual data representation
+
+Screenshot 6: Jam Companion (Optional)
+- Backing track player
+- Genre selection
+- Play controls
+
+Screenshot 7: Premium Features (Optional)
+- Premium gate or upgrade screen
+- Feature comparison
+- Clear value proposition
+
+Screenshot 8: Metronome/Tuner (Optional)
+- Essential tools interface
+- Clean, functional design
+
+═══════════════════════════════════════════════════════════
+POST-PROCESSING (OPTIONAL)
+═══════════════════════════════════════════════════════════
+
+Enhance screenshots for marketing:
+
+1. Add device frame (phone mockup):
+   - Use: https://mockuphone.com
+   - Upload screenshot, select device, download
+
+2. Add text overlays (optional):
+   - Use Canva, Figma, or Photoshop
+   - Highlight key features with brief text
+   - Keep it minimal and professional
+
+3. Create feature graphic (1024x500px):
+   - Required for Play Store listing
+   - Show app icon + tagline
+   - Use brand colors
+
+4. Optimize file size:
+   - Use TinyPNG or similar
+   - Aim for <1MB per screenshot
+   - Maintain quality
+
+═══════════════════════════════════════════════════════════
+QUICK CAPTURE COMMANDS (FOR CONNECTED DEVICE)
+═══════════════════════════════════════════════════════════
+
+PowerShell:
+
+# Check device connected
+adb devices
+
+# Create screenshot directory
+mkdir screenshots
+
+# Take screenshot remotely (press key on device)
+# OR pull existing screenshots:
+adb pull /sdcard/Pictures/Screenshots/ ./screenshots/
+
+# Alternative: Capture via adb directly
+adb shell screencap -p /sdcard/screen.png
+adb pull /sdcard/screen.png ./screenshots/home.png
+adb shell rm /sdcard/screen.png
+
+# Repeat for each screen (navigate app between captures)
+
+═══════════════════════════════════════════════════════════
+FILE NAMING CONVENTION
+═══════════════════════════════════════════════════════════
+
+Use clear, descriptive names:
+- 01_home_dashboard.png
+- 02_ai_lesson_generator.png
+- 03_fretboard_trainer.png
+- 04_chord_library.png
+- 05_practice_analytics.png
+- 06_jam_companion.png
+- 07_metronome_tuner.png
+- 08_premium_features.png
+
+═══════════════════════════════════════════════════════════
+UPLOAD TO PLAY CONSOLE
+═══════════════════════════════════════════════════════════
+
+Once captured:
+
+1. Go to: https://play.google.com/console
+2. Select: FretPilot app
+3. Navigate: Release → Production → Edit release
+4. Scroll to: Store listing → Phone screenshots
+5. Upload: Drag and drop 2-8 PNG/JPEG files
+6. Reorder: Drag to prioritize best screens first
+7. Save: Click "Save" at bottom
+
+Note: Screenshot #1 is most important - it's the first thing users see!
+
+═══════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════
+
+• Emulator too slow: Use a physical device or increase emulator RAM
+• ADB not recognized: Install Android SDK Platform Tools
+• Screenshots blurry: Ensure device/emulator has high DPI (1080p+)
+• Wrong aspect ratio: Crop to 9:16 (portrait) using image editor
+• File too large: Compress with TinyPNG or similar tool
+
+═══════════════════════════════════════════════════════════
