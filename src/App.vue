@@ -215,6 +215,11 @@ onMounted(async () => {
     quota.value = getDailyLessonRemaining()
     readAuth()
   }, 3000)
+  
+  // Show app after mount to prevent layout shift during load
+  requestAnimationFrame(() => {
+    document.getElementById('app')?.classList.add('loaded')
+  })
 })
 
 // Cleanup on unmount

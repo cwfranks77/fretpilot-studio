@@ -11,6 +11,14 @@
         overflow-y: scroll !important;
         scrollbar-gutter: stable !important;
       }
+      /* Hide content until loaded to prevent flash */
+      #app {
+        opacity: 0;
+        transition: opacity 0.15s ease-in;
+      }
+      #app.loaded {
+        opacity: 1;
+      }
     </style>
     <script>
       // Host-based client redirect: Serve store for TheFranksStandard domain
