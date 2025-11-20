@@ -2,7 +2,8 @@
   <div class="app-shell music-bg">
     <header class="topbar">
       <div class="brand" @click="view='home'" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-        <MainLogo :size="40" :compact="true" />
+        <!-- Replaced vector MainLogo with The Franks Standard architectural logo image -->
+        <img src="/franks-standard-logo.png" alt="The Franks Standard" class="brand-logo" />
         <span>FretPilot Studio & School</span>
       </div>
       <nav class="nav" v-if="loggedIn">
@@ -122,7 +123,8 @@ import PaymentSuccess from './components/PaymentSuccess.vue'
 import Login from './components/Login.vue'
 import ConsentPrompt from './components/ConsentPrompt.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
-import MainLogo from './assets/logos/MainLogo.vue'
+// MainLogo replaced by static image (public/franks-standard-logo.png)
+// import MainLogo from './assets/logos/MainLogo.vue'
 import FeatureIcons from './assets/logos/FeatureIcons.vue'
 import ContactOpenDoor from './components/ContactOpenDoor.vue'
 import { initAds, showBanner } from './services/adService'
