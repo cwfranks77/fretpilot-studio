@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { getConsent, setConsent } from '../services/consentService'
 import { initAnalytics } from '../services/analyticsService'
 
@@ -20,6 +20,15 @@ const visible = ref(false)
 onMounted(() => {
   const c = getConsent()
   visible.value = c == null
+})
+
+// Lock body scroll when modal is visible
+watch(visible, (isVisible) => {
+  if (isVisible) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
 })
 
 function accept(){ setConsent(true); initAnalytics(true); visible.value = false }
