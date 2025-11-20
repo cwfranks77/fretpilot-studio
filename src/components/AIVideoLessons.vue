@@ -1043,52 +1043,8 @@ export default {
     },
 
     async loadLessons() {
-      // PLACEHOLDER: These videos are sample content for demo purposes
-      // In production, these would be replaced with actual guitar instructional videos
-      this.lessons = [
-        {
-          id: 1,
-          title: '🚧 DEMO: Beginner Chord Transitions (Video Content Coming Soon)',
-          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
-          instructor: 'Coming Soon',
-          duration: '15:30',
-          difficulty: 'beginner',
-          category: 'technique',
-          thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-          isPremium: false,
-          progress: 0,
-          completed: false
-        },
-        {
-          id: 2,
-          title: '🚧 DEMO: Advanced Fingerpicking Patterns (Video Content Coming Soon)',
-          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
-          instructor: 'Coming Soon',
-          duration: '22:15',
-          difficulty: 'advanced',
-          category: 'technique',
-          thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-          isPremium: true,
-          progress: 0,
-          completed: false
-        },
-        {
-          id: 3,
-          title: '🚧 DEMO: Blues Improvisation Masterclass (Video Content Coming Soon)',
-          description: 'This is a placeholder video. Real guitar lessons are being recorded and will replace these demo videos soon.',
-          instructor: 'Coming Soon',
-          duration: '35:00',
-          difficulty: 'intermediate',
-          category: 'improvisation',
-          thumbnail: '/images/video-placeholder.png',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-          isPremium: true,
-          progress: 45,
-          completed: false
-        }
-      ];
+      // No pre-loaded lessons - users generate custom content via AI
+      this.lessons = [];
     },
 
     async loadRecommendations() {
