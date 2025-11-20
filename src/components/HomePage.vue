@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <div class="feature-card" @click="$emit('navigate', 'video')">
+      <div class="feature-card" @click="$emit('navigate', 'videolessons')">
         <div class="feature-icon">🎬</div>
         <h3>AI Video Lessons</h3>
         <p>Generate custom instructional videos with AI - perfect for visual learners</p>
