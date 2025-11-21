@@ -164,34 +164,10 @@
           </div>
         </div>
         
-        <!-- Fallback: Regular Video Player (for future non-AI lessons) -->
-        <video 
-          v-else-if="!isYouTubeVideo(currentLesson.videoUrl)"
-          ref="videoPlayer"
-          :key="currentLesson.id"
-          :src="currentLesson.videoUrl"
-          @timeupdate="handleTimeUpdate"
-          @ended="handleVideoEnd"
-          @error="handleVideoError"
-          @loadedmetadata="handleVideoLoaded"
-          controls
-          controlsList="nodownload"
-          preload="auto"
-          playsinline
-          crossorigin="anonymous"
-          class="video-element"
-        />
-        
-        <iframe
-          v-else
-          ref="youtubePlayer"
-          :key="currentLesson.id"
-          :src="currentLesson.videoUrl"
-          class="video-element youtube-iframe"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        ></iframe>
+        <!-- No video players for AI-generated lessons -->
+        <div v-else class="no-video-message">
+          <p>⚠️ This lesson type is not yet available. Please select an AI-generated lesson.</p>
+        </div>
       </div>
 
       <!-- Lesson Info -->
