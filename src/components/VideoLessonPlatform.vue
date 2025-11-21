@@ -56,6 +56,7 @@
       <div class="main-player">
         <div v-if="currentVideo.videoUrl" class="video-wrapper">
           <video 
+            v-if="!isYouTubeVideo(currentVideo.videoUrl)"
             ref="videoPlayer"
             :src="currentVideo.videoUrl"
             @timeupdate="handleTimeUpdate"
@@ -64,6 +65,16 @@
             controls
             class="video-element"
           ></video>
+          
+          <iframe
+            v-else
+            ref="youtubePlayer"
+            :src="currentVideo.videoUrl"
+            class="video-element youtube-iframe"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
         </div>
         <div v-else class="video-placeholder">
           <img src="/images/video-placeholder.png" alt="Video coming soon" />
@@ -275,7 +286,7 @@ const videos = ref([
     technique: 'scales',
     views: 12500,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoUrl: 'https://www.youtube.com/embed/Q4zXWlOrDLM',
     progress: 45,
     learningPoints: [
       'All 5 pentatonic positions',
@@ -311,7 +322,7 @@ const videos = ref([
     technique: 'chords',
     views: 8400,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    videoUrl: 'https://www.youtube.com/embed/z38e8pQD3a0',
     progress: 0,
     learningPoints: [
       'Classic 12-bar progression',
@@ -337,7 +348,7 @@ const videos = ref([
     technique: 'sweep',
     views: 15200,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: 'https://www.youtube.com/embed/rKiWZTmMA5E',
     progress: 100,
     learningPoints: [
       'Economy of motion',
@@ -448,6 +459,10 @@ function setLoopEnd() {
   if (videoPlayer.value) {
     loopEnd.value = videoPlayer.value.currentTime
   }
+}
+
+function isYouTubeVideo(url) {
+  return url && (url.includes('youtube.com') || url.includes('youtu.be'))
 }
 
 function handleTimeUpdate() {
@@ -658,6 +673,11 @@ onUnmounted(() => {
 .video-wrapper, .video-element {
   width: 100%;
   display: block;
+}
+
+.youtube-iframe {
+  aspect-ratio: 16 / 9;
+  height: auto;
 }
 
 .video-placeholder {

@@ -107,6 +107,7 @@
     <div v-if="currentLesson" class="video-player-container">
       <div class="video-wrapper">
         <video 
+          v-if="!isYouTubeVideo(currentLesson.videoUrl)"
           ref="videoPlayer"
           :key="currentLesson.id"
           :src="currentLesson.videoUrl"
@@ -121,6 +122,17 @@
           crossorigin="anonymous"
           class="video-element"
         />
+        
+        <iframe
+          v-else
+          ref="youtubePlayer"
+          :key="currentLesson.id"
+          :src="currentLesson.videoUrl"
+          class="video-element youtube-iframe"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
         
         <!-- AI Overlay (Premium+) -->
         <div v-if="hasFeature('poseDetection') && showAIOverlay" class="ai-overlay">
@@ -910,6 +922,10 @@ export default {
       }
     },
 
+    isYouTubeVideo(url) {
+      return url && (url.includes('youtube.com') || url.includes('youtu.be'));
+    },
+
     updateAdaptiveDifficulty() {
       // Analyze performance and adjust difficulty
       const performance = this.lessonProgress / (this.currentTime / 60); // progress per minute
@@ -1080,7 +1096,7 @@ export default {
             difficulty: 'beginner',
             category: 'chords',
             thumbnail: '/images/chord-library.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            videoUrl: 'https://www.youtube.com/embed/z0zoC-6YI7w',
             isPremium: false,
             progress: 0,
             completed: false
@@ -1094,7 +1110,7 @@ export default {
             difficulty: 'beginner',
             category: 'technique',
             thumbnail: '/images/guitar-hero.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            videoUrl: 'https://www.youtube.com/embed/z38e8pQD3a0',
             isPremium: false,
             progress: 0,
             completed: false
@@ -1108,7 +1124,7 @@ export default {
             difficulty: 'intermediate',
             category: 'fingerpicking',
             thumbnail: '/images/practice-tips.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            videoUrl: 'https://www.youtube.com/embed/rKiWZTmMA5E',
             isPremium: false,
             progress: 0,
             completed: false
@@ -1122,7 +1138,7 @@ export default {
             difficulty: 'intermediate',
             category: 'scales',
             thumbnail: '/images/jam-session.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            videoUrl: 'https://www.youtube.com/embed/Q4zXWlOrDLM',
             isPremium: true,
             progress: 0,
             completed: false
@@ -1136,7 +1152,7 @@ export default {
             difficulty: 'intermediate',
             category: 'chords',
             thumbnail: '/images/chord-library.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            videoUrl: 'https://www.youtube.com/embed/KxwfmUQT0Pg',
             isPremium: false,
             progress: 0,
             completed: false
@@ -1150,7 +1166,7 @@ export default {
             difficulty: 'advanced',
             category: 'lead',
             thumbnail: '/images/guitar-hero.svg',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
             isPremium: true,
             progress: 0,
             completed: false
@@ -1617,6 +1633,11 @@ export default {
 .video-element {
   width: 100%;
   display: block;
+}
+
+.youtube-iframe {
+  aspect-ratio: 16 / 9;
+  height: auto;
 }
 
 .ai-overlay {
