@@ -2,8 +2,8 @@
   <div class="app-shell music-bg">
     <header class="topbar">
       <div class="brand" @click="view='home'" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-        <!-- Replaced vector MainLogo with The Franks Standard architectural logo image -->
-        <img src="/franks-standard-logo.png" alt="The Franks Standard" class="brand-logo" />
+        <!-- FretPilot Studio logo -->
+        <img src="/src/assets/fretpilot-logo.svg" alt="FretPilot Studio" class="brand-logo" />
         <span>FretPilot Studio & School</span>
       </div>
       <nav class="nav" v-if="loggedIn">
