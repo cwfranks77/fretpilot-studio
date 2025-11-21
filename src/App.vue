@@ -242,11 +242,12 @@ body { width: 100%; position: relative; }
   position:sticky;
   top:0;
   z-index:10;
+  flex-wrap: wrap;
 }
 .brand { font-weight:700 }
 .brand-logo { height:42px; width:auto; display:block; filter:drop-shadow(0 0 4px rgba(0,0,0,0.6)); border-radius:6px }
 @media (max-width: 768px) { .brand-logo { height:34px } }
-.nav { display:flex; gap:8px; flex-wrap: wrap; max-width: 70%; }
+.nav { display:flex; gap:8px; flex-wrap: wrap; width: 100%; }
 .nav button, .nav a.link-button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; white-space: nowrap; }
 .nav button.active, .nav a.link-button.active { background:#2a2a2a; color:#fff }
 .nav button.payment-btn { 

@@ -44,12 +44,14 @@ const lessons = [
 ];
 
 function startLesson() {
+  console.log('Starting lesson:', selectedLesson.value);
   playing.value = true;
-  renderLesson();
+  setTimeout(() => renderLesson(), 100);
 }
 
 function togglePlay() {
   playing.value = !playing.value;
+  console.log('Toggle play:', playing.value);
   if (playing.value) {
     renderLesson();
   } else {
@@ -58,9 +60,11 @@ function togglePlay() {
 }
 
 function renderLesson() {
+  console.log('Render lesson called, canvas:', lessonCanvas.value, 'playing:', playing.value);
   if (!lessonCanvas.value || !playing.value) return;
   
   const ctx = lessonCanvas.value.getContext('2d');
+  console.log('Got context, drawing...');
   
   // Clear
   ctx.fillStyle = '#000';
