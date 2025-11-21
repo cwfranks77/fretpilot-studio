@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stripe Test</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h1>Test Stripe Checkout</h1>
+    <button id="checkout-btn">Subscribe to Premium ($9.99/mo)</button>
+    
+    <script>
+        const stripe = Stripe('pk_test_51SVqp375GiadGivVhZhrotemGQQtumQG1WFEfXDzA9amRDnrhk6HRDWk8kAOBFZhNQpRWTmMQb2jCw8rOwtpM9fl00JC6nosyG');
+        
+        document.getElementById('checkout-btn').addEventListener('click', async () => {
+            const response = await fetch('http://localhost:5173/api/stripe/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    priceId: 'price_1SVr2U75GiadGivVFE6yIF6c',
+                    mode: 'subscription'
+                })
+            });
+            
+            const session = await response.json();
+            
+            if (session.url) {
+                window.location.href = session.url;
+            } else {
+                alert('Error: ' + JSON.stringify(session));
+            }
+        });
+    </script>
+</body>
+</html>

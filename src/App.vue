@@ -41,7 +41,7 @@
           <FretPilotTrainer v-else-if="view==='trainer'" />
           <AiLessonGenerator v-else-if="view==='ai'" />
           <AIVideoGenerator v-else-if="view==='video'" />
-          <AIVideoLessons v-else-if="view==='videolessons'" @upgrade-tier="handleUpgradeTier" />
+          <SimpleLessons v-else-if="view==='videolessons'" />
           <VideoLessonPlatform v-else-if="view==='videoplatform'" />
           <MusicStudio v-else-if="view==='studio'" />
           <MusicStore v-else-if="view==='store'" />
@@ -101,6 +101,7 @@ import MetronomeTuner from './components/MetronomeTuner.vue'
 import ChordLibrary from './components/ChordLibrary.vue'
 import PremiumGate from './components/PremiumGate.vue'
 import OrderHistory from './components/OrderHistory.vue'
+import SimpleLessons from './components/SimpleLessons.vue'
 import AIVideoLessons from './components/AIVideoLessons.vue'
 import VideoLessonPlatform from './components/VideoLessonPlatform.vue'
 import PaymentCheckout from './components/PaymentCheckout.vue'
