@@ -7,31 +7,15 @@
         <span>FretPilot Studio & School</span>
       </div>
       <nav class="nav" v-if="loggedIn">
-        <button :class="{ active: view==='home' }" @click="view='home'">🏠 Home</button>
+        <button :class="{ active: view==='home' }" @click="view='home'">🏠</button>
         <button :class="{ active: view==='trainer' }" @click="view='trainer'">🎯 Trainer</button>
-        <button :class="{ active: view==='ai' }" @click="view='ai'" style="display: flex; align-items: center; gap: 4px;">
-          <FeatureIcons icon="ai" :size="18" /> AI Lessons
-        </button>
-        <button :class="{ active: view==='video' }" @click="view='video'">🎬 Video</button>
-        <button :class="{ active: view==='videolessons' }" @click="view='videolessons'">📚 Video Lessons</button>
-        <button :class="{ active: view==='videoplatform' }" @click="view='videoplatform'" style="display: flex; align-items: center; gap: 4px;">
-          <FeatureIcons icon="jam" :size="18" /> Video Platform
-        </button>
-        <button :class="{ active: view==='studio' }" @click="view='studio'">🎙️ Studio</button>
+        <button :class="{ active: view==='ai' }" @click="view='ai'">🤖 AI</button>
+        <button :class="{ active: view==='videolessons' }" @click="view='videolessons'">📚 Lessons</button>
+        <button :class="{ active: view==='practice' }" @click="view='practice'">📊 Practice</button>
+        <button :class="{ active: view==='jam' }" @click="view='jam'">🎸 Jam</button>
         <button :class="{ active: view==='store' }" @click="view='store'">🛒 Store</button>
-        <button :class="{ active: view==='practice' }" @click="view='practice'" style="display: flex; align-items: center; gap: 4px;">
-          <FeatureIcons icon="practice" :size="18" /> Practice
-        </button>
-        <button :class="{ active: view==='jam' }" @click="view='jam'" style="display: flex; align-items: center; gap: 4px;">
-          <FeatureIcons icon="jam" :size="18" /> Jam
-        </button>
-        <button :class="{ active: view==='multiplayer' }" @click="view='multiplayer'" style="display: flex; align-items: center; gap: 4px;">
-          <FeatureIcons icon="multiplayer" :size="18" /> Multiplayer
-        </button>
-        <button :class="{ active: view==='orders' }" @click="view='orders'">📦 Orders</button>
-        <button :class="{ active: view==='premium' }" @click="view='premium'">Premium</button>
-        <button :class="{ active: view==='payment' }" @click="view='payment'" class="payment-btn">💳 Upgrade</button>
-        <button :class="{ active: view==='contact' }" @click="view='contact'">✉️ Contact</button>
+        <button :class="{ active: view==='pricing' }" @click="view='pricing'" class="payment-btn">💳 Pricing</button>
+        <button :class="{ active: view==='contact' }" @click="view='contact'">✉️</button>
       </nav>
       <div class="status">
         <template v-if="loggedIn">
@@ -65,6 +49,7 @@
           <JamCompanion v-else-if="view==='jam'" />
           <MultiplayerJam v-else-if="view==='multiplayer'" />
           <OrderHistory v-else-if="view==='orders'" />
+          <PricingPage v-else-if="view==='pricing'" />
           <PaymentCheckout v-else-if="view==='payment'" />
           <PaymentSuccess v-else-if="view==='payment-success'" />
           <ContactOpenDoor v-else-if="view==='contact'" @close="view='home'" />
@@ -120,6 +105,7 @@ import AIVideoLessons from './components/AIVideoLessons.vue'
 import VideoLessonPlatform from './components/VideoLessonPlatform.vue'
 import PaymentCheckout from './components/PaymentCheckout.vue'
 import PaymentSuccess from './components/PaymentSuccess.vue'
+import PricingPage from './components/PricingPage.vue'
 import Login from './components/Login.vue'
 import ConsentPrompt from './components/ConsentPrompt.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
@@ -259,8 +245,8 @@ body { width: 100%; position: relative; }
 .brand { font-weight:700 }
 .brand-logo { height:42px; width:auto; display:block; filter:drop-shadow(0 0 4px rgba(0,0,0,0.6)); border-radius:6px }
 @media (max-width: 768px) { .brand-logo { height:34px } }
-.nav { display:flex; gap:8px }
-.nav button, .nav a.link-button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; }
+.nav { display:flex; gap:8px; flex-wrap: wrap; max-width: 70%; }
+.nav button, .nav a.link-button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; white-space: nowrap; }
 .nav button.active, .nav a.link-button.active { background:#2a2a2a; color:#fff }
 .nav button.payment-btn { 
   background: linear-gradient(135deg, #00d4ff, #0066ff);

@@ -957,22 +957,10 @@ export default {
       });
       
       // Show user-friendly error message
-      this.realtimeFeedback = `⚠️ ${errorMsg} Please refresh the page or try another lesson.`;
+      this.realtimeFeedback = `⚠️ ${errorMsg} Please try another lesson or use AI-generated lessons.`;
       
-      // Auto-retry with fallback after 2 seconds
-      if (this.currentLesson && video.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
-        setTimeout(() => {
-          console.log('Attempting fallback video source...');
-          this.realtimeFeedback = '🔄 Loading alternative video source...';
-          this.currentLesson.videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-          this.$nextTick(() => {
-            if (this.$refs.videoPlayer) {
-              this.$refs.videoPlayer.load();
-              this.realtimeFeedback = '✅ Alternative video loaded successfully!';
-            }
-          });
-        }, 2000);
-      }
+      // For AI-generated lessons, no fallback needed - they render on canvas
+      // For other lessons, just show the error without loading random content
     },
 
     isYouTubeVideo(url) {
@@ -1078,7 +1066,7 @@ export default {
           difficulty: this.aiSkillLevel,
           category: 'custom',
           thumbnail: '/images/ai-generated.png',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          videoUrl: 'ai-generated',
           isPremium: false,
           progress: 0,
           completed: false,
@@ -1510,8 +1498,107 @@ export default {
           }
         ];
       } else {
-        // For other instruments, show empty state with AI generation prompt
-        this.lessons = [];
+        // AI-generated lessons for ALL instruments
+        const instrumentName = this.selectedInstrument?.name || 'Music';
+        const instrumentId = this.selectedInstrument?.id || 'general';
+        
+        this.lessons = [
+          {
+            id: `${instrumentId}-1`,
+            title: `Beginner ${instrumentName}: Getting Started`,
+            description: `AI guides you through your first ${instrumentName.toLowerCase()} lesson with real-time feedback`,
+            instructor: 'AI Instructor',
+            duration: '8:00',
+            difficulty: 'beginner',
+            category: 'basics',
+            thumbnail: '/images/chord-library.svg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              bpm: 60,
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: `${instrumentId}-2`,
+            title: `${instrumentName} Technique Fundamentals`,
+            description: `Master proper technique with AI monitoring your form and posture`,
+            instructor: 'AI Instructor',
+            duration: '10:00',
+            difficulty: 'beginner',
+            category: 'technique',
+            thumbnail: '/images/practice-tips.svg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              bpm: 70,
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: `${instrumentId}-3`,
+            title: `Intermediate ${instrumentName} Skills`,
+            description: `AI tracks your progress and adapts difficulty in real-time`,
+            instructor: 'AI Instructor',
+            duration: '12:00',
+            difficulty: 'intermediate',
+            category: 'skills',
+            thumbnail: '/images/jam-session.svg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              bpm: 80,
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: `${instrumentId}-4`,
+            title: `Advanced ${instrumentName} Mastery`,
+            description: `Professional techniques with AI precision analysis`,
+            instructor: 'AI Instructor',
+            duration: '15:00',
+            difficulty: 'advanced',
+            category: 'mastery',
+            thumbnail: '/images/guitar-hero.svg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              bpm: 100,
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
+            isPremium: true,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: `${instrumentId}-5`,
+            title: `${instrumentName} Practice Routines`,
+            description: `Daily practice routines with AI guidance and tracking`,
+            instructor: 'AI Instructor',
+            duration: '20:00',
+            difficulty: 'intermediate',
+            category: 'practice',
+            thumbnail: '/images/practice-tips.svg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              bpm: 90,
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
+            isPremium: true,
+            progress: 0,
+            completed: false
+          }
+        ];
       }
     },
 
