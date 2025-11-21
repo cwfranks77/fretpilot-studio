@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8c5d6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8a99a8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8dcc8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#cfc0a8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b8a888;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b8941f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#skyGrad)"/>
+  
+  <!-- Building base -->
+  <rect x="50" y="280" width="700" height="100" fill="#a8988a"/>
+  
+  <!-- Main facade -->
+  <rect x="100" y="100" width="600" height="180" fill="url(#stoneGrad)"/>
+  
+  <!-- Columns (6 columns) -->
+  <rect x="130" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="210" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="290" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="370" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="450" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="530" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  <rect x="610" y="120" width="35" height="150" fill="#d8cbb8" stroke="#a89878" stroke-width="2"/>
+  
+  <!-- Column capitals (decorative tops) -->
+  <rect x="120" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="200" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="280" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="360" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="440" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="520" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  <rect x="600" y="110" width="55" height="15" fill="url(#goldGrad)"/>
+  
+  <!-- Pediment (triangular top) -->
+  <polygon points="100,100 400,20 700,100" fill="url(#stoneGrad)" stroke="#a89878" stroke-width="3"/>
+  
+  <!-- Entablature (horizontal beam above columns) -->
+  <rect x="100" y="90" width="600" height="20" fill="#cfc0a8" stroke="#a89878" stroke-width="2"/>
+  
+  <!-- Main entrance (central door) -->
+  <rect x="360" y="180" width="80" height="90" fill="#8a7560" stroke="#6a5540" stroke-width="2"/>
+  
+  <!-- Windows -->
+  <rect x="150" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  <rect x="230" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  <rect x="310" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  <rect x="490" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  <rect x="570" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  <rect x="650" y="150" width="40" height="50" fill="#6a7885" stroke="#4a5865" stroke-width="2"/>
+  
+  <!-- Front steps -->
+  <rect x="300" y="270" width="200" height="10" fill="#b8a898"/>
+  <rect x="320" y="260" width="160" height="10" fill="#c8b8a8"/>
+  <rect x="340" y="250" width="120" height="10" fill="#d8c8b8"/>
+  
+  <!-- THE FRANKS STANDARD text on pediment -->
+  <text x="400" y="65" font-family="Trajan Pro, Cinzel, Georgia, serif" font-size="48" font-weight="900" text-anchor="middle" fill="#8a7560" stroke="#d4af37" stroke-width="1.5" paint-order="stroke" letter-spacing="4">THE FRANKS STANDARD</text>
+  
+  <!-- Subtitle inscribed below -->
+  <text x="400" y="105" font-family="Trajan Pro, Georgia, serif" font-size="14" font-weight="600" text-anchor="middle" fill="#6a5540" letter-spacing="2">PREMIUM INSTRUMENTS · SERVICE STANDARD · QUALITY</text>
+  
+  <!-- Circular medallion in pediment center -->
+  <circle cx="400" cy="50" r="22" fill="url(#goldGrad)" stroke="#8a7560" stroke-width="2"/>
+  <circle cx="400" cy="50" r="18" fill="none" stroke="#6a5540" stroke-width="1.5"/>
+  <text x="400" y="58" font-family="serif" font-size="24" font-weight="900" text-anchor="middle" fill="#4a3520">TFS</text>
+</svg>

@@ -4,11 +4,7 @@
       <div class="header-content">
         <div class="brand">
           <div class="logo-container">
-            <img src="/images/thefranksstandard-logo.png" alt="The Franks Standard Logo" class="brand-logo">
-          </div>
-          <div class="brand-text">
-            <h1>THE FRANKS STANDARD</h1>
-            <p class="tagline">PREMIUM INSTRUMENTS. SERVICE STANDARD.</p>
+            <img src="/images/thefranksstandard-logo.svg" alt="The Franks Standard Logo" class="brand-logo">
           </div>
         </div>
         <nav class="header-nav">
@@ -102,26 +98,10 @@ const cartTotal = computed(() => {
 }
 
 .brand-logo {
-  height: 80px;
+  height: 120px;
   width: auto;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
 }
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.brand-text h1 {
-  font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: 1.8rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  margin: 0;
-  background: linear-gradient(135deg, #f5f5f5 0%, #d4af37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
