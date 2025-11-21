@@ -38,6 +38,9 @@
             <li><a href="https://fretpilotstudio.com">Main Site</a></li>
             <li><a href="https://fretpilotstudio.com">FretPilot App</a></li>
           </ul>
+          <div class="footer-social">
+            <SocialMediaFooter variant="franks" />
+          </div>
         </div>
       </div>
       <div class="footer-bottom">
@@ -50,6 +53,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import MusicStore from './components/MusicStore.vue'
+import SocialMediaFooter from './components/SocialMediaFooter.vue'
 
 const cart = ref([])
 const showCart = ref(false)
@@ -198,6 +202,10 @@ const cartTotal = computed(() => {
 
 .footer-section a:hover {
   color: #667eea;
+}
+
+.footer-social {
+  margin-top: 20px;
 }
 
 .footer-bottom {

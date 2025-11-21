@@ -216,6 +216,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Social Media Footer -->
+    <div class="home-footer">
+      <SocialMediaFooter variant="fretpilot" :showFollowText="true" />
+      <p class="copyright">© 2025 FretPilot Studio. All rights reserved.</p>
+    </div>
   </div>
 </template>
 
@@ -223,6 +229,7 @@
 import { ref, computed } from 'vue'
 import { isPremium, getDailyLessonRemaining } from '../services/featureFlags'
 import { postJSON } from '../services/config'
+import SocialMediaFooter from './SocialMediaFooter.vue'
 
 defineEmits(['navigate'])
 
@@ -736,6 +743,19 @@ async function submitBeta() {
 .success-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(6,193,103,0.4);
+}
+
+.home-footer {
+  margin-top: 60px;
+  padding: 40px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.copyright {
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
 }
 
 @media (max-width: 800px) {
