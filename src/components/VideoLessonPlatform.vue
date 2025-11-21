@@ -275,7 +275,7 @@ const videos = ref([
     technique: 'scales',
     views: 12500,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: '',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     progress: 45,
     learningPoints: [
       'All 5 pentatonic positions',
@@ -311,7 +311,7 @@ const videos = ref([
     technique: 'chords',
     views: 8400,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: '',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     progress: 0,
     learningPoints: [
       'Classic 12-bar progression',
@@ -337,7 +337,7 @@ const videos = ref([
     technique: 'sweep',
     views: 15200,
     thumbnail: '/images/video-placeholder.png',
-    videoUrl: '',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     progress: 100,
     learningPoints: [
       'Economy of motion',

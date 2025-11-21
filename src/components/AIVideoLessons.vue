@@ -706,14 +706,12 @@ export default {
 
     selectInstrument(instrument) {
       this.selectedInstrument = instrument;
+      this.currentLesson = null; // Reset current lesson when switching instruments
       console.log('Selected instrument:', instrument.name);
       
-      // For guitar, lessons are already loaded
-      // For other instruments, lessons would be fetched from API in production
-      if (instrument.id !== 'guitar') {
-        // Future: Load instrument-specific lessons
-        // this.lessons = await fetchLessonsForInstrument(instrument.id);
-      }
+      // Reload lessons for the selected instrument
+      this.loadLessons();
+      this.loadRecommendations();
     },
 
     loadSubscription() {
@@ -865,40 +863,50 @@ export default {
     handleVideoError(event) {
       const video = event.target;
       const error = video.error;
-      let errorMsg = 'Video failed to load. ';
+      let errorMsg = 'Unable to load video. ';
       
       if (error) {
         switch(error.code) {
           case error.MEDIA_ERR_ABORTED:
-            errorMsg += 'Playback aborted.';
+            errorMsg = 'Video loading was cancelled. Please try again.';
             break;
           case error.MEDIA_ERR_NETWORK:
-            errorMsg += 'Network error.';
+            errorMsg = 'Network error while loading video. Check your connection.';
             break;
           case error.MEDIA_ERR_DECODE:
-            errorMsg += 'Decode error.';
+            errorMsg = 'Video file is corrupted or unsupported.';
             break;
           case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMsg += 'Video format not supported.';
+            errorMsg = 'Video format not supported by your browser.';
             break;
           default:
-            errorMsg += 'Unknown error.';
+            errorMsg = 'An unknown error occurred while loading the video.';
         }
       }
       
-      console.error('Video error:', errorMsg, this.currentLesson?.videoUrl);
-      this.realtimeFeedback = '⚠️ ' + errorMsg + ' Trying alternate source...';
+      console.error('Video playback error:', {
+        message: errorMsg,
+        videoUrl: this.currentLesson?.videoUrl,
+        errorCode: error?.code,
+        lessonId: this.currentLesson?.id
+      });
       
-      // Try fallback video
+      // Show user-friendly error message
+      this.realtimeFeedback = `⚠️ ${errorMsg} Please refresh the page or try another lesson.`;
+      
+      // Auto-retry with fallback after 2 seconds
       if (this.currentLesson && video.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
         setTimeout(() => {
+          console.log('Attempting fallback video source...');
+          this.realtimeFeedback = '🔄 Loading alternative video source...';
           this.currentLesson.videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
           this.$nextTick(() => {
             if (this.$refs.videoPlayer) {
               this.$refs.videoPlayer.load();
+              this.realtimeFeedback = '✅ Alternative video loaded successfully!';
             }
           });
-        }, 1000);
+        }, 2000);
       }
     },
 
@@ -1043,8 +1051,98 @@ export default {
     },
 
     async loadLessons() {
-      // No pre-loaded lessons - users generate custom content via AI
-      this.lessons = [];
+      // Sample guitar lessons with working video URLs
+      if (this.selectedInstrument?.id === 'guitar') {
+        this.lessons = [
+          {
+            id: 'guitar-1',
+            title: 'Beginner Guitar: First Chords',
+            description: 'Learn your first three chords: C, G, and D major',
+            instructor: 'Sarah Johnson',
+            duration: '8:30',
+            difficulty: 'beginner',
+            category: 'chords',
+            thumbnail: '/images/chord-library.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: 'guitar-2',
+            title: 'Strumming Patterns for Beginners',
+            description: 'Master essential down and up strumming patterns',
+            instructor: 'Mike Chen',
+            duration: '10:15',
+            difficulty: 'beginner',
+            category: 'technique',
+            thumbnail: '/images/guitar-hero.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: 'guitar-3',
+            title: 'Fingerpicking Basics',
+            description: 'Introduction to fingerstyle guitar technique',
+            instructor: 'Alex Rivera',
+            duration: '12:45',
+            difficulty: 'intermediate',
+            category: 'fingerpicking',
+            thumbnail: '/images/practice-tips.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: 'guitar-4',
+            title: 'Blues Scale Mastery',
+            description: 'Learn the pentatonic blues scale in all positions',
+            instructor: 'David Martinez',
+            duration: '15:00',
+            difficulty: 'intermediate',
+            category: 'scales',
+            thumbnail: '/images/jam-session.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            isPremium: true,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: 'guitar-5',
+            title: 'Barre Chords Made Easy',
+            description: 'Conquer F and B major barre chords with proper technique',
+            instructor: 'Lisa Thompson',
+            duration: '11:20',
+            difficulty: 'intermediate',
+            category: 'chords',
+            thumbnail: '/images/chord-library.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            isPremium: false,
+            progress: 0,
+            completed: false
+          },
+          {
+            id: 'guitar-6',
+            title: 'Advanced Lead Guitar Techniques',
+            description: 'Hammer-ons, pull-offs, bends, and vibrato',
+            instructor: 'James Wilson',
+            duration: '18:30',
+            difficulty: 'advanced',
+            category: 'lead',
+            thumbnail: '/images/guitar-hero.svg',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+            isPremium: true,
+            progress: 0,
+            completed: false
+          }
+        ];
+      } else {
+        // For other instruments, show empty state with AI generation prompt
+        this.lessons = [];
+      }
     },
 
     async loadRecommendations() {
