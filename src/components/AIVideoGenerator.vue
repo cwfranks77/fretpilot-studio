@@ -63,19 +63,18 @@
       </div>
 
       <div class="video-ready" v-if="videoReady">
-        <h2>✅ Your Video is Ready!</h2>
+        <h2>✅ Your Lesson is Ready!</h2>
 
         <div class="video-preview">
-          <video class="native-player" :src="videoUrl" controls playsinline preload="metadata"></video>
+          <canvas ref="generatedCanvas" width="1280" height="720" style="width: 100%; height: auto; background: #000; border-radius: 12px;"></canvas>
+          <div style="margin-top: 20px;">
+            <button @click="playGeneratedLesson" class="download-btn">
+              {{ lessonPlaying ? '⏸ Pause' : '▶️ Play Lesson' }}
+            </button>
+          </div>
         </div>
 
         <div class="video-actions">
-          <button @click="downloadVideo" class="download-btn">
-            📥 Download Video
-          </button>
-          <button @click="shareVideo" class="share-btn">
-            🔗 Share
-          </button>
           <button @click="resetGenerator" class="new-btn">
             ➕ Generate Another
           </button>
@@ -130,6 +129,62 @@ const actualDuration = ref('')
 const progress = ref(0)
 const generationStatus = ref('Initializing AI...')
 const recentVideos = ref([])
+const generatedCanvas = ref(null)
+const lessonPlaying = ref(false)
+let lessonAnimationFrame = null
+
+function playGeneratedLesson() {
+  lessonPlaying.value = !lessonPlaying.value
+  if (lessonPlaying.value) {
+    renderGeneratedLesson()
+  } else {
+    if (lessonAnimationFrame) cancelAnimationFrame(lessonAnimationFrame)
+  }
+}
+
+function renderGeneratedLesson() {
+  if (!generatedCanvas.value || !lessonPlaying.value) return
+  
+  const ctx = generatedCanvas.value.getContext('2d')
+  
+  // Clear
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, 1280, 720)
+  
+  // Title
+  ctx.fillStyle = '#fff'
+  ctx.font = 'bold 48px Arial'
+  ctx.textAlign = 'center'
+  ctx.fillText(prompt.value || 'AI Generated Lesson', 640, 100)
+  
+  // Draw fretboard
+  ctx.strokeStyle = '#666'
+  ctx.lineWidth = 3
+  
+  for (let i = 0; i < 6; i++) {
+    const y = 200 + (i * 70)
+    ctx.beginPath()
+    ctx.moveTo(200, y)
+    ctx.lineTo(1080, y)
+    ctx.stroke()
+  }
+  
+  for (let i = 0; i <= 12; i++) {
+    const x = 200 + (i * 73)
+    ctx.beginPath()
+    ctx.moveTo(x, 200)
+    ctx.lineTo(x, 550)
+    ctx.stroke()
+  }
+  
+  // Instruction
+  ctx.fillStyle = '#06c167'
+  ctx.font = '32px Arial'
+  ctx.fillText(`${instrument.value.toUpperCase()} • ${skillLevel.value.toUpperCase()}`, 640, 650)
+  
+  lessonAnimationFrame = requestAnimationFrame(renderGeneratedLesson)
+}
+
 const videoCanvas = ref(null)
 const videoPlaying = ref(false)
 const videoCurrentTime = ref(0)
