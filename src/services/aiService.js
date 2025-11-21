@@ -99,15 +99,43 @@ export async function generateAIVideo({ prompt, skillLevel, instrument, duration
   // Simulate generation delay
   await sleep(2000)
 
-  // Provide a real, CC0 sample video URL so playback works out of the box
-  // Source: MDN CC0 sample video
-  const sampleVideo = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
+  // Generate AI lesson with metadata for real-time monitoring
   return {
-    videoUrl: sampleVideo,
+    videoUrl: 'ai-generated', // Special marker for AI canvas rendering
     thumbnail: '/images/video-placeholder.png',
     duration: duration === 'short' ? '3' : duration === 'medium' ? '7' : '15',
     title: prompt.substring(0, 60) || `AI ${instrument} lesson`,
-    transcript: generateTranscript(prompt, skillLevel, instrument)
+    transcript: generateTranscript(prompt, skillLevel, instrument),
+    aiMetadata: {
+      lessonType: instrument,
+      skillLevel: skillLevel,
+      exercises: generateExercises(prompt, skillLevel),
+      tabs: generateTabs(prompt, instrument),
+      playAlongEnabled: true,
+      mistakeDetection: true
+    }
+  }
+}
+
+function generateExercises(prompt, skillLevel) {
+  const exercises = [
+    { time: 0, chord: 'C', duration: 4, bpm: 60, instruction: 'Start with C major - keep fingers arched' },
+    { time: 5, chord: 'G', duration: 4, bpm: 60, instruction: 'Transition to G major - move smoothly' },
+    { time: 10, chord: 'Am', duration: 4, bpm: 60, instruction: 'A minor chord - relax your thumb' },
+    { time: 15, chord: 'F', duration: 4, bpm: 65, instruction: 'F major - practice the barre position' }
+  ]
+  return exercises
+}
+
+function generateTabs(prompt, instrument) {
+  return {
+    tuning: instrument === 'guitar' ? ['E', 'A', 'D', 'G', 'B', 'e'] : ['G', 'D', 'A', 'E'],
+    notation: [
+      { string: 0, fret: 3, time: 0, duration: 1 },
+      { string: 1, fret: 2, time: 1, duration: 1 },
+      { string: 2, fret: 0, time: 2, duration: 1 },
+      { string: 3, fret: 0, time: 3, duration: 1 }
+    ]
   }
 }
 
@@ -116,6 +144,29 @@ function createMockVideoUrl() { return '' }
 
 function generateTranscript(prompt, skillLevel, instrument) {
   return `Welcome to your personalized ${instrument} lesson. Today we'll be working on: ${prompt}. This lesson is designed for ${skillLevel} players. Let's get started...`
+}
+
+export async function analyzeRealTimeAudio(audioBuffer, expectedNotes) {
+  // Real implementation would use Web Audio API for pitch detection
+  // For now, simulate AI analysis
+  await sleep(100)
+  
+  const detectedNotes = expectedNotes.map(note => ({
+    ...note,
+    accuracy: 0.7 + Math.random() * 0.3, // 70-100% accuracy
+    timing: Math.random() > 0.8 ? 'early' : Math.random() > 0.6 ? 'late' : 'perfect'
+  }))
+  
+  const mistakes = detectedNotes.filter(n => n.accuracy < 0.85)
+  
+  return {
+    detectedNotes,
+    mistakes,
+    overallAccuracy: detectedNotes.reduce((sum, n) => sum + n.accuracy, 0) / detectedNotes.length,
+    suggestions: mistakes.length > 0 
+      ? [`Focus on ${mistakes[0].string} string - try slowing down`, 'Keep your wrist relaxed']
+      : ['Great job! Try increasing tempo']
+  }
 }
 
 function sleep(ms){ return new Promise(res=>setTimeout(res,ms)) }

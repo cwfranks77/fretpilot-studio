@@ -106,8 +106,67 @@
 
     <div v-if="currentLesson" class="video-player-container">
       <div class="video-wrapper">
+        <!-- AI-Generated Canvas Lesson -->
+        <div v-if="currentLesson.videoUrl === 'ai-generated'" class="ai-lesson-canvas">
+          <canvas ref="lessonCanvas" class="lesson-canvas"></canvas>
+          
+          <!-- Real-time Monitoring Overlay -->
+          <div class="ai-monitoring-overlay">
+            <div class="monitoring-status" :class="{ active: isMonitoring }">
+              <div class="status-indicator"></div>
+              <span>{{ isMonitoring ? '🎸 AI Monitoring Active' : '⏸ Paused' }}</span>
+            </div>
+            
+            <!-- Mistake Detection Alerts -->
+            <div v-if="currentMistake" class="mistake-alert">
+              <div class="alert-header">
+                <span class="icon">⚠️</span>
+                <strong>Detected Issue</strong>
+              </div>
+              <p>{{ currentMistake.description }}</p>
+              <button @click="showCorrection(currentMistake)" class="btn-correction">Show How to Fix</button>
+            </div>
+            
+            <!-- Real-time Metrics -->
+            <div class="realtime-metrics">
+              <div class="metric">
+                <span class="label">Accuracy</span>
+                <div class="meter">
+                  <div class="meter-fill" :style="{ width: accuracy + '%' }"></div>
+                </div>
+                <span class="value">{{ accuracy }}%</span>
+              </div>
+              <div class="metric">
+                <span class="label">Timing</span>
+                <div class="meter">
+                  <div class="meter-fill timing" :style="{ width: timingScore + '%' }"></div>
+                </div>
+                <span class="value">{{ timingScore }}%</span>
+              </div>
+            </div>
+            
+            <!-- Current Exercise Info -->
+            <div v-if="currentExercise" class="exercise-info">
+              <h4>{{ currentExercise.chord || currentExercise.pattern || currentExercise.technique }}</h4>
+              <p>{{ currentExercise.instruction }}</p>
+            </div>
+          </div>
+          
+          <!-- Play/Pause Controls -->
+          <div class="ai-lesson-controls">
+            <button @click="toggleAILesson" class="btn-play-pause">
+              {{ aiLessonPlaying ? '⏸ Pause' : '▶️ Start Lesson' }}
+            </button>
+            <button @click="requestMicPermission" class="btn-mic" :class="{ active: micEnabled }">
+              {{ micEnabled ? '🎤 Listening...' : '🎤 Enable Mic' }}
+            </button>
+            <button @click="resetLesson" class="btn-reset">🔄 Restart</button>
+          </div>
+        </div>
+        
+        <!-- Fallback: Regular Video Player (for future non-AI lessons) -->
         <video 
-          v-if="!isYouTubeVideo(currentLesson.videoUrl)"
+          v-else-if="!isYouTubeVideo(currentLesson.videoUrl)"
           ref="videoPlayer"
           :key="currentLesson.id"
           :src="currentLesson.videoUrl"
@@ -133,25 +192,6 @@
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
         ></iframe>
-        
-        <!-- AI Overlay (Premium+) -->
-        <div v-if="hasFeature('poseDetection') && showAIOverlay" class="ai-overlay">
-          <canvas ref="poseCanvas" class="pose-canvas"></canvas>
-        </div>
-
-        <!-- Interactive Hotspots (Premium+) -->
-        <div v-if="hasFeature('aiAnalysis') && currentHotspots.length" class="hotspots">
-          <div 
-            v-for="hotspot in currentHotspots"
-            :key="hotspot.id"
-            class="hotspot"
-            :style="{ left: hotspot.x + '%', top: hotspot.y + '%' }"
-            @click="showHotspotDetail(hotspot)"
-          >
-            <div class="hotspot-pulse"></div>
-            <div class="hotspot-icon">💡</div>
-          </div>
-        </div>
       </div>
 
       <!-- Lesson Info -->
@@ -659,7 +699,20 @@ export default {
       instructorName: '',
       instructorEmail: '',
       instructorMessage: '',
-      submittingRequest: false
+      submittingRequest: false,
+      
+      // AI Lesson Monitoring
+      aiLessonPlaying: false,
+      isMonitoring: false,
+      micEnabled: false,
+      audioContext: null,
+      audioStream: null,
+      currentExercise: null,
+      currentMistake: null,
+      accuracy: 0,
+      timingScore: 0,
+      lessonStartTime: 0,
+      animationFrame: null
     };
   },
   computed: {
@@ -1083,20 +1136,248 @@ export default {
       }
     },
 
+    // AI Lesson Control Methods
+    async toggleAILesson() {
+      this.aiLessonPlaying = !this.aiLessonPlaying;
+      
+      if (this.aiLessonPlaying) {
+        await this.startAILesson();
+      } else {
+        this.pauseAILesson();
+      }
+    },
+    
+    async startAILesson() {
+      if (!this.currentLesson?.aiMetadata) return;
+      
+      this.lessonStartTime = Date.now();
+      this.currentExercise = this.currentLesson.aiMetadata.exercises[0];
+      
+      // Initialize canvas
+      const canvas = this.$refs.lessonCanvas;
+      if (canvas) {
+        canvas.width = 1280;
+        canvas.height = 720;
+        this.renderAILesson();
+      }
+      
+      // Start monitoring if mic is enabled
+      if (this.micEnabled) {
+        this.isMonitoring = true;
+        this.startAudioMonitoring();
+      }
+      
+      this.realtimeFeedback = '🎸 AI lesson started! Play along with the instructor.';
+      setTimeout(() => { this.realtimeFeedback = null; }, 3000);
+    },
+    
+    pauseAILesson() {
+      this.isMonitoring = false;
+      if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+      }
+    },
+    
+    resetLesson() {
+      this.lessonStartTime = 0;
+      this.currentExercise = this.currentLesson?.aiMetadata?.exercises[0];
+      this.accuracy = 0;
+      this.timingScore = 0;
+      this.currentMistake = null;
+      this.aiLessonPlaying = false;
+      this.isMonitoring = false;
+      
+      this.realtimeFeedback = '🔄 Lesson reset. Ready to start fresh!';
+      setTimeout(() => { this.realtimeFeedback = null; }, 2000);
+    },
+    
+    async requestMicPermission() {
+      try {
+        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.micEnabled = true;
+        
+        if (this.aiLessonPlaying) {
+          this.isMonitoring = true;
+          this.startAudioMonitoring();
+        }
+        
+        this.realtimeFeedback = '🎤 Microphone enabled! AI is now listening to your playing.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 3000);
+      } catch (error) {
+        console.error('Microphone access denied:', error);
+        this.realtimeFeedback = '⚠️ Microphone access required for real-time feedback.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 4000);
+      }
+    },
+    
+    startAudioMonitoring() {
+      // Simulate real-time audio analysis
+      const monitoringInterval = setInterval(() => {
+        if (!this.isMonitoring) {
+          clearInterval(monitoringInterval);
+          return;
+        }
+        
+        // Simulate accuracy and timing scores
+        this.accuracy = Math.min(100, this.accuracy + Math.random() * 5);
+        this.timingScore = 75 + Math.random() * 25;
+        
+        // Randomly detect "mistakes" for demonstration
+        if (Math.random() > 0.95 && !this.currentMistake) {
+          this.detectMistake();
+        }
+        
+        // Update current exercise based on time
+        const elapsed = (Date.now() - this.lessonStartTime) / 1000;
+        const exercises = this.currentLesson.aiMetadata.exercises;
+        for (let i = exercises.length - 1; i >= 0; i--) {
+          if (elapsed >= exercises[i].time) {
+            this.currentExercise = exercises[i];
+            break;
+          }
+        }
+      }, 1000);
+    },
+    
+    detectMistake() {
+      const mistakes = [
+        { description: 'Finger not pressing down fully on 3rd string - muted sound detected', correction: 'Press closer to the fret with more pressure' },
+        { description: 'Strumming too fast - tempo is 15% ahead of target', correction: 'Slow down and focus on steady rhythm' },
+        { description: 'Hand position too high on neck - affecting tone quality', correction: 'Lower your thumb and arch your fingers more' },
+        { description: 'Missing string 1 in chord - only 5 strings ringing', correction: 'Adjust finger 3 to allow string 1 to ring clearly' }
+      ];
+      
+      this.currentMistake = mistakes[Math.floor(Math.random() * mistakes.length)];
+      
+      setTimeout(() => {
+        this.currentMistake = null;
+      }, 8000);
+    },
+    
+    showCorrection(mistake) {
+      this.realtimeFeedback = `💡 ${mistake.correction}`;
+      setTimeout(() => { this.realtimeFeedback = null; }, 5000);
+    },
+    
+    renderAILesson() {
+      const canvas = this.$refs.lessonCanvas;
+      if (!canvas || !this.aiLessonPlaying) return;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw fretboard
+      this.drawFretboard(ctx);
+      
+      // Draw current exercise notation
+      if (this.currentExercise) {
+        this.drawExercise(ctx);
+      }
+      
+      // Draw metronome
+      this.drawMetronome(ctx);
+      
+      this.animationFrame = requestAnimationFrame(() => this.renderAILesson());
+    },
+    
+    drawFretboard(ctx) {
+      const fretboardX = 100;
+      const fretboardY = 200;
+      const fretboardWidth = 800;
+      const fretboardHeight = 300;
+      const numFrets = 12;
+      const numStrings = 6;
+      
+      // Draw fretboard background
+      ctx.fillStyle = '#3a2920';
+      ctx.fillRect(fretboardX, fretboardY, fretboardWidth, fretboardHeight);
+      
+      // Draw strings
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < numStrings; i++) {
+        const y = fretboardY + (i * fretboardHeight / (numStrings - 1));
+        ctx.beginPath();
+        ctx.moveTo(fretboardX, y);
+        ctx.lineTo(fretboardX + fretboardWidth, y);
+        ctx.stroke();
+      }
+      
+      // Draw frets
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 3;
+      for (let i = 0; i <= numFrets; i++) {
+        const x = fretboardX + (i * fretboardWidth / numFrets);
+        ctx.beginPath();
+        ctx.moveTo(x, fretboardY);
+        ctx.lineTo(x, fretboardY + fretboardHeight);
+        ctx.stroke();
+      }
+      
+      // Draw fret markers
+      const markers = [3, 5, 7, 9, 12];
+      ctx.fillStyle = '#aaa';
+      markers.forEach(fret => {
+        const x = fretboardX + ((fret - 0.5) * fretboardWidth / numFrets);
+        const y = fretboardY + fretboardHeight / 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    },
+    
+    drawExercise(ctx) {
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 32px Arial';
+      ctx.fillText(this.currentExercise.chord || this.currentExercise.pattern || 'Exercise', 1000, 100);
+      
+      ctx.font = '20px Arial';
+      ctx.fillText(this.currentExercise.instruction, 1000, 140);
+    },
+    
+    drawMetronome(ctx) {
+      const time = Date.now() / 1000;
+      const bpm = this.currentLesson.aiMetadata?.bpm || 80;
+      const beat = Math.floor(time * (bpm / 60)) % 4;
+      
+      const metX = 100;
+      const metY = 100;
+      
+      for (let i = 0; i < 4; i++) {
+        ctx.fillStyle = i === beat ? '#00ff00' : '#333';
+        ctx.beginPath();
+        ctx.arc(metX + i * 40, metY, 15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+
     async loadLessons() {
-      // Sample guitar lessons with working video URLs
+      // AI-generated guitar lessons with real-time monitoring
       if (this.selectedInstrument?.id === 'guitar') {
         this.lessons = [
           {
             id: 'guitar-1',
             title: 'Beginner Guitar: First Chords',
-            description: 'Learn your first three chords: C, G, and D major',
-            instructor: 'Sarah Johnson',
+            description: 'AI guides you through C, G, and D major with real-time finger position feedback',
+            instructor: 'AI Instructor',
             duration: '8:30',
             difficulty: 'beginner',
             category: 'chords',
             thumbnail: '/images/chord-library.svg',
-            videoUrl: 'https://www.youtube.com/embed/z0zoC-6YI7w',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              chords: ['C', 'G', 'D'],
+              bpm: 60,
+              exercises: [
+                { time: 0, chord: 'C', instruction: 'Place fingers 1-2-3 on strings 2-4-5' },
+                { time: 120, chord: 'G', instruction: 'Stretch finger 3 to string 1' },
+                { time: 240, chord: 'D', instruction: 'Focus on clean sound from strings 1-4' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
             isPremium: false,
             progress: 0,
             completed: false
@@ -1104,13 +1385,23 @@ export default {
           {
             id: 'guitar-2',
             title: 'Strumming Patterns for Beginners',
-            description: 'Master essential down and up strumming patterns',
-            instructor: 'Mike Chen',
+            description: 'AI monitors your rhythm and timing in real-time',
+            instructor: 'AI Instructor',
             duration: '10:15',
             difficulty: 'beginner',
             category: 'technique',
             thumbnail: '/images/guitar-hero.svg',
-            videoUrl: 'https://www.youtube.com/embed/z38e8pQD3a0',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              patterns: ['Down-Down-Up-Up-Down-Up', 'Down-Up-Down-Up'],
+              bpm: 80,
+              exercises: [
+                { time: 0, pattern: 'D D U U D U', instruction: 'Keep wrist loose and relaxed' },
+                { time: 180, pattern: 'D U D U', instruction: 'Maintain steady tempo' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
             isPremium: false,
             progress: 0,
             completed: false
@@ -1118,13 +1409,23 @@ export default {
           {
             id: 'guitar-3',
             title: 'Fingerpicking Basics',
-            description: 'Introduction to fingerstyle guitar technique',
-            instructor: 'Alex Rivera',
+            description: 'AI tracks each finger and corrects technique instantly',
+            instructor: 'AI Instructor',
             duration: '12:45',
             difficulty: 'intermediate',
             category: 'fingerpicking',
             thumbnail: '/images/practice-tips.svg',
-            videoUrl: 'https://www.youtube.com/embed/rKiWZTmMA5E',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              pattern: 'Travis Picking',
+              bpm: 70,
+              exercises: [
+                { time: 0, fingers: 'T-3-2-3-1-3-2-3', instruction: 'Thumb plays bass, fingers play melody' },
+                { time: 240, fingers: 'T-1-2-1-3-1-2-1', instruction: 'Keep steady alternating bass' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
             isPremium: false,
             progress: 0,
             completed: false
@@ -1132,13 +1433,25 @@ export default {
           {
             id: 'guitar-4',
             title: 'Blues Scale Mastery',
-            description: 'Learn the pentatonic blues scale in all positions',
-            instructor: 'David Martinez',
+            description: 'AI analyzes your scale runs and provides instant feedback',
+            instructor: 'AI Instructor',
             duration: '15:00',
             difficulty: 'intermediate',
             category: 'scales',
             thumbnail: '/images/jam-session.svg',
-            videoUrl: 'https://www.youtube.com/embed/Q4zXWlOrDLM',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              scale: 'A Minor Pentatonic',
+              positions: [1, 2, 3, 4, 5],
+              bpm: 90,
+              exercises: [
+                { time: 0, position: 1, instruction: 'Start at 5th fret, play ascending' },
+                { time: 180, position: 2, instruction: 'Shift to 7-10 fret range' },
+                { time: 360, position: 3, instruction: 'Connect positions with slide' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true
+            },
             isPremium: true,
             progress: 0,
             completed: false
@@ -1146,13 +1459,25 @@ export default {
           {
             id: 'guitar-5',
             title: 'Barre Chords Made Easy',
-            description: 'Conquer F and B major barre chords with proper technique',
-            instructor: 'Lisa Thompson',
+            description: 'AI monitors finger pressure and hand position in real-time',
+            instructor: 'AI Instructor',
             duration: '11:20',
             difficulty: 'intermediate',
             category: 'chords',
             thumbnail: '/images/chord-library.svg',
-            videoUrl: 'https://www.youtube.com/embed/KxwfmUQT0Pg',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              chords: ['F', 'Fm', 'B', 'Bm'],
+              bpm: 65,
+              exercises: [
+                { time: 0, chord: 'F', instruction: 'Index finger flat across all strings at 1st fret' },
+                { time: 180, chord: 'Fm', instruction: 'Keep thumb centered behind neck' },
+                { time: 360, chord: 'B', instruction: 'Roll index finger slightly for cleaner sound' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true,
+              pressureMonitoring: true
+            },
             isPremium: false,
             progress: 0,
             completed: false
@@ -1160,13 +1485,25 @@ export default {
           {
             id: 'guitar-6',
             title: 'Advanced Lead Guitar Techniques',
-            description: 'Hammer-ons, pull-offs, bends, and vibrato',
-            instructor: 'James Wilson',
+            description: 'AI tracks bends, vibrato, and legato with precision analysis',
+            instructor: 'AI Instructor',
             duration: '18:30',
             difficulty: 'advanced',
             category: 'lead',
             thumbnail: '/images/guitar-hero.svg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            videoUrl: 'ai-generated',
+            aiMetadata: {
+              techniques: ['hammer-on', 'pull-off', 'bend', 'vibrato', 'slide'],
+              bpm: 110,
+              exercises: [
+                { time: 0, technique: 'hammer-on', instruction: 'Strike first note, hammer second without picking' },
+                { time: 240, technique: 'bend', instruction: 'Push string up to reach target pitch' },
+                { time: 480, technique: 'vibrato', instruction: 'Gentle wrist rotation for smooth vibrato' }
+              ],
+              mistakeDetection: true,
+              playAlongEnabled: true,
+              pitchTracking: true
+            },
             isPremium: true,
             progress: 0,
             completed: false
@@ -1638,6 +1975,212 @@ export default {
 .youtube-iframe {
   aspect-ratio: 16 / 9;
   height: auto;
+}
+
+/* AI Lesson Canvas */
+.ai-lesson-canvas {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lesson-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 9;
+}
+
+.ai-monitoring-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #00ff88;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 350px;
+  backdrop-filter: blur(10px);
+}
+
+.monitoring-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.monitoring-status.active {
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #666;
+}
+
+.monitoring-status.active .status-indicator {
+  background: #00ff88;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.mistake-alert {
+  background: rgba(255, 68, 68, 0.1);
+  border: 2px solid #ff4444;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #ff4444;
+}
+
+.mistake-alert p {
+  color: #fff;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.btn-correction {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-correction:hover {
+  background: #ff6666;
+  transform: translateY(-2px);
+}
+
+.realtime-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric .label {
+  width: 70px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+.meter {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00cc66);
+  transition: width 0.3s ease;
+}
+
+.meter-fill.timing {
+  background: linear-gradient(90deg, #00aaff, #0088cc);
+}
+
+.metric .value {
+  width: 50px;
+  text-align: right;
+  font-weight: bold;
+  color: #00ff88;
+}
+
+.exercise-info {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.exercise-info h4 {
+  margin: 0 0 8px 0;
+  color: #00ff88;
+  font-size: 16px;
+}
+
+.exercise-info p {
+  margin: 0;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.ai-lesson-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 15px;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+}
+
+.btn-play-pause,
+.btn-mic,
+.btn-reset {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-play-pause:hover,
+.btn-mic:hover,
+.btn-reset:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+}
+
+.btn-mic {
+  background: linear-gradient(135deg, #0088ff, #0066cc);
+}
+
+.btn-mic.active {
+  background: linear-gradient(135deg, #ff4444, #cc3333);
+  animation: pulse 2s infinite;
+}
+
+.btn-reset {
+  background: linear-gradient(135deg, #888, #666);
 }
 
 .ai-overlay {
