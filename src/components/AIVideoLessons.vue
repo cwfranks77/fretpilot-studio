@@ -815,12 +815,19 @@ export default {
       this.lessonProgress = lesson.progress || 0;
       this.currentDifficulty = lesson.suggestedDifficulty || 3;
       
-      // Force video reload
-      this.$nextTick(() => {
-        if (this.$refs.videoPlayer) {
-          this.$refs.videoPlayer.load();
-        }
-      });
+      // Auto-start AI-generated lessons
+      if (lesson.videoUrl === 'ai-generated') {
+        this.$nextTick(async () => {
+          await this.toggleAILesson();
+        });
+      } else {
+        // Force video reload for regular video lessons
+        this.$nextTick(() => {
+          if (this.$refs.videoPlayer) {
+            this.$refs.videoPlayer.load();
+          }
+        });
+      }
       
       // Start AI analysis
       if (this.hasFeature('aiAnalysis')) {
