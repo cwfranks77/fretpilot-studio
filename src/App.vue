@@ -257,6 +257,8 @@ body { width: 100%; position: relative; }
   z-index:10;
 }
 .brand { font-weight:700 }
+.brand-logo { height:42px; width:auto; display:block; filter:drop-shadow(0 0 4px rgba(0,0,0,0.6)); border-radius:6px }
+@media (max-width: 768px) { .brand-logo { height:34px } }
 .nav { display:flex; gap:8px }
 .nav button, .nav a.link-button { background:#1a1a1a; color:#cfd6e6; border:1px solid #2a2a2a; padding:8px 10px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; }
 .nav button.active, .nav a.link-button.active { background:#2a2a2a; color:#fff }

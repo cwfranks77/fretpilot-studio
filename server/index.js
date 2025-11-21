@@ -367,13 +367,55 @@ app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object
-        // Store subscription info in database
-        console.log('[webhook] subscription created:', {
-          customerId: session.customer,
-          subscriptionId: session.subscription,
-          tier: session.metadata.tier
-        })
-        // TODO: Save to database, send welcome email
+        // Distinguish subscription vs one-time physical goods checkout
+        if (session.mode === 'subscription') {
+          console.log('[webhook] subscription created:', {
+            customerId: session.customer,
+            subscriptionId: session.subscription,
+            tier: session.metadata.tier
+          })
+          // TODO: Persist subscription activation
+        } else {
+          // Physical goods order (Stripe Checkout payment)
+          try {
+            // Expand line items to derive products
+            const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 })
+            const processed = []
+            for (const li of lineItems.data) {
+              // Match by product name to catalog (simple heuristic)
+              const productEntry = Object.entries(PRODUCT_CATALOG).find(([, v]) => v.name === li.description)
+              if (!productEntry) continue
+              const [pid, meta] = productEntry
+              processed.push({
+                id: Number(pid),
+                name: meta.name,
+                unit_amount: meta.unit_amount,
+                quantity: li.quantity,
+                fulfillment: inferFulfillment(Number(pid)),
+              })
+            }
+            // Group by fulfillment model
+            const groups = groupByFulfillment(processed)
+            // Trigger vendor fulfillment stubs
+            const vendorResult = await autoFulfillGroups(groups, {
+              orderSource: 'stripe',
+              stripeSessionId: session.id,
+              total: session.amount_total,
+              currency: session.currency
+            })
+            persistOrder({
+              orderId: session.id,
+              createdAt: new Date().toISOString(),
+              customer: session.customer_details || {},
+              items: processed,
+              fulfillmentGroups: groups,
+              vendorResult
+            })
+            console.log('[webhook] physical goods fulfilled', { count: processed.length, groups: Object.keys(groups) })
+          } catch (err) {
+            console.error('[webhook] physical fulfillment error', err)
+          }
+        }
         break
       }
       
@@ -547,6 +589,72 @@ app.post('/api/subscription/portal', async (req, res) => {
 })
 
 app.listen(PORT, () => console.log(`[server] listening on http://localhost:${PORT}`))
+
+// ============================================
+// ORDER FULFILLMENT HELPERS (ZERO CAPITAL FLOW)
+// ============================================
+
+// Infer fulfillment type by product id (placeholder logic until unified catalog)
+function inferFulfillment(productId) {
+  // Affiliate items: skip (IDs 1-7 etc. originally guitars/bass) - adjust as needed
+  const affiliateIds = new Set([1,2,3,4,5,6,7,57,58,59,60,61,62,63,64,65,66])
+  if (affiliateIds.has(productId)) return 'affiliate'
+  // Dropship placeholder set (DIY kits & accessories etc.)
+  const dropshipIds = new Set([50,51,52,53,54,55,56,67,68,69,70,71,72])
+  if (dropshipIds.has(productId)) return 'dropship'
+  return 'fretpilot' // default internal / manual
+}
+
+// Group items by fulfillment
+function groupByFulfillment(items) {
+  const groups = {}
+  for (const it of items) {
+    const key = it.fulfillment
+    if (!groups[key]) groups[key] = []
+    groups[key].push(it)
+  }
+  return groups
+}
+
+// Persist order to JSON file (simple append model)
+const ordersFile = path.join(__dirname, 'data', 'orders.log.jsonl')
+function persistOrder(order) {
+  try {
+    const line = JSON.stringify(order) + '\n'
+    const dir = path.dirname(ordersFile)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.appendFileSync(ordersFile, line)
+  } catch (e) {
+    console.error('[orders] persist failed', e)
+  }
+}
+
+// Auto-fulfill groups (calls existing vendor PO route internally for dropship)
+async function autoFulfillGroups(groups, meta) {
+  const result = { meta, affiliate: [], dropship: null, manual: [] }
+  // Record affiliate items (no charge here, revenue via external cookie)
+  if (groups.affiliate) {
+    result.affiliate = groups.affiliate.map(i => ({ id: i.id, name: i.name, qty: i.quantity }))
+  }
+  // Dropship: forward as vendor PO (using handleVendorPO directly)
+  if (groups.dropship) {
+    try {
+      const poPayload = {
+        orderId: meta.stripeSessionId,
+        shipping: {}, // Expand with real shipping details when collected
+        vendors: [ { name: 'dropship', items: groups.dropship.map(i => ({ id: i.id, name: i.name, qty: i.quantity, price: i.unit_amount/100 })) } ]
+      }
+      result.dropship = await handleVendorPO(poPayload)
+    } catch (e) {
+      result.dropship = { ok: false, error: e?.message }
+    }
+  }
+  // Manual/internal fulfillment queue
+  if (groups.fretpilot) {
+    result.manual = groups.fretpilot.map(i => ({ id: i.id, name: i.name, qty: i.quantity }))
+  }
+  return result
+}
 
 // ============================================
 // BITCOIN / BTCPAY SERVER ENDPOINTS

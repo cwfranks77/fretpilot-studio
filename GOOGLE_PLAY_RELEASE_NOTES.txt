@@ -1,0 +1,3 @@
+<en-US>
+FretPilot v1.0 - AI-powered music learning for 16 instruments including Guitar, Piano, Drums, Violin, Bass, and more. Features: AI lesson generator, video lessons with AI, connect with instructors, metronome, tuner, chord library, and practice analyzer. Perfect for beginners and pros!
+</en-US>
