@@ -4,7 +4,7 @@
       <div class="header-content">
         <div class="brand">
           <div class="logo-container">
-            <img src="/resources/brand-assets/TFS_temple_logo.svg" alt="The Franks Standard Logo" class="brand-logo">
+            <img src="/images/thefranksstandard-logo.png" alt="The Franks Standard Logo" class="brand-logo">
           </div>
           <div class="brand-text">
             <h1>THE FRANKS STANDARD</h1>
