@@ -1,10 +1,21 @@
 <template>
   <div class="home-page">
+    <!-- Beta Access Banner -->
+    <div class="beta-banner" v-if="!hideBetaBanner">
+      <div class="beta-content">
+        <span class="beta-badge">🚀 BETA LAUNCH</span>
+        <p class="beta-text">Join our beta testers! Get early access + exclusive perks</p>
+        <button @click="showBetaModal = true" class="beta-cta">Sign Up Free</button>
+        <button @click="hideBetaBanner = true" class="beta-close">✕</button>
+      </div>
+    </div>
+
     <div class="hero">
       <img class="hero-image animate-float" src="/images/guitar-hero.svg" alt="FretPilot hero" />
       <h1 class="hero-title">🎸 FretPilot</h1>
       <p class="hero-tagline">AI-Powered Music Learning Platform</p>
       <p class="hero-subtitle">Train smarter. Play better. Master faster.</p>
+      <button @click="showBetaModal = true" class="hero-beta-btn">🎸 Join Beta Waitlist</button>
     </div>
 
     <div class="feature-grid">
@@ -108,20 +119,237 @@
       <img src="/images/practice-tips.svg" alt="Practice tips" />
       <img src="/images/jam-session.svg" alt="Jam session" />
     </div>
+
+    <!-- Beta Signup Modal -->
+    <div v-if="showBetaModal" class="modal-overlay" @click="showBetaModal = false">
+      <div class="beta-modal" @click.stop>
+        <button @click="showBetaModal = false" class="modal-close">✕</button>
+        
+        <div class="beta-modal-header">
+          <h2>🚀 Join FretPilot Beta</h2>
+          <p>Get early access + help shape the future of music learning</p>
+        </div>
+
+        <div v-if="!betaSubmitted" class="beta-form">
+          <div class="form-group">
+            <label>Email *</label>
+            <input 
+              v-model="betaForm.email" 
+              type="email" 
+              placeholder="your@email.com" 
+              required
+              @keyup.enter="submitBeta"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Name</label>
+            <input 
+              v-model="betaForm.name" 
+              type="text" 
+              placeholder="Your name" 
+              @keyup.enter="submitBeta"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Primary Instrument</label>
+            <select v-model="betaForm.instrument">
+              <option value="guitar">Guitar</option>
+              <option value="bass">Bass</option>
+              <option value="piano">Piano/Keys</option>
+              <option value="drums">Drums</option>
+              <option value="vocals">Vocals</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Experience Level</label>
+            <select v-model="betaForm.experience">
+              <option value="beginner">Beginner (0-1 year)</option>
+              <option value="intermediate">Intermediate (1-3 years)</option>
+              <option value="advanced">Advanced (3-5 years)</option>
+              <option value="pro">Professional (5+ years)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>How did you hear about us?</label>
+            <select v-model="betaForm.referral">
+              <option value="search">Google/Search</option>
+              <option value="social">Social Media</option>
+              <option value="friend">Friend/Word of Mouth</option>
+              <option value="ad">Advertisement</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="beta-benefits">
+            <h4>Beta Tester Perks:</h4>
+            <ul>
+              <li>✅ Free Premium access during beta</li>
+              <li>✅ Lifetime 50% discount when we launch</li>
+              <li>✅ Direct line to dev team</li>
+              <li>✅ Your feedback shapes the product</li>
+              <li>✅ Beta Tester badge & credits</li>
+            </ul>
+          </div>
+
+          <button 
+            @click="submitBeta" 
+            class="beta-submit-btn" 
+            :disabled="betaLoading || !betaForm.email"
+          >
+            {{ betaLoading ? '⏳ Joining...' : '🚀 Join Beta Waitlist' }}
+          </button>
+
+          <p v-if="betaError" class="beta-error">{{ betaError }}</p>
+        </div>
+
+        <div v-else class="beta-success">
+          <div class="success-icon">✅</div>
+          <h3>You're on the list!</h3>
+          <p>Check your email for next steps and beta access details.</p>
+          <p class="success-subtext">We'll be in touch within 24-48 hours.</p>
+          <button @click="showBetaModal = false" class="success-btn">Got it!</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { isPremium, getDailyLessonRemaining } from '../services/featureFlags'
+import { postJSON } from '../services/config'
 
 defineEmits(['navigate'])
 
 const premium = computed(() => isPremium())
 const quota = computed(() => getDailyLessonRemaining())
+
+// Beta modal state
+const showBetaModal = ref(false)
+const hideBetaBanner = ref(false)
+const betaSubmitted = ref(false)
+const betaLoading = ref(false)
+const betaError = ref('')
+
+const betaForm = ref({
+  email: '',
+  name: '',
+  instrument: 'guitar',
+  experience: 'beginner',
+  referral: 'search'
+})
+
+async function submitBeta() {
+  if (!betaForm.value.email) {
+    betaError.value = 'Email is required'
+    return
+  }
+  
+  betaLoading.value = true
+  betaError.value = ''
+  
+  try {
+    const response = await postJSON('/api/beta/signup', betaForm.value)
+    
+    if (response.ok) {
+      betaSubmitted.value = true
+      // Track conversion if Google Ads is configured
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL',
+          'event_callback': () => {}
+        })
+      }
+    } else {
+      betaError.value = response.error === 'rate_limited' 
+        ? `Too many attempts. Please try again in ${response.retryAfter || 300} seconds.`
+        : response.error === 'invalid_email'
+        ? 'Please enter a valid email address'
+        : 'Signup failed. Please try again.'
+    }
+  } catch (err) {
+    betaError.value = 'Network error. Please check your connection and try again.'
+  } finally {
+    betaLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
+/* Beta Banner */
+.beta-banner {
+  background: linear-gradient(135deg, #06c167 0%, #4a90e2 100%);
+  padding: 12px 20px;
+  margin: -20px -20px 20px -20px;
+  border-radius: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.beta-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.beta-badge {
+  background: rgba(0,0,0,0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.85em;
+  letter-spacing: 0.5px;
+}
+
+.beta-text {
+  color: white;
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.beta-cta {
+  background: white;
+  color: #06c167;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95em;
+}
+
+.beta-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.3);
+}
+
+.beta-close {
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 4px 8px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.beta-close:hover {
+  opacity: 1;
+}
+
 .home-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -162,6 +390,25 @@ const quota = computed(() => getDailyLessonRemaining())
   color: #8892a6;
   font-size: 1.1em;
   margin: 5px 0;
+}
+
+.hero-beta-btn {
+  background: linear-gradient(135deg, #06c167, #4a90e2);
+  color: white;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(6,193,103,0.4);
+  margin-top: 20px;
+}
+
+.hero-beta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6,193,103,0.6);
 }
 
 .feature-grid {
@@ -296,6 +543,201 @@ const quota = computed(() => getDailyLessonRemaining())
   border: 0;
 }
 .promo-right img { width: 100%; opacity: 0.8 }
+
+/* Beta Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.beta-modal {
+  background: #0a0a0a;
+  border: 2px solid #1a1a1a;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #8892a6;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.3s;
+}
+
+.modal-close:hover {
+  color: #fff;
+}
+
+.beta-modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.beta-modal-header h2 {
+  margin: 0 0 8px 0;
+  color: #fff;
+  font-size: 1.8em;
+}
+
+.beta-modal-header p {
+  margin: 0;
+  color: #8892a6;
+  font-size: 1em;
+}
+
+.beta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  color: #cfd6e6;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #06c167;
+}
+
+.beta-benefits {
+  background: rgba(6,193,103,0.1);
+  border: 1px solid rgba(6,193,103,0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
+}
+
+.beta-benefits h4 {
+  margin: 0 0 12px 0;
+  color: #06c167;
+  font-size: 1em;
+}
+
+.beta-benefits ul {
+  margin: 0;
+  padding: 0 0 0 20px;
+  color: #cfd6e6;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.beta-submit-btn {
+  background: linear-gradient(135deg, #06c167, #4a90e2);
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 8px;
+}
+
+.beta-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6,193,103,0.4);
+}
+
+.beta-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.beta-error {
+  color: #ff6b6b;
+  font-size: 0.9em;
+  margin: 8px 0 0 0;
+  text-align: center;
+}
+
+.beta-success {
+  text-align: center;
+  padding: 20px;
+}
+
+.success-icon {
+  font-size: 4em;
+  margin-bottom: 16px;
+}
+
+.beta-success h3 {
+  margin: 0 0 12px 0;
+  color: #06c167;
+  font-size: 1.8em;
+}
+
+.beta-success p {
+  color: #cfd6e6;
+  margin: 8px 0;
+  font-size: 1.05em;
+}
+
+.success-subtext {
+  color: #8892a6;
+  font-size: 0.9em !important;
+}
+
+.success-btn {
+  background: #06c167;
+  color: white;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.3s;
+}
+
+.success-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(6,193,103,0.4);
+}
+
 @media (max-width: 800px) {
   .promo-card { grid-template-columns: 1fr; }
   .promo-right { display: none }

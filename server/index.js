@@ -50,6 +50,75 @@ app.use(dropshipWebhooks)
 
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 
+// ============================================
+// BETA TESTER SIGNUP & EARLY ACCESS
+// ============================================
+const betaSignupsFile = path.join(__dirname, 'data', 'beta-signups.jsonl')
+
+// Simple rate limiting for beta signup (prevent spam)
+const betaRateStore = new Map() // email -> timestamp
+const BETA_RATE_WINDOW = 5 * 60 * 1000 // 5 minutes
+
+app.post('/api/beta/signup', (req, res) => {
+  try {
+    const { email, name, instrument, experience, referral } = req.body || {}
+    
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email || '')) {
+      return res.status(400).json({ ok: false, error: 'invalid_email' })
+    }
+    
+    // Rate limit by email
+    const now = Date.now()
+    const lastSignup = betaRateStore.get(email.toLowerCase())
+    if (lastSignup && (now - lastSignup) < BETA_RATE_WINDOW) {
+      return res.status(429).json({ ok: false, error: 'rate_limited', retryAfter: Math.ceil((BETA_RATE_WINDOW - (now - lastSignup)) / 1000) })
+    }
+    
+    betaRateStore.set(email.toLowerCase(), now)
+    
+    // Persist signup
+    const entry = {
+      email: email.toLowerCase(),
+      name: sanitizeField(name || '').slice(0, 100),
+      instrument: sanitizeField(instrument || '').slice(0, 50),
+      experience: sanitizeField(experience || 'beginner').slice(0, 20),
+      referral: sanitizeField(referral || 'organic').slice(0, 50),
+      signedUpAt: new Date().toISOString(),
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+    }
+    
+    const dir = path.dirname(betaSignupsFile)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.appendFileSync(betaSignupsFile, JSON.stringify(entry) + '\n')
+    
+    console.log('[beta] signup:', email)
+    
+    return res.json({ 
+      ok: true, 
+      message: 'Thanks for signing up! Check your email for beta access details.',
+      waitlist: true 
+    })
+  } catch (e) {
+    console.error('[beta] signup error', e)
+    return res.status(500).json({ ok: false, error: 'signup_failed' })
+  }
+})
+
+// Get beta signup count (public metric)
+app.get('/api/beta/count', (req, res) => {
+  try {
+    if (!fs.existsSync(betaSignupsFile)) {
+      return res.json({ count: 0 })
+    }
+    const lines = fs.readFileSync(betaSignupsFile, 'utf8').split('\n').filter(l => l.trim())
+    return res.json({ count: lines.length })
+  } catch (e) {
+    return res.json({ count: 0 })
+  }
+})
+
 // Limited invite status endpoint
 app.get('/api/invite/status', (req, res) => {
   try {
