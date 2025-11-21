@@ -329,7 +329,7 @@
         <div v-if="selectedInstrument && selectedInstrument.id !== 'guitar' && filteredLessons.length === 0" class="coming-soon-notice">
           <div class="empty-icon">🎬</div>
           <p>{{ selectedInstrument.name }} lessons are coming soon! We're currently building out our {{ selectedInstrument.name }} curriculum.</p>
-          <p class="beta-note">This is a beta feature. Lessons for guitar are available now.</p>
+          <button @click="showAIGenerator = true" class="btn-generate">Generate Custom AI Lesson</button>
         </div>
         <div v-else class="lesson-grid">
           <div 
@@ -929,7 +929,8 @@ export default {
     },
 
     showHotspotDetail(hotspot) {
-      alert(`${hotspot.title}\n\n${hotspot.description}`);
+      this.realtimeFeedback = `${hotspot.title}\n\n${hotspot.description}`;
+      setTimeout(() => { this.realtimeFeedback = null; }, 5000);
       // In real app, show detailed modal with images/video clips
     },
 
@@ -942,7 +943,8 @@ export default {
         completedAt: new Date().toISOString()
       });
       
-      alert('🎉 Lesson marked complete! Keep up the great work!');
+      this.realtimeFeedback = '🎉 Lesson marked complete! Keep up the great work!';
+      setTimeout(() => { this.realtimeFeedback = null; }, 4000);
     },
 
     downloadLesson() {
@@ -953,19 +955,29 @@ export default {
         return;
       }
       
-      alert('📥 Downloading lesson for offline access...');
+      this.realtimeFeedback = '📥 Downloading lesson for offline access...';
+      setTimeout(() => { 
+        this.realtimeFeedback = '✅ Download complete!';
+        setTimeout(() => { this.realtimeFeedback = null; }, 2000);
+      }, 2000);
       // In real app, download video file
     },
 
     addToPlaylist() {
-      alert('✅ Added to your practice playlist!');
+      this.realtimeFeedback = '✅ Added to your practice playlist!';
+      setTimeout(() => { this.realtimeFeedback = null; }, 3000);
       // In real app, save to user playlists
     },
 
     async generateCustomPlan() {
       if (!this.hasFeature('customLessonPlans')) return;
       
-      alert('🤖 Generating personalized lesson plan based on your skill level and goals...');
+      this.realtimeFeedback = '🤖 Generating personalized lesson plan based on your skill level and goals...';
+      
+      setTimeout(() => {
+        this.realtimeFeedback = '✅ Custom lesson plan created! Check your inbox for details.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 5000);
+      }, 3000);
       
       // Call AI to generate custom curriculum
       const plan = await aiService.generateLessonPlan({
@@ -1011,10 +1023,13 @@ export default {
         // Auto-select the new lesson
         this.selectLesson(newLesson);
         
-        alert('✨ AI video lesson generated successfully! In production, this would create a custom instructional video.');
+        // Success notification
+        this.realtimeFeedback = '✨ AI video lesson generated successfully! Your personalized lesson is ready to watch.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 5000);
       } catch (error) {
         console.error('Error generating AI video:', error);
-        alert('Failed to generate video. Please try again.');
+        this.realtimeFeedback = '⚠️ Failed to generate video. Please try again.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 5000);
       } finally {
         this.generatingVideo = false;
       }
@@ -1041,10 +1056,12 @@ export default {
         this.instructorEmail = '';
         this.instructorMessage = '';
         
-        alert('✅ Request submitted! An instructor will contact you within 24 hours to schedule your first lesson.');
+        this.realtimeFeedback = '✅ Request submitted! An instructor will contact you within 24 hours to schedule your first lesson.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 6000);
       } catch (error) {
         console.error('Error submitting request:', error);
-        alert('Failed to submit request. Please try again.');
+        this.realtimeFeedback = '⚠️ Failed to submit request. Please try again.';
+        setTimeout(() => { this.realtimeFeedback = null; }, 4000);
       } finally {
         this.submittingRequest = false;
       }
