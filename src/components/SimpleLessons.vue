@@ -1,5 +1,8 @@
 <template>
   <div class="simple-lessons" data-build="canvas-v1">
+    <div style="background: #06c167; color: #000; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 20px;">
+      ✅ CANVAS MODE ACTIVE - Build v2.0 - No Videos!
+    </div>
     <h1>🎸 Guitar Lessons <small style="font-size:14px; opacity:0.6;">Canvas Mode v1</small></h1>
     
     <div v-if="!selectedLesson" class="lesson-list">
