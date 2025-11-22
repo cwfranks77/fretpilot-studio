@@ -35,8 +35,8 @@
 
     <main class="content">
       <ErrorBoundary :key="view" @reset="() => {}">
-        <!-- <Login v-if="!loggedIn" /> -->
-        <template>
+        <Login v-if="!loggedIn" />
+        <template v-else>
           <HomePage v-if="view==='home'" @navigate="view = $event" />
           <FretPilotTrainer v-else-if="view==='trainer'" />
           <AiLessonGenerator v-else-if="view==='ai'" />
@@ -123,8 +123,8 @@ watch(view, (v) => {
 })
 const premium = ref(ffIsPremium())
 const quota = ref(getDailyLessonRemaining())
-const loggedIn = ref(false)
-const userName = ref('')
+const loggedIn = ref(true) // TEMP: bypass login for testing
+const userName = ref('Tester')
 const ambienceOn = ref(false)
 let ambienceAudio = null
 let ambienceFallbackApplied = false
