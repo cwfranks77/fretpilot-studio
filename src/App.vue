@@ -118,6 +118,9 @@ import { isPremium as ffIsPremium, getDailyLessonRemaining } from './services/fe
 import { initAnalytics } from './services/analyticsService'
 
 const view = ref('home')
+watch(view, (v) => {
+  console.log('[App] View changed to:', v)
+})
 const premium = ref(ffIsPremium())
 const quota = ref(getDailyLessonRemaining())
 const loggedIn = ref(false)

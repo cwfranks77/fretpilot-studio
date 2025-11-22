@@ -1,6 +1,6 @@
 <template>
-  <div class="simple-lessons">
-    <h1>🎸 Guitar Lessons</h1>
+  <div class="simple-lessons" data-build="canvas-v1">
+    <h1>🎸 Guitar Lessons <small style="font-size:14px; opacity:0.6;">Canvas Mode v1</small></h1>
     
     <div v-if="!selectedLesson" class="lesson-list">
       <div 
@@ -33,6 +33,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const selectedLesson = ref(null);
+console.log('[SimpleLessons] Component loaded - canvas build v1');
 const playing = ref(false);
 const lessonCanvas = ref(null);
 let animationFrame = null;
