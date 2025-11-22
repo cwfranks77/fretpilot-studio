@@ -14,7 +14,7 @@
         <button :class="{ active: view==='practice' }" @click="view='practice'">📊 Practice</button>
         <button :class="{ active: view==='jam' }" @click="view='jam'">🎸 Jam</button>
         <button :class="{ active: view==='store' }" @click="view='store'">🛒 Store</button>
-        <button :class="{ active: view==='pricing' }" @click="view='pricing'" class="payment-btn">💳 Pricing</button>
+        <button :class="{ active: view==='pricing' }" @click="console.log('Pricing clicked'); view='pricing'" class="payment-btn">💳 Pricing</button>
         <button :class="{ active: view==='contact' }" @click="view='contact'">✉️</button>
       </nav>
       <div class="status">
@@ -31,7 +31,7 @@
       </div>
     </header>
 
-    <ConsentPrompt />
+    <!-- <ConsentPrompt /> -->
 
     <main class="content">
       <ErrorBoundary :key="view" @reset="() => {}">
