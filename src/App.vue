@@ -35,8 +35,8 @@
 
     <main class="content">
       <ErrorBoundary :key="view" @reset="() => {}">
-        <Login v-if="!loggedIn" />
-        <template v-else>
+        <!-- <Login v-if="!loggedIn" /> -->
+        <template>
           <HomePage v-if="view==='home'" @navigate="view = $event" />
           <FretPilotTrainer v-else-if="view==='trainer'" />
           <AiLessonGenerator v-else-if="view==='ai'" />
