@@ -316,6 +316,73 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 })
 
+// =====================================================
+// Stripe Checkout Session Verification (client polling)
+// PaymentSuccess.vue calls this to display receipt data.
+// =====================================================
+app.get('/api/payments/verify-session/:id', async (req, res) => {
+  const sessionId = req.params.id
+  if (!stripe) return res.status(500).json({ success: false, error: 'stripe_not_configured' })
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    // Retrieve line items (first item determines plan) – avoid expensive calls if unnecessary
+    let priceId = ''
+    try {
+      const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 1 })
+      if (lineItems && lineItems.data && lineItems.data.length > 0) {
+        priceId = lineItems.data[0].price && lineItems.data[0].price.id || ''
+      }
+    } catch (_) {}
+
+    const priceMap = {
+      [process.env.VITE_STRIPE_PRICE_MONTHLY]: { planName: 'Premium Monthly', amount: '9.99' },
+      [process.env.VITE_STRIPE_PRICE_YEARLY]: { planName: 'Premium Yearly', amount: '99.99' },
+      [process.env.VITE_STRIPE_PRICE_PRO]: { planName: 'Pro Monthly', amount: '19.99' },
+      [process.env.STRIPE_PRICE_MONTHLY]: { planName: 'Premium Monthly', amount: '9.99' },
+      [process.env.STRIPE_PRICE_YEARLY]: { planName: 'Premium Yearly', amount: '99.99' },
+      [process.env.STRIPE_PRICE_PRO]: { planName: 'Pro Monthly', amount: '19.99' }
+    }
+    const planInfo = priceMap[priceId] || { planName: 'Unknown', amount: (session.amount_total ? (session.amount_total/100).toFixed(2) : '0.00') }
+    return res.json({ success: true, planName: planInfo.planName, amount: planInfo.amount, transactionId: sessionId })
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe] verify-session error', e)
+    return res.status(500).json({ success: false, error: 'session_lookup_failed' })
+  }
+})
+
+// =====================================================
+// Stripe Webhook Endpoint
+// Configure in Stripe Dashboard pointing to /api/stripe/webhook
+// Uses raw body for signature verification.
+// =====================================================
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  if (!stripe || !webhookSecret) {
+    return res.status(200).json({ received: true, skipped: 'stripe_or_secret_missing' })
+  }
+  const sig = req.headers['stripe-signature']
+  let event
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe] webhook signature failed', err.message)
+    return res.status(400).json({ error: 'invalid_signature' })
+  }
+
+  // Handle completed checkout sessions – mark upgrades (stateless example)
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object
+    // NOTE: In production you would persist session.customer or metadata to a DB
+    // and flag user as premium. Here we just log.
+    // eslint-disable-next-line no-console
+    console.log('[stripe] checkout.session.completed', session.id, session.customer)
+  }
+
+  res.json({ received: true })
+})
+
 // Basic email send stub
 app.post('/api/email/send', (req, res) => {
   // eslint-disable-next-line no-console

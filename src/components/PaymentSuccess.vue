@@ -79,18 +79,21 @@ onMounted(() => {
 
 async function verifyPayment(sessionId) {
   try {
-    const response = await fetch(`/api/payments/verify-session/${sessionId}`, {
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`
-      }
-    })
-    
+    const response = await fetch(`/api/payments/verify-session/${sessionId}`)
     const data = await response.json()
-    
-    if (data.success) {
-      planName.value = data.planName
-      amount.value = data.amount
-      transactionId.value = data.transactionId
+    if (data && data.success) {
+      planName.value = data.planName || planName.value
+      amount.value = data.amount || amount.value
+      transactionId.value = data.transactionId || sessionId
+      // Persist simple premium flag client-side (non-secure placeholder)
+      try {
+        const authRaw = localStorage.getItem('fretpilot-auth')
+        const auth = authRaw ? JSON.parse(authRaw) : {}
+        auth.premium = true
+        auth.premiumPlan = data.planName
+        localStorage.setItem('fretpilot-auth', JSON.stringify(auth))
+        window.dispatchEvent(new Event('fretpilot-auth-changed'))
+      } catch (_) {}
     }
   } catch (error) {
     console.error('Verification error:', error)
