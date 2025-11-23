@@ -11,15 +11,33 @@
   <title>FretPilot Trainer v2.0</title>
     
     <!-- Google Analytics (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Get your GA4 Measurement ID from: https://analytics.google.com/analytics/web/#/a{accountId}w{propertyId}p{streamId}/admin/streams/table/ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FRETPILOT001"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXXXX'); // Replace with your GA4 Measurement ID
       
-      // Google Ads conversion tracking
-      gtag('config', 'AW-XXXXXXXXXX'); // Replace with your Google Ads Conversion ID
+      // GA4 Configuration
+      gtag('config', 'G-FRETPILOT001', {
+        'send_page_view': true,
+        'anonymize_ip': true,
+        'app_name': 'FretPilot Studio',
+        'app_version': '1.0.0'
+      });
+      
+      // Custom events for FretPilot
+      window.trackEvent = function(eventName, params = {}) {
+        gtag('event', eventName, params);
+      };
+      
+      // Track app lifecycle
+      window.addEventListener('load', () => {
+        gtag('event', 'app_open', { method: 'web' });
+      });
+      
+      // Google Ads conversion tracking (optional - add after creating Ads account)
+      // gtag('config', 'AW-XXXXXXXXXX');
     </script>
     
     <style>
