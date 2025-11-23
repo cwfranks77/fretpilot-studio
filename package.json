@@ -20,6 +20,8 @@
     "electron:build": "npm run build && electron-builder --win --publish never",
     "server": "node server/index.js",
     "compose:temple": "node scripts/compose-temple-slogan.js"
+    ,"launch:verify": "node scripts/launch-verify.js --domain fretpilotstudio.com"
+    ,"stripe:test": "node scripts/stripe-test.js $env:TEST_PRICE_ID" 
   },
   "dependencies": {
     "@capacitor-community/admob": "^5.3.0",
