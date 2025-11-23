@@ -150,6 +150,50 @@ Invoke-WebRequest https://fretpilotstudio.com/version.json -UseBasicParsing | Se
 | Checkout error overlay | Confirm Price ID exists & allowed; verify secret key configured |
 | Stale assets | Redeploy or increment build version banner |
 
+### Stripe Webhook Configuration
+
+To receive automatic upgrade events after successful checkout sessions configure a Stripe webhook:
+
+1. In Stripe Dashboard go to: Developers → Webhooks → + Add endpoint
+2. Set URL: `https://fretpilotstudio.com/api/stripe/webhook`
+3. Select events: `checkout.session.completed` (and others you plan to use later like `invoice.payment_succeeded`)
+4. Copy the Signing Secret and set `STRIPE_WEBHOOK_SECRET` in your deployment environment.
+
+Local development via Stripe CLI (optional):
+
+```powershell
+stripe login
+stripe listen --events checkout.session.completed --forward-to localhost:5175/api/stripe/webhook
+```
+
+On receipt the server logs the session ID; extend the handler to persist user premium status in a real database.
+
+### Premium Persistence (File-Based Prototype)
+
+Current implementation persists upgrades in `server/data/users.json` via webhook events:
+
+- Checkout session creation attaches `metadata.userEmail` and `customer_email`.
+- Webhook `/api/stripe/webhook` listens for `checkout.session.completed` and writes:
+  ```json
+  {
+    "users": {
+      "player@example.com": {
+        "email": "player@example.com",
+        "premium": true,
+        "plan": "premium",
+        "updatedAt": "2025-11-23T00:00:00.000Z",
+        "firstSession": "cs_test_123",
+        "lastSession": "cs_test_123"
+      }
+    }
+  }
+  ```
+- Frontend `StripeCheckout.vue` sends the stored local email; `PaymentSuccess.vue` verifies session and then calls `/api/premium/status?email=...`.
+
+Upgrade this later by replacing file storage with a database (Postgres) and authenticating requests using JWT or session cookies. Add idempotency by storing processed session IDs.
+
+
+
 
 ### Build for Android
 ```powershell

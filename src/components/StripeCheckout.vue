@@ -104,6 +104,13 @@ async function initiateCheckout() {
       finalPriceId = priceIdMap[props.planType]
     }
 
+    // Extract user email from local auth (placeholder until secure auth implemented)
+    let userEmail = ''
+    try {
+      const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
+      userEmail = auth.email || auth.userEmail || auth.user || ''
+    } catch (_) {}
+
     // Create checkout session
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
@@ -117,7 +124,8 @@ async function initiateCheckout() {
         productName: props.productName,
         // Use unified payment success route (PaymentSuccess.vue)
         successUrl: props.successUrl || `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: props.cancelUrl || window.location.href
+        cancelUrl: props.cancelUrl || window.location.href,
+        userEmail
       })
     })
 

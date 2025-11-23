@@ -75,6 +75,8 @@ onMounted(() => {
     // Verify payment with backend
     verifyPayment(sessionId)
   }
+  // Attempt authoritative premium status refresh if email present
+  setTimeout(refreshPremiumStatus, 800)
 })
 
 async function verifyPayment(sessionId) {
@@ -111,6 +113,23 @@ function viewReceipt() {
 function getAuthToken() {
   const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
   return auth.token || ''
+}
+
+async function refreshPremiumStatus() {
+  try {
+    const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
+    const email = auth.email || auth.userEmail || auth.user || ''
+    if (!email) return
+    const r = await fetch(`/api/premium/status?email=${encodeURIComponent(email)}`)
+    const data = await r.json()
+    if (data && data.ok && data.premium) {
+      planName.value = data.plan || planName.value
+      // Keep existing amount (server may not store it)
+      const updatedAuth = { ...auth, premium: true, premiumPlan: data.plan }
+      localStorage.setItem('fretpilot-auth', JSON.stringify(updatedAuth))
+      window.dispatchEvent(new Event('fretpilot-auth-changed'))
+    }
+  } catch (e) { /* silent */ }
 }
 </script>
 

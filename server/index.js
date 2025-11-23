@@ -274,7 +274,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
       priceId = '',
       mode = 'subscription',
       successUrl = `${req.headers.origin || 'http://localhost:5173'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl = `${req.headers.origin || 'http://localhost:5173'}/pricing?cancelled=1`
+      cancelUrl = `${req.headers.origin || 'http://localhost:5173'}/pricing?cancelled=1`,
+      userEmail = ''
     } = req.body || {}
 
     if (!stripe) {
@@ -304,6 +305,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
       ],
       allow_promotion_codes: true,
       subscription_data: mode === 'subscription' ? { trial_period_days: 0 } : undefined,
+      metadata: userEmail ? { userEmail } : undefined,
+      customer_email: userEmail || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl
     })
@@ -357,6 +360,32 @@ app.get('/api/payments/verify-session/:id', async (req, res) => {
 // Uses raw body for signature verification.
 // =====================================================
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
+// Simple premium user persistence (file-based) ---------------------------------
+const usersFile = path.join(__dirname, 'data', 'users.json')
+function loadUsers() {
+  try {
+    if (!fs.existsSync(usersFile)) {
+      const dir = path.dirname(usersFile)
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      fs.writeFileSync(usersFile, JSON.stringify({ users: {} }, null, 2))
+    }
+    const raw = fs.readFileSync(usersFile, 'utf8')
+    return JSON.parse(raw)
+  } catch (e) { return { users: {} } }
+}
+function saveUsers(data) {
+  try { fs.writeFileSync(usersFile, JSON.stringify(data, null, 2)) } catch (_) {}
+}
+
+// Public endpoint to query premium status by email (lightweight, non-secure placeholder)
+app.get('/api/premium/status', (req, res) => {
+  const email = (req.query.email || '').toLowerCase().trim()
+  if (!email) return res.status(400).json({ ok: false, error: 'missing_email' })
+  const data = loadUsers()
+  const u = data.users[email]
+  if (!u) return res.json({ ok: true, premium: false })
+  return res.json({ ok: true, premium: !!u.premium, plan: u.plan || '', updatedAt: u.updatedAt })
+})
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   if (!stripe || !webhookSecret) {
     return res.status(200).json({ received: true, skipped: 'stripe_or_secret_missing' })
@@ -375,9 +404,34 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
     // NOTE: In production you would persist session.customer or metadata to a DB
-    // and flag user as premium. Here we just log.
-    // eslint-disable-next-line no-console
-    console.log('[stripe] checkout.session.completed', session.id, session.customer)
+    const email = (session.metadata && session.metadata.userEmail) || (session.customer_details && session.customer_details.email) || ''
+    if (email) {
+      const data = loadUsers()
+      const key = email.toLowerCase()
+      const existing = data.users[key] || {}
+      // Determine plan from price (if expanded later we could listLineItems here)
+      let plan = 'premium'
+      if (session.mode === 'subscription') {
+        // Basic heuristic based on amount_total if price not passed in metadata
+        const amt = session.amount_total || 0
+        if (amt > 1500 && amt < 3000) plan = 'pro'
+        if (amt > 5000) plan = 'yearly'
+      }
+      data.users[key] = {
+        email: key,
+        premium: true,
+        plan,
+        updatedAt: new Date().toISOString(),
+        firstSession: existing.firstSession || session.id,
+        lastSession: session.id
+      }
+      saveUsers(data)
+      // eslint-disable-next-line no-console
+      console.log('[stripe] upgraded user', key, 'plan:', plan)
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('[stripe] checkout.session.completed (no email)', session.id)
+    }
   }
 
   res.json({ received: true })
