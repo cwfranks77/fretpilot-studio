@@ -123,8 +123,9 @@ watch(view, (v) => {
 })
 const premium = ref(ffIsPremium())
 const quota = ref(getDailyLessonRemaining())
-const loggedIn = ref(true) // TEMP: bypass login for testing
-const userName = ref('Tester')
+// Login gating reverted to proper auth read; default false until readAuth evaluates stored credentials.
+const loggedIn = ref(false)
+const userName = ref('')
 const ambienceOn = ref(false)
 let ambienceAudio = null
 let ambienceFallbackApplied = false

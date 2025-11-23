@@ -50,6 +50,16 @@ const lessons = [
 function startLesson() {
   console.log('Starting lesson:', selectedLesson.value);
   playing.value = true;
+  
+  // Track lesson start
+  if (window.trackEvent) {
+    window.trackEvent('lesson_start', {
+      lesson_id: selectedLesson.value.id,
+      lesson_title: selectedLesson.value.title,
+      platform: 'web'
+    });
+  }
+  
   setTimeout(() => renderLesson(), 100);
 }
 
@@ -60,6 +70,15 @@ function togglePlay() {
     renderLesson();
   } else {
     if (animationFrame) cancelAnimationFrame(animationFrame);
+    
+    // Track lesson completion when paused
+    if (window.trackEvent && selectedLesson.value) {
+      window.trackEvent('lesson_complete', {
+        lesson_id: selectedLesson.value.id,
+        lesson_title: selectedLesson.value.title,
+        platform: 'web'
+      });
+    }
   }
 }
 

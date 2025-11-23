@@ -49,6 +49,16 @@ class PlayBillingService {
       return new Promise((resolve, reject) => {
         const purchaseListener = this.PlayBilling.addListener('purchaseCompleted', (purchase) => {
           console.log('[PlayBilling] Purchase completed:', purchase);
+          
+          // Track subscription start
+          if (window.trackEvent) {
+            window.trackEvent('subscription_start', {
+              product_id: productId,
+              platform: 'android',
+              method: 'play_billing'
+            });
+          }
+          
           purchaseListener.remove();
           cancelListener.remove();
           errorListener.remove();

@@ -199,11 +199,25 @@ export async function purchaseProduct(productId) {
     auth.purchaseToken = 'mock_' + Date.now();
     localStorage.setItem('fretpilot-auth', JSON.stringify(auth));
     
+    const purchaseToken = 'mock_' + Date.now();
+    const orderId = 'ORDER_' + Date.now();
+
+    // Analytics tracking (web/mock environment)
+    try {
+      if (window.trackEvent) {
+        window.trackEvent('subscription_start', {
+          product_id: productId,
+          platform: 'web',
+          method: 'mock'
+        });
+      }
+    } catch (_) {}
+
     return {
       success: true,
       productId,
-      purchaseToken: 'mock_' + Date.now(),
-      orderId: 'ORDER_' + Date.now()
+      purchaseToken,
+      orderId
     };
   }
 
@@ -223,7 +237,18 @@ export async function purchaseProduct(productId) {
     
     // Initiate purchase
     await offer.order();
-    
+
+    // Track subscription start (Android real purchase)
+    try {
+      if (window.trackEvent) {
+        window.trackEvent('subscription_start', {
+          product_id: productId,
+          platform: 'android',
+          method: 'google_play'
+        });
+      }
+    } catch (_) {}
+
     return { 
       success: true, 
       productId: productId,

@@ -33,6 +33,10 @@
       <p v-if="isIOS" class="ios-note">On iOS, in-app purchases are coming soon. You can purchase with Bitcoin today.</p>
     </div>
 
+    <div v-if="billingAvailable && !subscriptionActive" class="restore-wrapper">
+      <button class="restore-btn" @click="doRestore">Restore Purchases</button>
+    </div>
+
     <div class="plans">
       <div class="card">
         <h3>Monthly</h3>
@@ -121,6 +125,10 @@
       ₿ Bitcoin payments available on all platforms<br>
       All transactions are encrypted and secure
     </p>
+    <div v-if="subscriptionActive" class="subscription-status">
+      <p class="active-msg">✅ Premium active (Plan: {{ subscriptionPlan }})</p>
+      <button class="manage-btn" @click="manageSubscription()">Manage Subscription</button>
+    </div>
   </section>
 </template>
 
@@ -128,7 +136,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { setPremium } from '../services/featureFlags'
 import { createBitcoinPayment, checkPaymentStatus as checkBitcoinPaymentStatus, startPaymentMonitoring, stopPaymentMonitoring, getPaymentQRCode } from '../services/bitcoinPaymentService'
-import { purchaseProduct, isGooglePlayBillingAvailable, SUBSCRIPTION_PRODUCTS, getProducts } from '../services/googlePlayBilling'
+import { purchaseProduct, isGooglePlayBillingAvailable, SUBSCRIPTION_PRODUCTS, getProducts, checkSubscriptionStatus, manageSubscription, restorePurchases } from '../services/googlePlayBilling'
 
 const paymentMethod = ref('card')
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -150,6 +158,11 @@ const productPrices = ref({
   yearly: '$99.99',
   lifetime: '$49.99'
 })
+
+// Subscription status
+const subscriptionActive = ref(false)
+const subscriptionPlan = ref(null)
+const billingAvailable = isGooglePlayBillingAvailable()
 
 async function initiatePurchase(plan) {
   selectedPlan.value = plan
@@ -212,6 +225,23 @@ async function initiatePurchase(plan) {
   }
 }
 
+async function doRestore() {
+  try {
+    const res = await restorePurchases()
+    if (res.restored > 0) {
+      const status = await checkSubscriptionStatus()
+      subscriptionActive.value = !!status.active
+      subscriptionPlan.value = status.plan || null
+      setPremium(true)
+      alert('✅ Subscription restored successfully.')
+    } else {
+      alert('No previous purchases found to restore.')
+    }
+  } catch (e) {
+    alert('Restore failed: ' + (e.message || 'Unknown error'))
+  }
+}
+
 function copyBitcoinAddress() {
   navigator.clipboard.writeText(bitcoinAddress.value)
   alert('Bitcoin address copied to clipboard!')
@@ -252,6 +282,12 @@ onMounted(() => {
     if (byId[SUBSCRIPTION_PRODUCTS.lifetime]?.price) {
       productPrices.value.lifetime = byId[SUBSCRIPTION_PRODUCTS.lifetime].price
     }
+  }).catch(() => {})
+
+  // Load subscription status
+  checkSubscriptionStatus().then(status => {
+    subscriptionActive.value = !!status.active
+    subscriptionPlan.value = status.plan || null
   }).catch(() => {})
 })
 
@@ -447,6 +483,51 @@ button:hover {
   font-size: 0.95rem;
   text-align: center;
   line-height: 1.8;
+}
+
+.subscription-status {
+  background: #0a0a0a;
+  border: 2px solid #06c167;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin: 30px auto 10px;
+  max-width: 500px;
+  text-align: center;
+}
+.active-msg {
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: #06c167;
+}
+.manage-btn {
+  background: #2a2a2a;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #cfd6e6;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background .2s;
+}
+.manage-btn:hover { background: #3a3a3a; }
+
+.restore-wrapper {
+  text-align: center;
+  margin: 10px 0 32px;
+}
+.restore-btn {
+  background: #2a2a2a;
+  border: 2px solid #2a2a2a;
+  color: #cfd6e6;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.restore-btn:hover {
+  border-color: #06c167;
+  color: #fff;
 }
 
 .modal-overlay {

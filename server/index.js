@@ -263,6 +263,59 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
   }
 })
 
+// Unified subscription checkout endpoint used by front-end StripeCheckout component.
+// Supports both subscription and one-time payment modes. Expects a priceId that maps
+// to a Stripe Price object configured in the Stripe dashboard. Unlike the catalog
+// purchase endpoint above, this does not derive prices from the client except for
+// the provided priceId; it validates against allowed environment-configured IDs.
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const {
+      priceId = '',
+      mode = 'subscription',
+      successUrl = `${req.headers.origin || 'http://localhost:5173'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl = `${req.headers.origin || 'http://localhost:5173'}/pricing?cancelled=1`
+    } = req.body || {}
+
+    if (!stripe) {
+      return res.status(500).json({ error: 'stripe_not_configured' })
+    }
+    if (!priceId) {
+      return res.status(400).json({ error: 'missing_priceId' })
+    }
+
+    // Optional allow-list validation (prevents arbitrary priceIds being used)
+    const allowed = [
+      process.env.VITE_STRIPE_PRICE_MONTHLY,
+      process.env.VITE_STRIPE_PRICE_YEARLY,
+      process.env.VITE_STRIPE_PRICE_PRO,
+      process.env.STRIPE_PRICE_MONTHLY,
+      process.env.STRIPE_PRICE_YEARLY,
+      process.env.STRIPE_PRICE_PRO
+    ].filter(Boolean)
+    if (allowed.length && !allowed.includes(priceId)) {
+      return res.status(400).json({ error: 'price_not_allowed' })
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode,
+      line_items: [
+        { price: priceId, quantity: 1 }
+      ],
+      allow_promotion_codes: true,
+      subscription_data: mode === 'subscription' ? { trial_period_days: 0 } : undefined,
+      success_url: successUrl,
+      cancel_url: cancelUrl
+    })
+
+    return res.json({ id: session.id })
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe] unified checkout error', e)
+    return res.status(500).json({ error: 'stripe_session_error' })
+  }
+})
+
 // Basic email send stub
 app.post('/api/email/send', (req, res) => {
   // eslint-disable-next-line no-console

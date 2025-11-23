@@ -111,6 +111,14 @@ function startMetronome() {
   const interval = 60000 / bpm.value
   currentBeat.value = 1
   
+  // Track metronome usage
+  if (window.trackEvent) {
+    window.trackEvent('metronome_use', {
+      tempo: bpm.value,
+      platform: 'web'
+    });
+  }
+  
   playClick()
   metronomeInterval = setInterval(() => {
     currentBeat.value = (currentBeat.value % 4) + 1
@@ -169,6 +177,14 @@ function toggleTuner() {
 async function startTuner() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    
+    // Track tuner usage
+    if (window.trackEvent) {
+      window.trackEvent('tuner_open', {
+        platform: 'web'
+      });
+    }
+    
     // Simplified tuner simulation - real implementation would use pitch detection
     detectedNote.value = 'A'
     detectedFreq.value = 440.0

@@ -19,10 +19,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import FeatureIcons from '../assets/logos/FeatureIcons.vue'
 const props = defineProps({
   heatmap: { type: Array, required: true }, // array[6][13] 0..1
+})
+
+onMounted(() => {
+  // Track heatmap view
+  if (window.trackEvent) {
+    window.trackEvent('heatmap_view', {
+      platform: 'web'
+    });
+  }
 })
 
 const strings = ['e', 'B', 'G', 'D', 'A', 'E'] // high to low

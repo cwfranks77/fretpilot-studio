@@ -10,34 +10,35 @@
     <meta http-equiv="Expires" content="0" />
   <title>FretPilot Trainer v2.0</title>
     
-    <!-- Google Analytics (gtag.js) -->
-    <!-- Get your GA4 Measurement ID from: https://analytics.google.com/analytics/web/#/a{accountId}w{propertyId}p{streamId}/admin/streams/table/ -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FRETPILOT001"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      
-      // GA4 Configuration
-      gtag('config', 'G-FRETPILOT001', {
-        'send_page_view': true,
-        'anonymize_ip': true,
-        'app_name': 'FretPilot Studio',
-        'app_version': '1.0.0'
-      });
-      
-      // Custom events for FretPilot
-      window.trackEvent = function(eventName, params = {}) {
-        gtag('event', eventName, params);
-      };
-      
-      // Track app lifecycle
-      window.addEventListener('load', () => {
-        gtag('event', 'app_open', { method: 'web' });
-      });
-      
-      // Google Ads conversion tracking (optional - add after creating Ads account)
-      // gtag('config', 'AW-XXXXXXXXXX');
+    <!-- Dynamic GA4 injection via Vite env variable -->
+    <!-- Set VITE_GA_MEASUREMENT_ID in .env (e.g. VITE_GA_MEASUREMENT_ID=G-XXXXXXX) before build/deploy -->
+    <script type="module">
+      const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+      if (GA_ID) {
+        const s = document.createElement('script');
+        s.async = true;
+        s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID, {
+          send_page_view: true,
+            anonymize_ip: true,
+            app_name: 'FretPilot Studio',
+            app_version: '1.0.0'
+        });
+        window.trackEvent = (eventName, params = {}) => {
+          try { gtag('event', eventName, params); } catch(_){}
+        };
+        window.addEventListener('load', () => {
+          try { gtag('event', 'app_open', { method: 'web' }); } catch(_){}
+        });
+      } else {
+        // Analytics disabled (no measurement ID). Provide no-op tracker to avoid errors.
+        window.trackEvent = () => {};
+      }
     </script>
     
     <style>

@@ -110,6 +110,47 @@ node index.js
 
 Visit `http://localhost:5173`
 
+### Production Domain & DNS (fretpilotstudio.com)
+
+Ensure DNS records at your registrar:
+
+| Record | Type | Value |
+|--------|------|-------|
+| apex (fretpilotstudio.com) | A | 76.76.21.21 |
+| www | CNAME | cname.vercel-dns.com |
+
+Remove conflicting legacy A/CNAME records. Wait for propagation (usually minutes; up to 2 hours). Then run verification scripts:
+
+```powershell
+npm run dns:verify    # Quick one-off check
+npm run dns:wait      # Poll until valid configuration
+```
+
+Once Vercel shows "Valid Configuration", redeploy the latest commit (Dashboard → Deployments → Redeploy) to ensure fresh CDN cache.
+
+Health & version checks once live:
+
+```powershell
+Invoke-WebRequest https://fretpilotstudio.com -UseBasicParsing | Select-Object -ExpandProperty StatusCode
+Invoke-WebRequest https://fretpilotstudio.com/version.json -UseBasicParsing | Select-Object -ExpandProperty Content
+```
+
+### Stripe Test Checkout Flow
+1. Go to Pricing page
+2. Click a Premium button
+3. Test card: `4242 4242 4242 4242` (future expiry, any CVC, any ZIP)
+4. Land on `/payment-success?session_id=...`
+5. Refresh; Premium badge should appear if upgrade logic triggers
+
+### Troubleshooting
+| Symptom | Fix |
+|---------|-----|
+| White page | Redeploy; ensure DNS valid; add `?bust=1` to URL |
+| Pricing button inert | Check `.env` `VITE_STRIPE_PUBLIC_KEY` not placeholder |
+| Checkout error overlay | Confirm Price ID exists & allowed; verify secret key configured |
+| Stale assets | Redeploy or increment build version banner |
+
+
 ### Build for Android
 ```powershell
 # Build web app

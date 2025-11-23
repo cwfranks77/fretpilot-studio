@@ -53,7 +53,7 @@ const props = defineProps({
   },
   successUrl: {
     type: String,
-    default: null
+    default: null // Will fallback to /payment-success route if not provided
   },
   cancelUrl: {
     type: String,
@@ -115,7 +115,8 @@ async function initiateCheckout() {
         mode: props.mode,
         amount: props.amount,
         productName: props.productName,
-        successUrl: props.successUrl || `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        // Use unified payment success route (PaymentSuccess.vue)
+        successUrl: props.successUrl || `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: props.cancelUrl || window.location.href
       })
     })
