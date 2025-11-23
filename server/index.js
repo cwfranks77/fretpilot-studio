@@ -3,6 +3,7 @@
 
 const express = require('express')
 const cors = require('cors')
+const rateLimit = require('express-rate-limit')
 const fs = require('fs')
 const path = require('path')
 const { handleVendorPO } = require('./vendor')
@@ -42,8 +43,59 @@ if (STRIPE_SECRET_KEY) {
   try { stripe = require('stripe')(STRIPE_SECRET_KEY) } catch (e) { stripe = null }
 }
 
+// Idempotent processed checkout sessions (avoid duplicate upgrade writes)
+const processedSessionsFile = path.join(__dirname, 'data', 'processed-sessions.json')
+function loadProcessedSessions() {
+  try {
+    if (!fs.existsSync(processedSessionsFile)) {
+      const dir = path.dirname(processedSessionsFile)
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      fs.writeFileSync(processedSessionsFile, JSON.stringify({ ids: [] }, null, 2))
+    }
+    return JSON.parse(fs.readFileSync(processedSessionsFile, 'utf8'))
+  } catch (e) { return { ids: [] } }
+}
+function saveProcessedSessions(data) {
+  try { fs.writeFileSync(processedSessionsFile, JSON.stringify(data, null, 2)) } catch (_) {}
+}
+function markSessionProcessed(id) {
+  const data = loadProcessedSessions()
+  if (!data.ids.includes(id)) {
+    data.ids.push(id)
+    // Keep file from growing indefinitely
+    if (data.ids.length > 5000) data.ids = data.ids.slice(-3000)
+    saveProcessedSessions(data)
+    return true
+  }
+  return false
+}
+
 app.use(express.json({ limit: '10mb' }))
 app.use(cors())
+
+// Basic global rate limit (adjust as needed)
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: parseInt(process.env.RATE_LIMIT_GLOBAL || '300', 10),
+  standardHeaders: true,
+  legacyHeaders: false
+})
+app.use(globalLimiter)
+
+// Targeted stricter limits
+const checkoutLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: parseInt(process.env.RATE_LIMIT_CHECKOUT || '20', 10),
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+const contactLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: parseInt(process.env.RATE_LIMIT_CONTACT || '40', 10),
+  standardHeaders: true,
+  legacyHeaders: false
+})
 
 // Mount dropshipping webhook routes
 app.use(dropshipWebhooks)
@@ -268,7 +320,7 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
 // to a Stripe Price object configured in the Stripe dashboard. Unlike the catalog
 // purchase endpoint above, this does not derive prices from the client except for
 // the provided priceId; it validates against allowed environment-configured IDs.
-app.post('/api/create-checkout-session', async (req, res) => {
+app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
   try {
     const {
       priceId = '',
@@ -405,7 +457,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
     const session = event.data.object
     // NOTE: In production you would persist session.customer or metadata to a DB
     const email = (session.metadata && session.metadata.userEmail) || (session.customer_details && session.customer_details.email) || ''
-    if (email) {
+    const firstProcess = markSessionProcessed(session.id)
+    if (email && firstProcess) {
       const data = loadUsers()
       const key = email.toLowerCase()
       const existing = data.users[key] || {}
@@ -427,7 +480,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
       }
       saveUsers(data)
       // eslint-disable-next-line no-console
-      console.log('[stripe] upgraded user', key, 'plan:', plan)
+      console.log('[stripe] upgraded user', key, 'plan:', plan, 'session:', session.id)
     } else {
       // eslint-disable-next-line no-console
       console.log('[stripe] checkout.session.completed (no email)', session.id)
@@ -467,7 +520,7 @@ function rateLimited(ip) {
   return entry.count > CONTACT_RATE_LIMIT_MAX
 }
 
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
     if (rateLimited(ip)) {

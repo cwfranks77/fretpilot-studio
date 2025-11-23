@@ -479,6 +479,27 @@ Consider a separate `PLAY_ASSETS.md` to store versioned asset references and des
 - **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Complete setup, deployment, and scaling guide
 - **[LAUNCH_GUIDE.md](./LAUNCH_GUIDE.md)** - Feature walkthrough and launch checklist
 
+### Launch Checklist (Web Beta)
+
+1. DNS: `A 76.76.21.21`, `CNAME www -> cname.vercel-dns.com` validated (`npm run dns:verify`).
+2. Version endpoint reachable: `https://fretpilotstudio.com/version.json`.
+3. Stripe test checkout success; webhook logs upgrade; `server/data/users.json` updated.
+4. Rate limits active (global & checkout) – configurable via `RATE_LIMIT_*` env vars.
+5. Idempotent webhook sessions file present (`server/data/processed-sessions.json`).
+6. SEO tags (title, description, og:*), favicon, manifest, and `robots.txt` allow indexing.
+7. No test secrets committed (scan for `sk_test` / placeholder keys before live switch).
+8. Monitoring: uptime ping `/api/health`; error log rotation planned.
+9. Accessibility: keyboard nav works; contrast acceptable; images have alt (review future additions).
+10. Play assets scaffolded (`PLAY_ASSETS/`).
+11. Privacy & Terms pages linked in footer.
+12. Rollback tag created: `git tag launch-prep-v1 && git push --tags`.
+
+Post-Launch Monitoring:
+- Track Stripe webhook failures / retry count.
+- Observe Lighthouse core metrics (target LCP < 2.5s, CLS < 0.1).
+- Monitor growth of `users.json` (plan database migration before >10K entries).
+- Collect user feedback; prioritize performance & mobile offline features.
+
 ---
 
 ## 🤝 Contributing
