@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "deploymentMeta": "minimal-test-1",
+  "rewrites": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "thefranksstandard.com" }], "destination": "/store.html" },
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.thefranksstandard.com" }], "destination": "/store.html" },
+    { "source": "/store", "destination": "/store.html" },
+    { "source": "/store/(.*)", "destination": "/store.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
