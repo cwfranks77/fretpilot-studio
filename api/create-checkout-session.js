@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       res.status(500).json({ error: 'stripe_not_configured' })
       return
     }
-    const { priceId = '', mode = 'subscription', successUrl, cancelUrl } = req.body || {}
+    const { priceId = '', mode = 'subscription', successUrl, cancelUrl, userEmail = '', userId = '' } = req.body || {}
     if (!priceId) {
       res.status(400).json({ error: 'missing_priceId' })
       return
@@ -41,6 +41,11 @@ module.exports = async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       subscription_data: mode === 'subscription' ? { trial_period_days: 0 } : undefined,
+      metadata: {
+        userEmail: userEmail || '',
+        userId: userId || ''
+      },
+      customer_email: userEmail || undefined,
       success_url: successUrl || `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${origin}/pricing?cancelled=1`
     })
