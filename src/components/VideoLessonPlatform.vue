@@ -548,24 +548,36 @@ function applyFilters() {
   // Filters are reactive, auto-applied
 }
 
-function saveProgress() {
-  // In production, save to backend
-  localStorage.setItem('video-progress', JSON.stringify(
-    videos.value.map(v => ({ id: v.id, progress: v.progress, checkpoints: v.checkpoints }))
-  ))
+async function saveProgress() {
+  // Save encrypted progress to secure storage
+  try {
+    const { setSecureJSON } = await import('../services/secureStorage')
+    const progressData = videos.value.map(v => ({ 
+      id: v.id, 
+      progress: v.progress, 
+      checkpoints: v.checkpoints 
+    }))
+    await setSecureJSON('video-progress', progressData)
+  } catch (e) {
+    console.error('Failed to save encrypted progress:', e)
+  }
 }
 
-function loadProgress() {
-  const saved = localStorage.getItem('video-progress')
-  if (saved) {
-    const progress = JSON.parse(saved)
-    progress.forEach(p => {
-      const video = videos.value.find(v => v.id === p.id)
-      if (video) {
-        video.progress = p.progress
-        if (p.checkpoints) video.checkpoints = p.checkpoints
-      }
-    })
+async function loadProgress() {
+  try {
+    const { getSecureJSON } = await import('../services/secureStorage')
+    const progress = await getSecureJSON('video-progress')
+    if (progress && Array.isArray(progress)) {
+      progress.forEach(p => {
+        const video = videos.value.find(v => v.id === p.id)
+        if (video) {
+          video.progress = p.progress
+          if (p.checkpoints) video.checkpoints = p.checkpoints
+        }
+      })
+    }
+  } catch (e) {
+    console.error('Failed to load encrypted progress:', e)
   }
 }
 

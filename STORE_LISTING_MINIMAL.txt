@@ -1,0 +1,26 @@
+FretPilot Studio helps guitarists practice smarter with intelligent tools that adapt to your playing. Get structured drills, real-time feedback, and clear progress tracking to accelerate your guitar journey.
+
+Features:
+- Smart Practice Trainer with adaptive sessions
+- AI-powered lesson generator for personalized exercises
+- Comprehensive chord and scale library
+- Mistake heatmap showing accuracy patterns
+- Built-in metronome and tuner
+- Progress analytics tracking streaks and improvements
+- Jam companion with backing tracks
+- Practice planner for daily routines
+
+Whether you are a beginner building fundamentals, an intermediate player accelerating skills, or a returning guitarist rebuilding technique, FretPilot Studio provides the structure and feedback you need.
+
+Track your progress with visual analytics. See exactly what improved and what needs work. Turn consistent practice into measurable results.
+
+Get started:
+1. Tune up with the built-in tuner
+2. Choose your focus area
+3. Run a Smart Trainer session
+4. Review your heatmap and analytics
+5. Generate AI lessons for weak spots
+
+Your practice data is private and under your control. Only metrics you enable are analyzed to personalize your experience.
+
+Start your structured guitar practice journey with FretPilot Studio.

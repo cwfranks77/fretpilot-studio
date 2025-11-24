@@ -2,9 +2,13 @@
 
 **AI-Powered Video Lessons • Practice Tracking • Music Store • Live Jam Companion**
 
-FretPilot is a comprehensive guitar learning application featuring AI-powered video lessons with real-time pose detection, personalized practice plans, an integrated music store with **dropshipping** (NEW!), and a tiered subscription model. Built with Vue 3, Capacitor, and Node.js.
+FretPilot is a comprehensive guitar learning application featuring AI-powered video lessons with real-time pose detection, personalized practice plans, an integrated music store with **dropshipping**, and a tiered subscription model. Built with Vue 3, Capacitor, Firebase Authentication, and Node.js.
 
-> **🎸 NEW: Dropshipping Store Integration!**  
+> **🔐 NEW: Firebase Authentication!**  
+> Production-ready authentication with email/password, Google Sign-In, and anonymous accounts.  
+> **Quick Setup:** See `FIREBASE_QUICK_REFERENCE.md` | **Full Guide:** See `FIREBASE_SETUP.md`
+
+> **🎸 Dropshipping Store Integration!**  
 > Sell musical instruments & accessories with zero inventory using Spocket & Printful.  
 > **Quick Setup:** See `QUICK_START_DROPSHIPPING.md` | **Full Guide:** See `DROPSHIPPING_SETUP_GUIDE.md`
 

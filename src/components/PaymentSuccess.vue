@@ -87,13 +87,13 @@ async function verifyPayment(sessionId) {
       planName.value = data.planName || planName.value
       amount.value = data.amount || amount.value
       transactionId.value = data.transactionId || sessionId
-      // Persist simple premium flag client-side (non-secure placeholder)
+      // Persist premium flag with encryption
       try {
-        const authRaw = localStorage.getItem('fretpilot-auth')
-        const auth = authRaw ? JSON.parse(authRaw) : {}
+        const { getSecureJSON, setSecureJSON } = await import('../services/secureStorage')
+        const auth = await getSecureJSON('fretpilot-auth') || {}
         auth.premium = true
         auth.premiumPlan = data.planName
-        localStorage.setItem('fretpilot-auth', JSON.stringify(auth))
+        await setSecureJSON('fretpilot-auth', auth)
         window.dispatchEvent(new Event('fretpilot-auth-changed'))
       } catch (_) {}
     }
@@ -110,14 +110,16 @@ function viewReceipt() {
   alert('Receipt sent to your email!')
 }
 
-function getAuthToken() {
-  const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
+async function getAuthToken() {
+  const { getSecureJSON } = await import('../services/secureStorage')
+  const auth = await getSecureJSON('fretpilot-auth') || {}
   return auth.token || ''
 }
 
 async function refreshPremiumStatus() {
   try {
-    const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
+    const { getSecureJSON, setSecureJSON } = await import('../services/secureStorage')
+    const auth = await getSecureJSON('fretpilot-auth') || {}
     const email = auth.email || auth.userEmail || auth.user || ''
     if (!email) return
     const r = await fetch(`/api/premium/status?email=${encodeURIComponent(email)}`)
@@ -126,7 +128,7 @@ async function refreshPremiumStatus() {
       planName.value = data.plan || planName.value
       // Keep existing amount (server may not store it)
       const updatedAuth = { ...auth, premium: true, premiumPlan: data.plan }
-      localStorage.setItem('fretpilot-auth', JSON.stringify(updatedAuth))
+      await setSecureJSON('fretpilot-auth', updatedAuth)
       window.dispatchEvent(new Event('fretpilot-auth-changed'))
     }
   } catch (e) { /* silent */ }

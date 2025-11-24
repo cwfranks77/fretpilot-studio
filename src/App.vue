@@ -19,7 +19,7 @@
       </nav>
       <div class="status">
         <template v-if="loggedIn">
-          <span class="user">👤 {{ userName }}</span>
+          <span class="user" @click="view='account'" style="cursor: pointer;" title="Account Settings">👤 {{ userName }}</span>
           <span class="badge" :class="premium ? 'pro' : 'free'">{{ premium ? 'Premium' : 'Free' }}</span>
           <span v-if="!premium" class="quota">{{ quota }} free AI</span>
           <button class="ambience" :class="{ on: ambienceOn }" @click="toggleAmbience">🎵 Ambience</button>
@@ -38,6 +38,7 @@
         <Login v-if="!loggedIn" />
         <template v-else>
           <HomePage v-if="view==='home'" @navigate="view = $event" />
+          <AccountSettings v-else-if="view==='account'" @close="view='home'" />
           <FretPilotTrainer v-else-if="view==='trainer'" />
           <AiLessonGenerator v-else-if="view==='ai'" />
           <AIVideoGenerator v-else-if="view==='video'" />
@@ -69,7 +70,8 @@
         </template>
       </ErrorBoundary>
     </main>
-
+    <!-- Dev-only automated screenshot capture panel -->
+    <ScreenshotCapturer v-if="loggedIn" />
     <footer class="app-footer">
       <div class="footer-content">
         <div class="footer-links">
@@ -109,6 +111,8 @@ import PricingPage from './components/PricingPage.vue'
 import Login from './components/Login.vue'
 import ConsentPrompt from './components/ConsentPrompt.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
+import AccountSettings from './components/AccountSettings.vue'
+import ScreenshotCapturer from './components/ScreenshotCapturer.vue'
 // MainLogo replaced by static image (public/franks-standard-logo.png)
 // import MainLogo from './assets/logos/MainLogo.vue'
 import FeatureIcons from './assets/logos/FeatureIcons.vue'
@@ -116,6 +120,8 @@ import ContactOpenDoor from './components/ContactOpenDoor.vue'
 import { initAds, showBanner } from './services/adService'
 import { isPremium as ffIsPremium, getDailyLessonRemaining } from './services/featureFlags'
 import { initAnalytics } from './services/analyticsService'
+import { getCurrentUser, signOut } from './services/firebaseAuth'
+import { watch } from 'vue'
 
 const view = ref('home')
 watch(view, (v) => {
@@ -130,21 +136,31 @@ const ambienceOn = ref(false)
 let ambienceAudio = null
 let ambienceFallbackApplied = false
 
-function readAuth() {
+async function readAuth() {
   try {
-    const raw = localStorage.getItem('fretpilot-auth')
-    if(!raw) { loggedIn.value = false; userName.value=''; return }
-    const obj = JSON.parse(raw)
+    const user = await getCurrentUser()
+    if(!user) { 
+      loggedIn.value = false
+      userName.value = ''
+      return 
+    }
     loggedIn.value = true
-    userName.value = obj.user || 'Player'
+    userName.value = user.displayName || user.email || 'Player'
   } catch(err) {
+    console.error('[App] Error reading auth:', err)
     loggedIn.value = false
   }
 }
 
-function logout() {
-  localStorage.removeItem('fretpilot-auth')
-  readAuth()
+async function logout() {
+  try {
+    await signOut()
+    loggedIn.value = false
+    userName.value = ''
+    view.value = 'home'
+  } catch(err) {
+    console.error('[App] Logout error:', err)
+  }
 }
 
 function toggleAmbience() {
@@ -186,10 +202,13 @@ function handleUpgradeTier(data) {
 }
 
 // Listener defined once so add/remove works correctly
-function handleUpgradeEvent(e) {
+async function handleUpgradeEvent(e) {
   try {
     const sel = e && e.detail && e.detail.plan
-    if (sel) localStorage.setItem('fretpilot-selected-plan', sel)
+    if (sel) {
+      const { setSecure } = await import('./services/secureStorage')
+      await setSecure('fretpilot-selected-plan', sel)
+    }
   } catch (_) {}
   view.value = 'payment'
 }
@@ -199,6 +218,15 @@ onMounted(async () => {
   window.addEventListener('fretpilot-auth-changed', readAuth)
   // Listen for upgrade requests from components (e.g., PremiumGate)
   window.addEventListener('fretpilot-upgrade', handleUpgradeEvent)
+  // Listen for automated screenshot view cycling events
+  window.addEventListener('fretpilot-set-view', (e) => {
+    try {
+      const next = e && e.detail && e.detail.view
+      if (next && typeof next === 'string') {
+        view.value = next
+      }
+    } catch(_) {}
+  })
   initAnalytics()
   await initAds()
   await showBanner()
@@ -218,6 +246,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('fretpilot-upgrade', handleUpgradeEvent)
   window.removeEventListener('fretpilot-auth-changed', readAuth)
+  window.removeEventListener('fretpilot-set-view', () => {})
 })
 </script>
 

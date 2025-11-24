@@ -104,10 +104,13 @@ async function initiateCheckout() {
       finalPriceId = priceIdMap[props.planType]
     }
 
-    // Extract user email from local auth (placeholder until secure auth implemented)
+    // Extract user data from encrypted auth storage
     let userEmail = ''
+    let userId = ''
     try {
-      const auth = JSON.parse(localStorage.getItem('fretpilot-auth') || '{}')
+      const { getSecureJSON } = await import('../services/secureStorage')
+      const auth = await getSecureJSON('fretpilot-auth') || {}
+      userId = auth.uid || '' // Firebase UID is the primary identifier
       userEmail = auth.email || auth.userEmail || auth.user || ''
     } catch (_) {}
 
@@ -122,6 +125,7 @@ async function initiateCheckout() {
         mode: props.mode,
         amount: props.amount,
         productName: props.productName,
+        userId, // Send Firebase UID to backend
         // Use unified payment success route (PaymentSuccess.vue)
         successUrl: props.successUrl || `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: props.cancelUrl || window.location.href,

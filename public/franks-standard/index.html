@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Franks Standard</title>
+  <meta name="description" content="Human-centered software that respects your time." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="container">
+      <a class="brand" href="./"><img class="logo" src="./logo.svg" alt="The Franks Standard" />The Franks Standard</a>
+      <nav>
+        <a class="link" href="/">FretPilot Studio</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <img class="hero-logo" src="./logo.svg" alt="The Franks Standard" />
+      <h1>Human-centered software that respects your time.</h1>
+      <p class="sub">We build simple, delightful tools for creators — starting with FretPilot Studio for guitarists.</p>
+      <div class="ctas">
+        <a class="btn primary" href="/">Explore FretPilot Studio</a>
+        <a class="btn" href="mailto:hello@thefranksstandard.com">Contact</a>
+      </div>
+    </section>
+
+    <section class="section container">
+      <h2>Our philosophy</h2>
+      <p>We ship practical products that remove friction, respect privacy, and help people make progress every day. No dark patterns. No bloat. Just useful software.</p>
+    </section>
+
+    <section class="section container cards">
+      <article>
+        <h3>FretPilot Studio</h3>
+        <p>AI‑powered guitar practice: real‑time feedback, mistake heatmaps, 500+ backing tracks, and progress analytics.</p>
+        <a class="btn small" href="/">Open FretPilot</a>
+      </article>
+      <article>
+        <h3>What’s next</h3>
+        <p>We’re exploring tools for creators and learners. Want to collaborate or invest? Reach out.</p>
+        <a class="btn small" href="mailto:hello@thefranksstandard.com">Email us</a>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container foot">
+      <span>© <span id="y"></span> The Franks Standard</span>
+      <div class="links">
+        <a href="/franks-standard/">Brand</a>
+        <a href="https://fretpilotstudio.com" target="_blank" rel="noopener">FretPilot</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

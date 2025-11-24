@@ -9,25 +9,31 @@ const path = require('path')
 const { handleVendorPO } = require('./vendor')
 const dropshipWebhooks = require('./dropship-webhooks')
 const { sendContactEmail, sanitizeField } = require('./contact')
+const { readEncryptedJSON, writeEncryptedJSON } = require('./serverEncryption')
 const app = express()
 const PORT = process.env.PORT || 5175
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
 // Limited invite code management (self-destruct after N unique claims)
 const LIMITED_INVITE_CODE = process.env.INVITE_LIMITED_CODE || ''
 const LIMITED_INVITE_MAX = parseInt(process.env.INVITE_LIMITED_MAX || '10', 10)
-const inviteDataFile = path.join(__dirname, 'data', 'inviteCodes.json')
+const inviteDataFile = path.join(__dirname, 'data', 'inviteCodes.json.enc')
 function loadInviteData() {
   try {
-    if (!fs.existsSync(inviteDataFile)) {
-      const dir = path.dirname(inviteDataFile)
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(inviteDataFile, JSON.stringify({ codes: {} }, null, 2))
-    }
-    return JSON.parse(fs.readFileSync(inviteDataFile, 'utf8'))
-  } catch (e) { return { codes: {} } }
+    const data = readEncryptedJSON(inviteDataFile)
+    if (data) return data
+    // Initialize new file
+    const newData = { codes: {} }
+    writeEncryptedJSON(inviteDataFile, newData)
+    return newData
+  } catch (e) { 
+    console.error('Failed to load invite data:', e)
+    return { codes: {} } 
+  }
 }
 function saveInviteData(data) {
-  try { fs.writeFileSync(inviteDataFile, JSON.stringify(data, null, 2)) } catch (_) {}
+  try { writeEncryptedJSON(inviteDataFile, data) } catch (e) {
+    console.error('Failed to save invite data:', e)
+  }
 }
 function initLimitedCode(data) {
   if (!LIMITED_INVITE_CODE) return
@@ -44,19 +50,24 @@ if (STRIPE_SECRET_KEY) {
 }
 
 // Idempotent processed checkout sessions (avoid duplicate upgrade writes)
-const processedSessionsFile = path.join(__dirname, 'data', 'processed-sessions.json')
+const processedSessionsFile = path.join(__dirname, 'data', 'processed-sessions.json.enc')
 function loadProcessedSessions() {
   try {
-    if (!fs.existsSync(processedSessionsFile)) {
-      const dir = path.dirname(processedSessionsFile)
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(processedSessionsFile, JSON.stringify({ ids: [] }, null, 2))
-    }
-    return JSON.parse(fs.readFileSync(processedSessionsFile, 'utf8'))
-  } catch (e) { return { ids: [] } }
+    const data = readEncryptedJSON(processedSessionsFile)
+    if (data) return data
+    // Initialize new file
+    const newData = { ids: [] }
+    writeEncryptedJSON(processedSessionsFile, newData)
+    return newData
+  } catch (e) { 
+    console.error('Failed to load processed sessions:', e)
+    return { ids: [] } 
+  }
 }
 function saveProcessedSessions(data) {
-  try { fs.writeFileSync(processedSessionsFile, JSON.stringify(data, null, 2)) } catch (_) {}
+  try { writeEncryptedJSON(processedSessionsFile, data) } catch (e) {
+    console.error('Failed to save processed sessions:', e)
+  }
 }
 function markSessionProcessed(id) {
   const data = loadProcessedSessions()
@@ -327,7 +338,8 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       mode = 'subscription',
       successUrl = `${req.headers.origin || 'http://localhost:5173'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl = `${req.headers.origin || 'http://localhost:5173'}/pricing?cancelled=1`,
-      userEmail = ''
+      userEmail = '',
+      userId = '' // Firebase UID from client
     } = req.body || {}
 
     if (!stripe) {
@@ -357,7 +369,10 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       ],
       allow_promotion_codes: true,
       subscription_data: mode === 'subscription' ? { trial_period_days: 0 } : undefined,
-      metadata: userEmail ? { userEmail } : undefined,
+      metadata: { 
+        userEmail: userEmail || '',
+        userId: userId || '' // Store Firebase UID for user identification
+      },
       customer_email: userEmail || undefined,
       success_url: successUrl,
       cancel_url: cancelUrl
@@ -412,29 +427,41 @@ app.get('/api/payments/verify-session/:id', async (req, res) => {
 // Uses raw body for signature verification.
 // =====================================================
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
-// Simple premium user persistence (file-based) ---------------------------------
-const usersFile = path.join(__dirname, 'data', 'users.json')
+// Simple premium user persistence (file-based with encryption) ---------------------------------
+const usersFile = path.join(__dirname, 'data', 'users.json.enc')
 function loadUsers() {
   try {
-    if (!fs.existsSync(usersFile)) {
-      const dir = path.dirname(usersFile)
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(usersFile, JSON.stringify({ users: {} }, null, 2))
-    }
-    const raw = fs.readFileSync(usersFile, 'utf8')
-    return JSON.parse(raw)
-  } catch (e) { return { users: {} } }
+    const data = readEncryptedJSON(usersFile)
+    if (data) return data
+    // Initialize new file
+    const newData = { users: {} }
+    writeEncryptedJSON(usersFile, newData)
+    return newData
+  } catch (e) { 
+    console.error('Failed to load users:', e)
+    return { users: {} } 
+  }
 }
 function saveUsers(data) {
-  try { fs.writeFileSync(usersFile, JSON.stringify(data, null, 2)) } catch (_) {}
+  try { writeEncryptedJSON(usersFile, data) } catch (e) {
+    console.error('Failed to save users:', e)
+  }
 }
 
-// Public endpoint to query premium status by email (lightweight, non-secure placeholder)
+// Public endpoint to query premium status by userId or email (lightweight, non-secure placeholder)
 app.get('/api/premium/status', (req, res) => {
+  const userId = (req.query.userId || '').trim()
   const email = (req.query.email || '').toLowerCase().trim()
-  if (!email) return res.status(400).json({ ok: false, error: 'missing_email' })
+  
+  if (!userId && !email) {
+    return res.status(400).json({ ok: false, error: 'missing_userId_or_email' })
+  }
+  
   const data = loadUsers()
-  const u = data.users[email]
+  // Try userId first (Firebase UID is primary key), fallback to email
+  const userKey = userId || email
+  const u = data.users[userKey]
+  
   if (!u) return res.json({ ok: true, premium: false })
   return res.json({ ok: true, premium: !!u.premium, plan: u.plan || '', updatedAt: u.updatedAt })
 })
@@ -455,13 +482,17 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
   // Handle completed checkout sessions – mark upgrades (stateless example)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
-    // NOTE: In production you would persist session.customer or metadata to a DB
+    // Extract user identifiers from metadata
+    const userId = (session.metadata && session.metadata.userId) || ''
     const email = (session.metadata && session.metadata.userEmail) || (session.customer_details && session.customer_details.email) || ''
     const firstProcess = markSessionProcessed(session.id)
-    if (email && firstProcess) {
+    
+    // Prefer userId (Firebase UID) as primary key, fallback to email for legacy compatibility
+    const userKey = userId || email.toLowerCase()
+    
+    if (userKey && firstProcess) {
       const data = loadUsers()
-      const key = email.toLowerCase()
-      const existing = data.users[key] || {}
+      const existing = data.users[userKey] || {}
       // Determine plan from price (if expanded later we could listLineItems here)
       let plan = 'premium'
       if (session.mode === 'subscription') {
@@ -470,8 +501,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
         if (amt > 1500 && amt < 3000) plan = 'pro'
         if (amt > 5000) plan = 'yearly'
       }
-      data.users[key] = {
-        email: key,
+      data.users[userKey] = {
+        userId: userId || existing.userId || '', // Store Firebase UID if available
+        email: email.toLowerCase() || existing.email || '',
         premium: true,
         plan,
         updatedAt: new Date().toISOString(),
@@ -480,10 +512,10 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
       }
       saveUsers(data)
       // eslint-disable-next-line no-console
-      console.log('[stripe] upgraded user', key, 'plan:', plan, 'session:', session.id)
+      console.log('[stripe] upgraded user', userKey, 'plan:', plan, 'session:', session.id)
     } else {
       // eslint-disable-next-line no-console
-      console.log('[stripe] checkout.session.completed (no email)', session.id)
+      console.log('[stripe] checkout.session.completed (no user identifier)', session.id)
     }
   }
 

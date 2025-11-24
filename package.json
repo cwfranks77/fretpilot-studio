@@ -1,8 +1,8 @@
 {
-  "name": "fretpilot-studio-school",
+  "name": "fretpilot-studio",
   "version": "1.0.0",
   "description": "Interactive guitar chord trainer for learning and practice",
-  "author": "FretPilot",
+  "author": "FretPilot Studio",
   "homepage": "https://fretpilotstudio.com",
   "main": "main.js",
   "private": true,
@@ -19,30 +19,33 @@
     "electron": "npm run build && npx cap sync && npx cap open electron",
     "electron:build": "npm run build && electron-builder --win --publish never",
     "server": "node server/index.js",
-    "compose:temple": "node scripts/compose-temple-slogan.js"
-    ,"launch:verify": "node scripts/launch-verify.js --domain fretpilotstudio.com"
-    ,"stripe:test": "node scripts/stripe-test.js $env:TEST_PRICE_ID" 
+    "compose:temple": "node scripts/compose-temple-slogan.js",
+    "launch:verify": "node scripts/launch-verify.js --domain fretpilotstudio.com",
+    "stripe:test": "node scripts/stripe-test.js $env:TEST_PRICE_ID",
+    "build:icons": "node scripts/generate-icons.js",
+    "build:store-assets": "npm install adm-zip && node scripts/generate-icons.js"
   },
   "dependencies": {
     "@capacitor-community/admob": "^5.3.0",
-    "@capacitor-firebase/crashlytics": "^6.3.1",
+    "@capacitor-firebase/crashlytics": "^5.0.0",
     "@capacitor/android": "^5.5.0",
     "@capacitor/app": "^5.0.6",
     "@capacitor/core": "^5.5.0",
     "@capacitor/ios": "^5.5.0",
     "@capacitor/splash-screen": "^5.0.6",
     "@stripe/stripe-js": "^8.5.2",
+    "adm-zip": "^0.5.16",
     "chalk": "^4.1.2",
     "cordova-plugin-purchase": "^13.12.1",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^6.11.2",
     "firebase": "^10.14.1",
     "html2canvas": "^1.4.1",
     "node-fetch": "^2.7.0",
     "nodemailer": "^6.9.8",
     "sharp": "^0.33.4",
     "stripe": "^16.12.0",
-    "express-rate-limit": "^6.11.2",
     "vue": "^3.3.0"
   },
   "devDependencies": {
@@ -55,7 +58,7 @@
   },
   "build": {
     "appId": "com.fretpilot.app",
-    "productName": "FretPilot",
+    "productName": "FretPilot Studio",
     "directories": {
       "buildResources": "resources",
       "output": "dist-electron"

@@ -33,17 +33,28 @@ async function checkDomain(domain) {
 }
 
 async function checkLocal() {
-  // Local endpoints (assuming server running on default port)
-  const local = process.env.LAUNCH_LOCAL_BASE || 'http://localhost:5175'
+  // Prefer explicit LAUNCH_LOCAL_BASE (Express server) else fallback to Express default port 5175
+  // Dev meta checks also attempt Vite dev server (5173) if reachable
+  const expressBase = process.env.LAUNCH_LOCAL_BASE || `http://localhost:${process.env.PORT || 5175}`
+  const devBase = 'http://localhost:5173'
   try {
-    const h = await fetch(`${local}/api/health`)
+    const h = await fetch(`${expressBase}/api/health`)
     log('Local /api/health', h.ok)
   } catch (e) { log('Local /api/health', false, e.message) }
   try {
     const email = process.env.LAUNCH_TEST_EMAIL || 'launch-test@example.com'
-    const p = await fetch(`${local}/api/premium/status?email=${encodeURIComponent(email)}`)
+    const p = await fetch(`${expressBase}/api/premium/status?email=${encodeURIComponent(email)}`)
     log('Local premium status endpoint', p.ok)
   } catch (e) { log('Local premium status endpoint', false, e.message) }
+  // Optional dev server HTML meta scan (non-fatal)
+  try {
+    const r = await fetch(devBase)
+    const html = await r.text()
+    const hasDesc = /meta name="description"/i.test(html)
+    log('Dev meta description', hasDesc)
+    const hasOG = /og:title/i.test(html) && /og:description/i.test(html)
+    log('Dev OpenGraph tags', hasOG)
+  } catch (_) { /* ignore */ }
 }
 
 async function main() {

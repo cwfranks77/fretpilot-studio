@@ -1,6 +1,6 @@
 {
   "appId": "com.fretpilot.app",
-  "appName": "FretPilot Studio & School",
+  "appName": "FretPilot Studio",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {
