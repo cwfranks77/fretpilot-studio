@@ -129,7 +129,8 @@ async function initiateCheckout() {
         // Use unified payment success route (PaymentSuccess.vue)
         successUrl: props.successUrl || `${window.location.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: props.cancelUrl || window.location.href,
-        userEmail
+        userEmail,
+        refCode: (typeof window !== 'undefined' && window.getReferralCode ? window.getReferralCode() : '')
       })
     })
 

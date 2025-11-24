@@ -14,6 +14,7 @@
         <button :class="{ active: view==='practice' }" @click="view='practice'">📊 Practice</button>
         <button :class="{ active: view==='jam' }" @click="view='jam'">🎸 Jam</button>
         <button :class="{ active: view==='store' }" @click="view='store'">🛒 Store</button>
+        <button :class="{ active: view==='gear' }" @click="view='gear'">⚙️ Gear</button>
         <button :class="{ active: view==='pricing' }" @click="console.log('Pricing clicked'); view='pricing'" class="payment-btn">💳 Pricing</button>
         <button :class="{ active: view==='contact' }" @click="view='contact'">✉️</button>
       </nav>
@@ -46,6 +47,7 @@
           <VideoLessonPlatform v-else-if="view==='videoplatform'" />
           <MusicStudio v-else-if="view==='studio'" />
           <MusicStore v-else-if="view==='store'" />
+          <GearRecommendations v-else-if="view==='gear'" />
           <PracticeAnalyzer v-else-if="view==='practice'" />
           <JamCompanion v-else-if="view==='jam'" />
           <MultiplayerJam v-else-if="view==='multiplayer'" />
@@ -99,6 +101,7 @@ import MusicStudio from './components/MusicStudio.vue'
   // Store is now its own domain (https://thefranksstandard.com)
   // Keeping import available if needed for in-app fallback usage
   import MusicStore from './components/MusicStore.vue'
+  import GearRecommendations from './components/GearRecommendations.vue'
 import MetronomeTuner from './components/MetronomeTuner.vue'
 import ChordLibrary from './components/ChordLibrary.vue'
 import PremiumGate from './components/PremiumGate.vue'

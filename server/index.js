@@ -371,7 +371,8 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       subscription_data: mode === 'subscription' ? { trial_period_days: 0 } : undefined,
       metadata: { 
         userEmail: userEmail || '',
-        userId: userId || '' // Store Firebase UID for user identification
+        userId: userId || '', // Store Firebase UID for user identification
+        refCode: (req.body && req.body.refCode) || ''
       },
       customer_email: userEmail || undefined,
       success_url: successUrl,
@@ -463,7 +464,31 @@ app.get('/api/premium/status', (req, res) => {
   const u = data.users[userKey]
   
   if (!u) return res.json({ ok: true, premium: false })
-  return res.json({ ok: true, premium: !!u.premium, plan: u.plan || '', updatedAt: u.updatedAt })
+  return res.json({ ok: true, premium: !!u.premium, plan: u.plan || '', updatedAt: u.updatedAt, refCode: u.refCode || '' })
+})
+// Lightweight user registration capture to persist referral codes before purchase
+app.post('/api/user/register', (req, res) => {
+  try {
+    const { userId = '', email = '', refCode = '' } = req.body || {}
+    if (!userId && !email) return res.status(400).json({ ok: false, error: 'missing_identifiers' })
+    const key = (userId || email.toLowerCase())
+    const data = loadUsers()
+    const existing = data.users[key] || {}
+    data.users[key] = {
+      userId: userId || existing.userId || '',
+      email: (email || existing.email || '').toLowerCase(),
+      premium: existing.premium || false,
+      plan: existing.plan || '',
+      updatedAt: new Date().toISOString(),
+      firstSession: existing.firstSession || '',
+      lastSession: existing.lastSession || '',
+      refCode: existing.refCode || refCode || ''
+    }
+    saveUsers(data)
+    return res.json({ ok: true, saved: true })
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: 'registration_failed' })
+  }
 })
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   if (!stripe || !webhookSecret) {
@@ -485,6 +510,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
     // Extract user identifiers from metadata
     const userId = (session.metadata && session.metadata.userId) || ''
     const email = (session.metadata && session.metadata.userEmail) || (session.customer_details && session.customer_details.email) || ''
+    const refCode = (session.metadata && session.metadata.refCode) || ''
     const firstProcess = markSessionProcessed(session.id)
     
     // Prefer userId (Firebase UID) as primary key, fallback to email for legacy compatibility
@@ -508,7 +534,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
         plan,
         updatedAt: new Date().toISOString(),
         firstSession: existing.firstSession || session.id,
-        lastSession: session.id
+        lastSession: session.id,
+        refCode: existing.refCode || refCode || ''
       }
       saveUsers(data)
       // eslint-disable-next-line no-console

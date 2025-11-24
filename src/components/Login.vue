@@ -154,6 +154,24 @@ async function handleEmailAuth() {
         result.message || 'Success! Redirecting...',
         'success'
       )
+      // Capture referral code early (non-blocking)
+      try {
+        const refCode = typeof window !== 'undefined' && window.getReferralCode ? window.getReferralCode() : ''
+        if (refCode) {
+          fetch('/api/user/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.value, userId: (result.uid || ''), refCode })
+          }).catch(()=>{})
+        } else if (result.uid || email.value) {
+          // Persist basic user record even without ref for consistency
+          fetch('/api/user/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.value, userId: (result.uid || '') })
+          }).catch(()=>{})
+        }
+      } catch(_) {}
       setTimeout(() => {
         // Let App.vue handle navigation via auth state change
       }, 1000)

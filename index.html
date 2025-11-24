@@ -81,6 +81,41 @@
           }
         } catch (_) { /* no-op */ }
       })();
+      // Referral tracking & FTC disclosure injection
+      (function() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var ref = params.get('ref');
+          if (ref && /^[A-Z0-9_-]{3,32}$/i.test(ref)) {
+            // Persist 30-day cookie
+            var expiry = new Date(Date.now() + 30*24*60*60*1000).toUTCString();
+            document.cookie = 'fp_ref=' + encodeURIComponent(ref) + '; expires=' + expiry + '; path=/; SameSite=Lax';
+            try { localStorage.setItem('fp_ref', ref); } catch(_){ }
+          }
+          // Simple function exposed for components to read referral code
+          window.getReferralCode = function() {
+            try {
+              var stored = localStorage.getItem('fp_ref');
+              if (stored) return stored;
+              var m = document.cookie.match(/(?:^|; )fp_ref=([^;]+)/);
+              return m ? decodeURIComponent(m[1]) : '';
+            } catch(_) { return ''; }
+          };
+          // Inject disclosure once if any affiliate link page loads or ref param present
+          var shouldShowDisclosure = ref && !localStorage.getItem('fp_affiliate_disclosure_closed');
+          if (shouldShowDisclosure) {
+            var bar = document.createElement('div');
+            bar.textContent = 'Affiliate link used. Purchases may earn a commission at no extra cost to you.';
+            bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0b1020;color:#fff;font:12px/1.4 Inter,Arial;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;z-index:9999;border-top:1px solid #1E90FF';
+            var btn=document.createElement('button');
+            btn.textContent='×';
+            btn.style.cssText='background:#1E90FF;border:none;color:#fff;width:24px;height:24px;cursor:pointer;border-radius:4px;font-size:16px';
+            btn.onclick=function(){localStorage.setItem('fp_affiliate_disclosure_closed','1');bar.remove();};
+            bar.appendChild(btn);
+            document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(bar);});
+          }
+        } catch(_) { /* silent */ }
+      })();
     </script>
     <!-- Robots / indexing strategy -->
     <meta name="robots" content="index,follow" />
