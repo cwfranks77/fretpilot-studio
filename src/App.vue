@@ -80,8 +80,9 @@
           <a href="/about.html" target="_blank">About Us</a>
           <a href="/privacy.html" target="_blank">Privacy Policy</a>
           <a href="/terms.html" target="_blank">Terms of Service</a>
-            <a href="mailto:support@fretpilotstudio.com">Contact Support</a>
+          <a href="mailto:support@fretpilotstudio.com">Contact Support</a>
         </div>
+        <p class="affiliate-disclosure">Some links & referral codes may be affiliate links. If you purchase, we may earn a commission at no extra cost to you.</p>
         <p class="footer-copyright">© 2025 FretPilot Studio & School. Premium AI-powered music education & gear.</p>
       </div>
     </footer>

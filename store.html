@@ -13,7 +13,20 @@
   <meta property="og:image" content="/images/thefranksstandard-logo.png" />
 </head>
 <body>
-  <div id="app"></div>
-  <!-- Store main entry disabled: removed script to prevent build errors -->
+  <div id="app" class="loading"></div>
+  <noscript>This store requires JavaScript to function. Please enable JavaScript.</noscript>
+  <script>
+    // Lightweight guard: if main app bundle fails, show fallback message
+    window.addEventListener('error', function(e){
+      if(!document.getElementById('app')?.classList.contains('loaded')){
+        document.getElementById('app').innerHTML = '<div style="padding:40px;max-width:640px;margin:40px auto;font-family:system-ui;color:#eee;background:#111;border:1px solid #222;border-radius:12px"><h1 style="margin-top:0;font-size:28px">Store Loading Issue</h1><p>We\'re updating The Franks Standard store. Please refresh or try again later. Login is still available at <a href="/" style="color:#4da3ff">FretPilot Studio</a>.</p></div>';
+      }
+    }, { once:true });
+  </script>
+  <script type="module">
+    // Load the main application for store until dedicated store app is built
+    import '/src/main.js';
+    requestAnimationFrame(()=>document.getElementById('app')?.classList.add('loaded'));
+  </script>
 </body>
 </html>
