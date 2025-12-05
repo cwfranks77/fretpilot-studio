@@ -58,7 +58,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { isPremium } from './services/featureFlags'
-import brandLogo from '../images/temple-logo-2025.jpeg'
+import brandLogo from './assets/logos/fretpilot-logo.svg'
 import HomePage from './components/HomePage.vue'
 import PremiumGate from './components/PremiumGate.vue'
 import PaymentSuccess from './components/PaymentSuccess.vue'
