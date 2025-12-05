@@ -1,0 +1,20 @@
+{
+  "users": {
+    "01": {
+      "code": "63825678",
+      "name": "Master",
+      "created": "2025-12-04T19:17:39.672767",
+      "enabled": true
+    }
+  },
+  "settings": {
+    "time_delay": 0,
+    "wrong_try_penalty": 5,
+    "wrong_try_count": 4,
+    "dual_control": false,
+    "timelock_enabled": false,
+    "timelock_schedule": [],
+    "dst_enabled": false,
+    "dst_rules": []
+  }
+}

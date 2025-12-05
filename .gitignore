@@ -1,0 +1,15 @@
+.vercel
+node_modules
+
+# Android keystore files - NEVER COMMIT THESE!
+android/app/keystore/*.keystore
+android/app/keystore/keystore.properties
+*.jks
+*.keystore
+
+# Build outputs
+android/app/build/
+android/.gradle/
+android/build/
+dist/
+dist-electron/

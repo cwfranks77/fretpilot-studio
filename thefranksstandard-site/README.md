@@ -12,7 +12,7 @@ Static landing page for https://www.thefranksstandard.com deployed on Vercel.
 # From PowerShell
 npm i -g vercel
 vercel login
-cd C:\Users\ninja\Fretquest\thefranksstandard-site
+cd C:\Users\ninja\fretPilot Studio\thefranksstandard-site
 # First deploy (choose scope, project name: thefranksstandard)
 vercel
 # Production deploy

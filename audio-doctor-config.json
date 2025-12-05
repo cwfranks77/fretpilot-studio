@@ -1,0 +1,20 @@
+{
+  "gain_db": 0.0,
+  "eq": [
+    {"band": 1, "frequency": 60, "gain_db": 0.0, "q": 1.0},
+    {"band": 2, "frequency": 250, "gain_db": 0.0, "q": 1.0},
+    {"band": 3, "frequency": 1000, "gain_db": 0.0, "q": 1.0},
+    {"band": 4, "frequency": 4000, "gain_db": 0.0, "q": 1.0},
+    {"band": 5, "frequency": 12000, "gain_db": 0.0, "q": 1.0}
+  ],
+  "compressor": {
+    "threshold_db": -18.0,
+    "ratio": 3.0,
+    "attack_ms": 10,
+    "release_ms": 150
+  },
+  "monitor": {
+    "meter_refresh_s": 1.0,
+    "show_debug": true
+  }
+}

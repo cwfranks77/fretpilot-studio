@@ -1,0 +1,11 @@
+{
+  "name": "FretPilot Studio",
+  "short_name": "FretPilot",
+  "description": "AI-Powered Music Learning Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#06c167",
+  "orientation": "portrait-primary",
+  "categories": ["music", "education"]
+}

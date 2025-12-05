@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Gard Keypad Tester</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #06c167, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #8892a6;
+            margin-bottom: 30px;
+        }
+        .test-area {
+            background: #0f0f1a;
+            border: 3px solid #2a2a4a;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .key-display {
+            font-size: 4rem;
+            font-weight: bold;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: #06c167;
+            text-shadow: 0 0 20px rgba(6, 193, 103, 0.5);
+        }
+        .key-display.active {
+            animation: pulse 0.2s ease-out;
+            background: linear-gradient(135deg, #06c167, #00d4ff);
+            color: #000;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .code-display {
+            font-size: 2rem;
+            letter-spacing: 8px;
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            font-family: 'Courier New', monospace;
+        }
+        .log {
+            background: #0a0a14;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #8892a6;
+        }
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .log-entry.special {
+            color: #f472b6;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .status.waiting {
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ffa500;
+            color: #ffa500;
+        }
+        .status.connected {
+            background: rgba(6, 193, 103, 0.2);
+            border: 2px solid #06c167;
+            color: #06c167;
+        }
+        .btn {
+            background: linear-gradient(135deg, #06c167, #05a557);
+            border: none;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 193, 103, 0.4);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .instructions {
+            margin-top: 30px;
+            background: rgba(6, 193, 103, 0.1);
+            border: 2px solid rgba(6, 193, 103, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 500px;
+        }
+        .instructions h3 {
+            color: #06c167;
+            margin-bottom: 10px;
+        }
+        .instructions ol {
+            text-align: left;
+            padding-left: 20px;
+            color: #cfd6e6;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 La Gard Keypad Tester</h1>
+    <p class="subtitle">Testing Dormakaba keypad connection</p>
+
+    <div class="test-area">
+        <div class="key-display" id="keyDisplay">-</div>
+        <div class="code-display" id="codeDisplay"></div>
+        
+        <div class="log" id="log">
+            <div class="log-entry">Waiting for keypad input...</div>
+        </div>
+
+        <div class="status waiting" id="status">
+            ⏳ Press any key on the keypad to test
+        </div>
+
+        <button class="btn danger" onclick="clearCode()">Clear Code</button>
+    </div>
+
+    <div class="instructions">
+        <h3>📋 Instructions</h3>
+        <ol>
+            <li>Make sure the keypad is connected via micro USB</li>
+            <li>Click anywhere on this page to focus it</li>
+            <li>Press numbers on the La Gard keypad</li>
+            <li>You should see the numbers appear above</li>
+            <li>If nothing happens, the keypad may need power from the lock</li>
+        </ol>
+    </div>
+
+    <script>
+        let code = '';
+        let keyCount = 0;
+        let lastKeyTime = 0;
+
+        document.addEventListener('keydown', function(e) {
+            const key = e.key;
+            const keyCode = e.keyCode;
+            const now = Date.now();
+            
+            // Display the pressed key
+            const display = document.getElementById('keyDisplay');
+            display.textContent = key;
+            display.classList.add('active');
+            setTimeout(() => display.classList.remove('active'), 200);
+
+            // Add to code if it's a number
+            if (/^[0-9]$/.test(key)) {
+                code += key;
+                document.getElementById('codeDisplay').textContent = code;
+            }
+
+            // Log the key
+            keyCount++;
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry' + (key === 'Enter' ? ' special' : '');
+            logEntry.textContent = `[${keyCount}] Key: "${key}" | Code: ${keyCode} | Time: ${now - lastKeyTime}ms`;
+            
+            const log = document.getElementById('log');
+            log.insertBefore(logEntry, log.firstChild);
+            
+            // Keep log manageable
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+
+            lastKeyTime = now;
+
+            // Update status
+            const status = document.getElementById('status');
+            status.className = 'status connected';
+            status.textContent = '✅ Keypad detected! Keys are being received.';
+
+            // Handle Enter key as code submission
+            if (key === 'Enter' && code.length > 0) {
+                alert('Code entered: ' + code);
+                // Here we could verify the code
+            }
+
+            // Prevent default for special keys
+            if (['Enter', 'Tab', 'Backspace'].includes(key)) {
+                e.preventDefault();
+            }
+        });
+
+        function clearCode() {
+            code = '';
+            document.getElementById('codeDisplay').textContent = '';
+            document.getElementById('keyDisplay').textContent = '-';
+        }
+
+        // Focus check
+        window.addEventListener('blur', function() {
+            document.getElementById('status').textContent = '⚠️ Click on this page to capture keypad input';
+            document.getElementById('status').className = 'status waiting';
+        });
+
+        window.addEventListener('focus', function() {
+            document.getElementById('status').textContent = '⏳ Press any key on the keypad to test';
+        });
+    </script>
+</body>
+</html>
+
