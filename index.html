@@ -1,199 +1,28 @@
 <!doctype html>
-<!-- deploy-bust: 2025-11-23TLaunchCommit_052a87a -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="google-site-verification" content="602995" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <meta name="description" content="FretPilot – AI guitar & multi-instrument lessons, jam companion, practice analytics, and gear store." />
+    <meta name="description" content="FretPilot Studio – AI guitar & multi-instrument lessons, jam companion, practice analytics, and gear store." />
     <meta name="author" content="FretPilot Studio" />
     <meta name="theme-color" content="#000000" />
-    <!-- OpenGraph / Social -->
     <meta property="og:site_name" content="FretPilot Studio" />
-    <meta property="og:title" content="FretPilot – AI Music Learning & Gear" />
+    <meta property="og:title" content="FretPilot Studio – AI Music Learning & Gear" />
     <meta property="og:description" content="Adaptive AI lessons, jam tracks, analytics, and premium guitar gear in one platform." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fretpilotstudio.com" />
-    <meta property="og:image" content="/resources/icon/social/fretpilot-og.png" />
     <link rel="canonical" href="https://fretpilotstudio.com" />
-    <link rel="icon" id="favicon" type="image/png" sizes="32x32" href="/resources/icon/ios/icon-32.png" />
-    <link rel="apple-touch-icon" id="apple-icon" href="/resources/icon/ios/icon-180.png" />
     <link rel="manifest" href="/manifest.json" />
-    <script>
-      // Swap favicon for The Franks Standard domain
-      (function(){
-        try {
-          if (/(thefranksstandard\.com)$/i.test(window.location.hostname)) {
-            // Use new cache-busted temple logo
-            const templeLogo = '/images/temple-logo-2025.jpeg';
-            document.getElementById('favicon').href = templeLogo;
-            document.getElementById('apple-icon').href = templeLogo;
-            document.title = 'The Franks Standard';
-          }
-        } catch(_) {}
-      })();
-    </script>
-  <title>FretPilot Trainer v2.0</title>
-    
-    <!-- Dynamic GA4 injection via Vite env variable -->
-    <!-- Set VITE_GA_MEASUREMENT_ID in .env (e.g. VITE_GA_MEASUREMENT_ID=G-XXXXXXX) before build/deploy -->
-    <script type="module">
-      const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
-      if (GA_ID) {
-        const s = document.createElement('script');
-        s.async = true;
-        s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-        document.head.appendChild(s);
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        window.gtag = gtag;
-        gtag('js', new Date());
-        gtag('config', GA_ID, {
-          send_page_view: true,
-            anonymize_ip: true,
-            app_name: 'FretPilot Studio',
-            app_version: '1.0.0'
-        });
-        window.trackEvent = (eventName, params = {}) => {
-          try { gtag('event', eventName, params); } catch(_){}
-        };
-        window.addEventListener('load', () => {
-          try { gtag('event', 'app_open', { method: 'web' }); } catch(_){}
-        });
-      } else {
-        // Analytics disabled (no measurement ID). Provide no-op tracker to avoid errors.
-        window.trackEvent = () => {};
-      }
-    </script>
-    
+    <title>FretPilot Studio</title>
     <style>
-      html { overflow-y: scroll; scrollbar-gutter: stable; }
-      body { margin:0; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; background:#000; color:#fff; }
-      #app { opacity:0; transition:opacity .15s ease-in; }
-      #app.loaded { opacity:1; }
-      /* Brand landing embedded (to avoid white screen + redirect flash) */
-      .tfs-brand-root { display:none; }
-      .tfs-brand-active .tfs-brand-root { display:block; }
-      .tfs-brand-active #app { display:none; }
-      .brand-hero { max-width:860px; margin:0 auto; padding:80px 24px 40px; text-align:center; }
-      .brand-hero h1 { font-size:clamp(2.2rem,6vw,3.4rem); line-height:1.05; margin:0 0 20px; background:linear-gradient(135deg,#fff,#b3b3b3); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-      .brand-hero p.sub { font-size:1.15rem; color:#c4ccd9; margin:0 0 30px; }
-      .brand-cta { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
-      .brand-cta a { background:#111a; padding:14px 26px; border:1px solid #2a2f37; border-radius:12px; text-decoration:none; color:#fff; font-weight:600; backdrop-filter:blur(6px); transition:.2s; }
-      .brand-cta a.primary { background:linear-gradient(135deg,#1E90FF,#0066ff); border:none; box-shadow:0 8px 32px -8px rgba(0,102,255,.5); }
-      .brand-cta a:hover { transform:translateY(-2px); }
-      .brand-philosophy { max-width:900px; margin:20px auto 60px; padding:0 24px; color:#9aa4b7; font-size:1rem; line-height:1.55; }
-      .brand-grid { display:grid; gap:24px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); max-width:1000px; margin:0 auto 70px; padding:0 24px; }
-      .brand-card { background:#0d1117; border:1px solid #1e2530; padding:28px 24px; border-radius:18px; box-shadow:0 10px 34px -10px rgba(0,0,0,.6); position:relative; overflow:hidden; }
-      .brand-card h3 { margin:0 0 14px; font-size:1.2rem; }
-      .brand-card p { margin:0 0 18px; color:#b2bccb; font-size:.95rem; line-height:1.5; }
-      .brand-card a { display:inline-block; text-decoration:none; font-size:.85rem; font-weight:600; padding:9px 16px; background:#1E90FF; color:#fff; border-radius:8px; }
-      footer.brand-foot { border-top:1px solid #1e2530; padding:36px 24px 60px; text-align:center; color:#667085; font-size:.8rem; }
-      footer.brand-foot a { color:#9aa4b7; text-decoration:none; margin:0 10px; }
-      footer.brand-foot a:hover { color:#1E90FF; }
+      html, body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', system-ui, sans-serif; }
+      #app { min-height: 100vh; opacity: 0; transition: opacity 0.15s ease-in; }
+      #app.loaded { opacity: 1; }
     </style>
-    <script>
-      (function(){
-        try {
-          var host = window.location.hostname;
-          var root = document.documentElement;
-          var isTFS = /(thefranksstandard\.com)$/i.test(host);
-          if (isTFS) {
-            root.classList.add('tfs-brand-active');
-          }
-        } catch(_) {}
-      })();
-    </script>
-    <script>
-      // Referral tracking & FTC disclosure injection
-      (function() {
-        try {
-          var params = new URLSearchParams(window.location.search);
-          var ref = params.get('ref');
-          if (ref && /^[A-Z0-9_-]{3,32}$/i.test(ref)) {
-            // Persist 30-day cookie
-            var expiry = new Date(Date.now() + 30*24*60*60*1000).toUTCString();
-            document.cookie = 'fp_ref=' + encodeURIComponent(ref) + '; expires=' + expiry + '; path=/; SameSite=Lax';
-            try { localStorage.setItem('fp_ref', ref); } catch(_){ }
-          }
-          // Simple function exposed for components to read referral code
-          window.getReferralCode = function() {
-            try {
-              var stored = localStorage.getItem('fp_ref');
-              if (stored) return stored;
-              var m = document.cookie.match(/(?:^|; )fp_ref=([^;]+)/);
-              return m ? decodeURIComponent(m[1]) : '';
-            } catch(_) { return ''; }
-          };
-          // Inject disclosure once if any affiliate link page loads or ref param present
-          var shouldShowDisclosure = ref && !localStorage.getItem('fp_affiliate_disclosure_closed');
-          if (shouldShowDisclosure) {
-            var bar = document.createElement('div');
-            bar.textContent = 'Affiliate link used. Purchases may earn a commission at no extra cost to you.';
-            bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0b1020;color:#fff;font:12px/1.4 Inter,Arial;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;z-index:9999;border-top:1px solid #1E90FF';
-            var btn=document.createElement('button');
-            btn.textContent='×';
-            btn.style.cssText='background:#1E90FF;border:none;color:#fff;width:24px;height:24px;cursor:pointer;border-radius:4px;font-size:16px';
-            btn.onclick=function(){localStorage.setItem('fp_affiliate_disclosure_closed','1');bar.remove();};
-            bar.appendChild(btn);
-            document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(bar);});
-          }
-        } catch(_) { /* silent */ }
-      })();
-    </script>
-    <!-- Robots / indexing strategy -->
-    <meta name="robots" content="index,follow" />
+    <script type="module" crossorigin src="/assets/main-C9GCAeBe.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-CKWSttwF.css">
   </head>
   <body>
-    <!-- Embedded brand landing (served instantly when on thefranksstandard.com) -->
-    <div class="tfs-brand-root">
-      <section class="brand-hero">
-        <img src="/images/temple-logo-2025.jpeg" alt="The Franks Standard" style="max-width: 600px; width: 100%; height: auto; margin: 0 auto 30px; display: block; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
-        <h1>The Franks Standard</h1>
-        <p class="sub">Human‑centered software & curated gear that respects your time. We start with FretPilot Studio for musicians.</p>
-        <div class="brand-cta">
-          <a class="primary" href="/" rel="noopener">Launch FretPilot Studio</a>
-          <a href="mailto:hello@thefranksstandard.com">Contact</a>
-        </div>
-      </section>
-      <div class="brand-philosophy">We build practical tools for creators and learners: privacy‑respecting, progress‑driven, distraction‑free. No dark patterns. No data hoarding. Just useful experiences that compound skill over time.</div>
-      <div class="brand-grid">
-        <div class="brand-card">
-          <h3>FretPilot Studio</h3>
-          <p>Adaptive AI guitar practice, mistake heatmaps, jam tracks, analytics & gear guidance — all in one place.</p>
-          <a href="/">Open App →</a>
-        </div>
-        <div class="brand-card">
-          <h3>Curated Gear</h3>
-          <p>Hand‑picked instruments & accessories matched to skill milestones. Coming soon as we finalize vendor onboarding.</p>
-          <a href="/gear" rel="noopener">Preview Gear →</a>
-        </div>
-        <div class="brand-card">
-          <h3>What’s Next</h3>
-          <p>Exploring creator workflow utilities & practice accelerators. Early partners welcome — reach out if you build for musicians.</p>
-          <a href="mailto:hello@thefranksstandard.com">Collaborate →</a>
-        </div>
-      </div>
-      <footer class="brand-foot">
-        <div>© <span id="tfs-year"></span> The Franks Standard • Privacy‑first, education‑focused.</div>
-        <div><a href="/privacy.html">Privacy</a> • <a href="/terms.html">Terms</a> • <a href="mailto:hello@thefranksstandard.com">Email</a></div>
-      </footer>
-      <script>document.getElementById('tfs-year').textContent=new Date().getFullYear()</script>
-    </div>
-    <!-- Main application only loads when NOT on thefranksstandard.com -->
     <div id="app"></div>
-    <script type="module">
-      if (!document.documentElement.classList.contains('tfs-brand-active')) {
-        import('/src/main.js').then(()=>requestAnimationFrame(()=>document.getElementById('app')?.classList.add('loaded')))
-      } else {
-        // For brand root we still expose minimal referral code API
-        window.getReferralCode = function(){
-          try { var m=document.cookie.match(/(?:^|; )fp_ref=([^;]+)/); return m?decodeURIComponent(m[1]):'' } catch(_) { return '' }
-        }
-      }
-    </script>
   </body>
 </html>
