@@ -11,6 +11,7 @@
         <button class="nav-link" :class="{ active: view === 'chord-library' }" @click="view='chord-library'">Chords</button>
         <button class="nav-link" :class="{ active: view === 'metronome' }" @click="view='metronome'">Tools</button>
         <button class="nav-link" :class="{ active: view === 'pricing' }" @click="view='pricing'">Pricing</button>
+        <button v-if="isCreatorUser" class="nav-link dev-link" :class="{ active: view === 'admin' }" @click="view='admin'">🛠️ Dev</button>
       </nav>
       <div class="status">
         <span class="badge" :class="premium ? 'pro' : 'free'">{{ premium ? 'Premium' : 'Free' }}</span>
@@ -29,6 +30,7 @@
       <PremiumGate v-else-if="view==='pricing'" />
       <PaymentSuccess v-else-if="view==='payment-success'" />
       <TesterSignup v-else-if="view==='tester-signup'" />
+      <AdminDashboard v-else-if="view==='admin'" />
       <AILessonGenerator v-else-if="view==='ai-lessons'" />
       <AIVideoLessons v-else-if="view==='ai-video'" />
       <ScaleExplorer v-else-if="view==='scale-explorer'" />
@@ -57,12 +59,13 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { isPremium } from './services/featureFlags'
+import { isPremium, isCreator } from './services/featureFlags'
 import brandLogo from '../images/temple-logo-2025.jpeg'
 import HomePage from './components/HomePage.vue'
 import PremiumGate from './components/PremiumGate.vue'
 import PaymentSuccess from './components/PaymentSuccess.vue'
 import TesterSignup from './components/TesterSignup.vue'
+import AdminDashboard from './components/AdminDashboard.vue'
 import ChordTrainer from './components/ChordTrainer.vue'
 import ChordLibrary from './components/ChordLibrary.vue'
 import Metronome from './components/Metronome.vue'
@@ -74,8 +77,12 @@ import PracticeAnalyzer from './components/PracticeAnalyzer.vue'
 
 const view = ref('home')
 const premium = ref(false)
+const isCreatorUser = ref(false)
 
-function readAuth() { premium.value = isPremium() }
+function readAuth() { 
+  premium.value = isPremium() 
+  isCreatorUser.value = isCreator()
+}
 function openFeature(feature) { view.value = feature }
 
 let premiumCheckInterval = null
@@ -86,7 +93,10 @@ onMounted(() => {
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.get('tester_signup')) view.value = 'tester-signup'
   if (window.location.search.includes('payment_success')) view.value = 'payment-success'
-  premiumCheckInterval = setInterval(() => { premium.value = isPremium() }, 5000)
+  premiumCheckInterval = setInterval(() => { 
+    premium.value = isPremium() 
+    isCreatorUser.value = isCreator()
+  }, 5000)
 })
 
 onUnmounted(() => { if (premiumCheckInterval) clearInterval(premiumCheckInterval) })
@@ -108,6 +118,9 @@ body { width: 100%; position: relative; }
 .nav-link { background:transparent; color:#cfd6e6; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; text-decoration: none; display: inline-block; white-space: nowrap; font-size: 0.95rem; transition: all 0.2s; }
 .nav-link:hover { color:#fff; background:#1a1a1a; }
 .nav-link.active { color:#06c167; background: rgba(6, 193, 103, 0.1); }
+.nav-link.dev-link { color:#ffa500; border: 1px solid rgba(255, 165, 0, 0.3); }
+.nav-link.dev-link:hover { background: rgba(255, 165, 0, 0.1); }
+.nav-link.dev-link.active { color:#ffa500; background: rgba(255, 165, 0, 0.15); }
 @media (max-width: 600px) { .nav-link { padding: 6px 10px; font-size: 0.85rem; } }
 .status { display:flex; align-items:center; gap:8px }
 .badge { padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid #2a2a2a }

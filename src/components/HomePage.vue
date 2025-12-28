@@ -132,6 +132,17 @@
       </div>
     </section>
 
+    <!-- Beta Tester CTA -->
+    <section class="tester-cta">
+      <div class="tester-cta-content">
+        <div class="tester-badge-large">🧪 BETA</div>
+        <h2>Become a Beta Tester!</h2>
+        <p>Get <strong>FREE lifetime premium access</strong> in exchange for testing and feedback.</p>
+        <button class="btn-tester" @click="openTesterSignup">Join Beta Program →</button>
+        <span class="tester-spots" v-if="spotsRemaining <= 20">{{ spotsRemaining }} spots remaining!</span>
+      </div>
+    </section>
+
     <!-- Premium CTA Section -->
     <section class="premium-cta">
       <div class="premium-cta-content">
@@ -178,8 +189,8 @@
 </template>
 
 <script setup>
-import { defineComponent, h, ref, nextTick } from 'vue'
-import { isPremium } from '../services/featureFlags'
+import { defineComponent, h, ref, nextTick, computed, onMounted } from 'vue'
+import { isPremium, getTesterSignupUrl, getTesterCount, MAX_TESTERS, isTesterSignupAvailable } from '../services/featureFlags'
 
 // Developer password
 const DEV_PASSWORD = 'pw638256'
@@ -320,6 +331,22 @@ function showToast(message) {
   setTimeout(() => {
     showDevToast.value = false
   }, 3000)
+}
+
+// Tester signup
+const testerCount = ref(0)
+const spotsRemaining = computed(() => Math.max(0, MAX_TESTERS - testerCount.value))
+
+onMounted(() => {
+  testerCount.value = getTesterCount()
+})
+
+function openTesterSignup() {
+  if (!isTesterSignupAvailable()) {
+    alert('Sorry, we\'ve reached our limit of beta testers! Check back later.')
+    return
+  }
+  window.location.href = getTesterSignupUrl()
 }
 
 // Emit for opening features
@@ -801,6 +828,103 @@ function openFeature(feature) {
   color: #6c5ce7;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+/* Tester CTA */
+.tester-cta {
+  margin: 60px 0;
+  text-align: center;
+  padding: 48px 24px;
+  background: linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(255, 100, 0, 0.05));
+  border-radius: 24px;
+  border: 2px solid rgba(255, 165, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.tester-cta::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(255, 165, 0, 0.05) 0%, transparent 50%);
+  animation: testerGlow 8s ease-in-out infinite;
+}
+
+@keyframes testerGlow {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(10%, 10%); }
+}
+
+.tester-cta-content {
+  position: relative;
+  z-index: 1;
+}
+
+.tester-badge-large {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffa500, #ff6b00);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(255, 165, 0, 0.3);
+}
+
+.tester-cta-content h2 {
+  font-size: 2rem;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.tester-cta-content p {
+  font-size: 1.1rem;
+  color: #8892a6;
+  margin: 0 0 24px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tester-cta-content p strong {
+  color: #ffa500;
+}
+
+.btn-tester {
+  background: linear-gradient(135deg, #ffa500, #ff6b00);
+  border: none;
+  color: #fff;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px -8px rgba(255, 165, 0, 0.4);
+}
+
+.btn-tester:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px rgba(255, 165, 0, 0.6);
+}
+
+.tester-spots {
+  display: block;
+  margin-top: 16px;
+  color: #ff6b6b;
+  font-weight: 600;
+  font-size: 0.95rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* Premium CTA */
