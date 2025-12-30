@@ -408,25 +408,28 @@ onUnmounted(() => {
 
 <style scoped>
 .premium { 
-  padding: 24px; 
-  background: #000; 
-  color: #e8ecf6; 
+  padding: 32px 24px; 
+  background: #0c0a09; 
+  color: #fafaf9; 
   min-height: 100vh;
   max-width: 1000px;
   margin: 0 auto;
 }
 
 h2 {
-  font-size: 2.5em;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 3em;
+  font-weight: 400;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  color: #fafaf9;
 }
 
 .subtitle { 
-  color: #8892a6;
+  color: #78716c;
   text-align: center;
   font-size: 1.1em;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .benefits { 
@@ -462,21 +465,21 @@ h2 {
 }
 
 .method-tabs button {
-  background: #1a1a1a;
-  border: 2px solid #2a2a2a;
-  color: #cfd6e6;
+  background: rgba(250, 250, 249, 0.03);
+  border: 1px solid rgba(250, 250, 249, 0.08);
+  color: #a8a29e;
   padding: 14px 32px;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   font-size: 1.1em;
   font-weight: 600;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .method-tabs button.active {
-  background: #06c167;
-  border-color: #06c167;
-  color: #fff;
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #f97316;
   transform: translateY(-2px);
 }
 
@@ -489,23 +492,24 @@ h2 {
 }
 
 .card { 
-  background: #0a0a0a;
-  border: 2px solid #2a2a2a;
-  border-radius: 16px;
-  padding: 32px;
+  background: rgba(250, 250, 249, 0.02);
+  border: 1px solid rgba(250, 250, 249, 0.06);
+  border-radius: 24px;
+  padding: 40px 32px;
   width: 300px;
   text-align: center;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  border-color: #06c167;
+  border-color: rgba(249, 115, 22, 0.3);
 }
 
 .card.featured { 
-  border-color: #06c167;
-  box-shadow: 0 8px 24px -10px rgba(6,193,103,0.6);
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.02));
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 8px 32px -10px rgba(249, 115, 22, 0.4);
   position: relative;
 }
 
@@ -514,12 +518,13 @@ h2 {
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #06c167;
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: #fff;
   padding: 6px 16px;
   border-radius: 999px;
-  font-size: 0.85em;
+  font-size: 0.8em;
   font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .card h3 { 
@@ -553,25 +558,32 @@ h2 {
 }
 
 button { 
-  background: #1e90ff;
-  border: none;
-  color: #fff;
-  padding: 14px 28px;
-  border-radius: 10px;
+  background: rgba(250, 250, 249, 0.05);
+  border: 1px solid rgba(250, 250, 249, 0.1);
+  color: #fafaf9;
+  padding: 16px 28px;
+  border-radius: 14px;
   cursor: pointer;
   font-size: 1.1em;
   font-weight: 600;
   width: 100%;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  opacity: 0.9;
+  background: rgba(250, 250, 249, 0.1);
+  border-color: rgba(250, 250, 249, 0.2);
   transform: translateY(-2px);
 }
 
 .primary { 
-  background: #06c167;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  box-shadow: 0 8px 24px -8px rgba(249, 115, 22, 0.4);
+}
+
+.primary:hover {
+  box-shadow: 0 12px 32px -8px rgba(249, 115, 22, 0.5);
 }
 
 .cta { 
@@ -594,10 +606,10 @@ button:hover {
 }
 
 .subscription-status {
-  background: #0a0a0a;
-  border: 2px solid #06c167;
-  padding: 16px 24px;
-  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 20px 28px;
+  border-radius: 16px;
   margin: 30px auto 10px;
   max-width: 500px;
   text-align: center;
@@ -605,37 +617,40 @@ button:hover {
 .active-msg {
   margin: 0 0 12px;
   font-weight: 600;
-  color: #06c167;
+  color: #22c55e;
 }
 .manage-btn {
-  background: #2a2a2a;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  color: #cfd6e6;
+  background: rgba(250, 250, 249, 0.05);
+  border: 1px solid rgba(250, 250, 249, 0.1);
+  padding: 12px 24px;
+  border-radius: 10px;
+  color: #d6d3d1;
   cursor: pointer;
   font-weight: 600;
-  transition: background .2s;
+  transition: all 0.2s ease;
 }
-.manage-btn:hover { background: #3a3a3a; }
+.manage-btn:hover { 
+  background: rgba(250, 250, 249, 0.1);
+  border-color: rgba(250, 250, 249, 0.2);
+}
 
 .restore-wrapper {
   text-align: center;
-  margin: 10px 0 32px;
+  margin: 10px 0 40px;
 }
 .restore-btn {
-  background: #2a2a2a;
-  border: 2px solid #2a2a2a;
-  color: #cfd6e6;
-  padding: 12px 28px;
-  border-radius: 10px;
+  background: rgba(250, 250, 249, 0.03);
+  border: 1px solid rgba(250, 250, 249, 0.08);
+  color: #a8a29e;
+  padding: 14px 32px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 .restore-btn:hover {
-  border-color: #06c167;
-  color: #fff;
+  border-color: rgba(249, 115, 22, 0.3);
+  color: #f97316;
 }
 
 .modal-overlay {
