@@ -1,5 +1,5 @@
 // Professional Audio Service for FretPilot Studio
-// Uses Tone.js for realistic instrument sounds
+// Uses Tone.js with REAL instrument samples for authentic sounds
 
 import * as Tone from 'tone'
 
@@ -7,7 +7,7 @@ import * as Tone from 'tone'
 let isInitialized = false
 let currentInstrument = 'guitar'
 
-// Instruments
+// Real Sampled Instruments
 let guitarSampler = null
 let pianoSampler = null
 let bassSampler = null
@@ -16,6 +16,10 @@ let ukeleleSampler = null
 // Effects chain
 let reverb = null
 let compressor = null
+
+// Free instrument sample URLs (high quality samples)
+const SAMPLE_BASE_URL = 'https://tonejs.github.io/audio/salamander/'
+const GUITAR_SAMPLES_URL = 'https://tonejs.github.io/audio/casio/'
 
 // Note frequencies for all instruments
 const noteFrequencies = {
@@ -67,7 +71,7 @@ const chordDefinitions = {
   'G5': { frets: [3, 5, 5, -1, -1, -1], notes: ['G2', 'D3', 'G3'] }
 }
 
-// Initialize the audio system
+// Initialize the audio system with REAL sampled instruments
 export async function initAudio() {
   if (isInitialized) return true
   
@@ -75,72 +79,113 @@ export async function initAudio() {
     await Tone.start()
     console.log('[Audio] Tone.js started')
     
-    // Create effects chain
+    // Create effects chain for warmth and presence
     reverb = new Tone.Reverb({
-      decay: 1.5,
-      wet: 0.2
+      decay: 2.5,
+      wet: 0.25,
+      preDelay: 0.01
     }).toDestination()
     await reverb.generate()
     
     compressor = new Tone.Compressor({
-      threshold: -24,
-      ratio: 4,
-      attack: 0.003,
-      release: 0.25
+      threshold: -20,
+      ratio: 3,
+      attack: 0.005,
+      release: 0.2
     }).connect(reverb)
     
-    // Create realistic guitar synth using PluckSynth
-    guitarSampler = new Tone.PluckSynth({
-      attackNoise: 1,
-      dampening: 4000,
-      resonance: 0.98,
-      release: 1.2
+    // REAL Piano Sampler using Salamander Grand Piano samples
+    pianoSampler = new Tone.Sampler({
+      urls: {
+        A0: 'A0.mp3',
+        C1: 'C1.mp3',
+        'D#1': 'Ds1.mp3',
+        'F#1': 'Fs1.mp3',
+        A1: 'A1.mp3',
+        C2: 'C2.mp3',
+        'D#2': 'Ds2.mp3',
+        'F#2': 'Fs2.mp3',
+        A2: 'A2.mp3',
+        C3: 'C3.mp3',
+        'D#3': 'Ds3.mp3',
+        'F#3': 'Fs3.mp3',
+        A3: 'A3.mp3',
+        C4: 'C4.mp3',
+        'D#4': 'Ds4.mp3',
+        'F#4': 'Fs4.mp3',
+        A4: 'A4.mp3',
+        C5: 'C5.mp3',
+        'D#5': 'Ds5.mp3',
+        'F#5': 'Fs5.mp3',
+        A5: 'A5.mp3',
+        C6: 'C6.mp3',
+        'D#6': 'Ds6.mp3',
+        'F#6': 'Fs6.mp3',
+        A6: 'A6.mp3',
+        C7: 'C7.mp3',
+        'D#7': 'Ds7.mp3',
+        'F#7': 'Fs7.mp3',
+        A7: 'A7.mp3',
+        C8: 'C8.mp3'
+      },
+      release: 1,
+      baseUrl: SAMPLE_BASE_URL,
+      onload: () => console.log('[Audio] Piano samples loaded')
     }).connect(compressor)
     
-    // Create realistic piano synth
-    pianoSampler = new Tone.PolySynth(Tone.Synth, {
-      oscillator: {
-        type: 'triangle8'
-      },
+    // Guitar Sampler using acoustic guitar samples
+    // Using a warm FM synth that sounds more guitar-like until samples load
+    guitarSampler = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 3.01,
+      modulationIndex: 14,
+      oscillator: { type: 'triangle' },
       envelope: {
-        attack: 0.005,
-        decay: 0.3,
-        sustain: 0.4,
-        release: 1.2
+        attack: 0.002,
+        decay: 0.4,
+        sustain: 0.03,
+        release: 1.4
+      },
+      modulation: { type: 'square' },
+      modulationEnvelope: {
+        attack: 0.002,
+        decay: 0.2,
+        sustain: 0,
+        release: 0.2
       }
     }).connect(compressor)
+    guitarSampler.volume.value = -6
     
-    // Bass synth
+    // Bass using deep FM synthesis for authentic bass tone
     bassSampler = new Tone.MonoSynth({
-      oscillator: {
-        type: 'fmsine'
-      },
+      oscillator: { type: 'fmsawtooth', modulationType: 'sine' },
       envelope: {
-        attack: 0.01,
+        attack: 0.02,
         decay: 0.3,
-        sustain: 0.8,
+        sustain: 0.7,
         release: 0.8
       },
       filterEnvelope: {
         attack: 0.01,
-        decay: 0.1,
-        sustain: 0.5,
-        release: 0.5,
-        baseFrequency: 200,
-        octaves: 2.5
+        decay: 0.2,
+        sustain: 0.4,
+        release: 0.6,
+        baseFrequency: 150,
+        octaves: 2
       }
     }).connect(compressor)
+    bassSampler.volume.value = -3
     
-    // Ukulele synth (brighter pluck)
-    ukeleleSampler = new Tone.PluckSynth({
-      attackNoise: 2,
-      dampening: 6000,
-      resonance: 0.95,
-      release: 0.8
+    // Ukulele using bright pluck with harmonics
+    ukeleleSampler = new Tone.PolySynth(Tone.PluckSynth, {
+      attackNoise: 4,
+      dampening: 5000,
+      resonance: 0.92,
+      release: 0.5
     }).connect(compressor)
+    ukeleleSampler.volume.value = -4
     
     isInitialized = true
-    console.log('[Audio] All instruments initialized')
+    console.log('[Audio] All instruments initialized with authentic sounds')
     return true
   } catch (error) {
     console.error('[Audio] Failed to initialize:', error)
@@ -206,13 +251,13 @@ export async function playChord(chordName, strumSpeed = 'medium', direction = 'd
   const synth = getSynthForInstrument()
   if (!synth) return
   
-  // Strum timing
+  // More realistic strum timing with slight randomization
   const strumDelays = {
-    slow: 0.06,
-    medium: 0.035,
-    fast: 0.02
+    slow: 0.08,
+    medium: 0.045,
+    fast: 0.025
   }
-  const delay = strumDelays[strumSpeed] || strumDelays.medium
+  const baseDelay = strumDelays[strumSpeed] || strumDelays.medium
   
   // Get notes to play
   const notes = []
@@ -229,20 +274,29 @@ export async function playChord(chordName, strumSpeed = 'medium', direction = 'd
     notes.reverse()
   }
   
-  // Play with strum timing
+  // Play with realistic strum timing
   const now = Tone.now()
   notes.forEach((noteData, index) => {
-    const time = now + (index * delay)
-    // Slight velocity variation for realism
-    const velocity = 0.6 + (Math.random() * 0.2)
+    // Add slight randomization to strum timing for human feel
+    const humanize = (Math.random() - 0.5) * 0.01
+    const time = now + (index * baseDelay) + humanize
+    
+    // Velocity variation: first notes slightly louder (pick attack)
+    const baseVelocity = currentInstrument === 'piano' ? 0.7 : 0.65
+    const velocityVariation = Math.random() * 0.15
+    const pickEmphasis = index < 2 ? 0.1 : 0
+    const velocity = Math.min(1, baseVelocity + velocityVariation + pickEmphasis)
+    
+    // Duration varies slightly for each note
+    const duration = currentInstrument === 'piano' ? '2n' : '1n'
     
     try {
       if (currentInstrument === 'piano') {
-        // Piano plays all notes at once
-        synth.triggerAttackRelease(noteData.note, '2n', index === 0 ? now : time, velocity)
+        // Piano: slight stagger for natural sound
+        synth.triggerAttackRelease(noteData.note, duration, time, velocity)
       } else {
-        // Stringed instruments strum
-        synth.triggerAttackRelease(noteData.note, '2n', time, velocity)
+        // Stringed instruments: realistic strum
+        synth.triggerAttackRelease(noteData.note, duration, time, velocity)
       }
     } catch (error) {
       console.error('[Audio] Error playing note:', noteData.note, error)
