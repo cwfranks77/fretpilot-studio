@@ -1,13 +1,12 @@
 // Stripe payment service for FretPilot Premium subscriptions
 // Uses Stripe Payment Links (no backend required)
 
-// Stripe Payment Links - Direct checkout URLs (create these in Stripe Dashboard)
+// Stripe Payment Links - Direct checkout URLs
 // These are pre-configured payment links that handle the entire checkout flow
 export const STRIPE_PAYMENT_LINKS = {
-  // Set these in Vercel environment variables
-  monthly: import.meta.env.VITE_STRIPE_LINK_MONTHLY || '',
-  yearly: import.meta.env.VITE_STRIPE_LINK_YEARLY || '',
-  lifetime: import.meta.env.VITE_STRIPE_LINK_LIFETIME || ''
+  monthly: import.meta.env.VITE_STRIPE_LINK_MONTHLY || 'https://buy.stripe.com/bJe3co9gWe39crQduAbII07',
+  yearly: import.meta.env.VITE_STRIPE_LINK_YEARLY || 'https://buy.stripe.com/14AaEQ64Ke390J84Y4bII06',
+  lifetime: import.meta.env.VITE_STRIPE_LINK_LIFETIME || 'https://buy.stripe.com/bJeeV6al05wD0J8duAbII08'
 }
 
 // Fallback prices for display (actual price comes from Stripe)
