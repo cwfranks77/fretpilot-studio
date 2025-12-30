@@ -1,8 +1,52 @@
 <template>
   <div class="ai-video-lessons">
-    <div class="lessons-header">
-      <h1>🎬 AI Video Lessons</h1>
-      <p class="subtitle">Interactive step-by-step tutorials powered by AI</p>
+    <!-- Teacher Introduction (when no lesson selected) -->
+    <div v-if="!selectedLesson" class="teacher-intro">
+      <div class="teacher-profile">
+        <div class="teacher-avatar">
+          <div class="avatar-image">
+            <span class="avatar-initials">CF</span>
+          </div>
+          <div class="online-indicator"></div>
+        </div>
+        <div class="teacher-info">
+          <h1>Learn with Coach Charles</h1>
+          <p class="teacher-title">Professional Music Instructor • 15+ Years Experience</p>
+          <div class="teacher-stats">
+            <div class="stat">
+              <span class="stat-value">12,000+</span>
+              <span class="stat-label">Students Taught</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">500+</span>
+              <span class="stat-label">Lessons Created</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">4.9★</span>
+              <span class="stat-label">Rating</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="teacher-message">
+        <p>"Hey there! I'm Charles, and I'll be your personal music coach. I've been teaching guitar, piano, and bass for over 15 years, and I'm excited to help you on your musical journey. Let's make some music together!"</p>
+      </div>
+    </div>
+
+    <!-- Instrument Selector -->
+    <div v-if="!selectedLesson" class="instrument-selector">
+      <h3>What instrument are you learning?</h3>
+      <div class="instrument-buttons">
+        <button 
+          v-for="inst in instruments" 
+          :key="inst.id"
+          :class="['instrument-btn', { active: selectedInstrument === inst.id }]"
+          @click="selectedInstrument = inst.id"
+        >
+          <span class="inst-icon">{{ inst.icon }}</span>
+          <span class="inst-name">{{ inst.name }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Lesson Categories -->
@@ -28,8 +72,15 @@
           @click="selectLesson(lesson)"
         >
           <div class="lesson-thumbnail">
+            <div class="teacher-mini">CF</div>
             <span class="lesson-icon">{{ lesson.icon }}</span>
             <span class="lesson-duration">{{ lesson.duration }}</span>
+            <div class="play-overlay">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="24" fill="rgba(0,0,0,0.6)"/>
+                <path d="M32 24L20 32V16L32 24Z" fill="white"/>
+              </svg>
+            </div>
           </div>
           <div class="lesson-info">
             <h3>{{ lesson.title }}</h3>
@@ -45,73 +96,98 @@
 
     <!-- Lesson Player -->
     <div v-if="selectedLesson" class="lesson-player">
-      <button class="back-btn" @click="selectedLesson = null">← Back to Lessons</button>
+      <button class="back-btn" @click="selectedLesson = null">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Back to Lessons
+      </button>
       
       <div class="player-content">
-        <div class="player-header">
-          <h2>{{ selectedLesson.title }}</h2>
-          <p>{{ selectedLesson.description }}</p>
-        </div>
+        <!-- Video Area with Teacher -->
+        <div class="video-container">
+          <div class="video-area">
+            <!-- Teacher Video Frame -->
+            <div class="teacher-video">
+              <div class="teacher-cam">
+                <div class="cam-avatar">CF</div>
+                <div class="speaking-indicator" :class="{ active: isSpeaking }"></div>
+              </div>
+              <div class="teacher-speech">
+                <p class="speech-bubble">{{ currentStep.teacherSays || currentStep.description }}</p>
+              </div>
+            </div>
 
-        <!-- Video/Animation Area -->
-        <div class="video-area">
-          <div class="animation-container">
-            <!-- Animated Fretboard for Guitar Lessons -->
-            <div v-if="currentStep.type === 'chord' || currentStep.type === 'fretboard'" class="fretboard-animation">
-              <div class="animated-fretboard">
-                <div class="fret-row" v-for="string in 6" :key="string">
-                  <div class="string-label">{{ ['e', 'B', 'G', 'D', 'A', 'E'][string - 1] }}</div>
+            <!-- Animation/Demo Area -->
+            <div class="demo-area">
+              <!-- Animated Fretboard for Guitar/Bass/Ukulele -->
+              <div v-if="currentStep.type === 'chord' || currentStep.type === 'fretboard'" class="fretboard-demo">
+                <div class="fretboard-visual">
+                  <div class="fret-row" v-for="string in stringCount" :key="string">
+                    <div class="string-label">{{ getStringLabel(string) }}</div>
+                    <div 
+                      v-for="fret in 5" 
+                      :key="fret"
+                      class="fret-cell"
+                      :class="{ 
+                        'has-finger': isFingerPosition(string, fret),
+                        'animating': isAnimating && isFingerPosition(string, fret)
+                      }"
+                    >
+                      <span v-if="isFingerPosition(string, fret)" class="finger-dot">
+                        {{ getFingerNumber(string, fret) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="chord-name-display">{{ currentStep.chord || 'Position' }}</div>
+              </div>
+
+              <!-- Piano Keys -->
+              <div v-else-if="selectedInstrument === 'piano'" class="piano-demo">
+                <div class="piano-keys">
                   <div 
-                    v-for="fret in 5" 
-                    :key="fret"
-                    class="fret-cell"
-                    :class="{ 
-                      'has-finger': isFingerPosition(string, fret),
-                      'animating': isAnimating && isFingerPosition(string, fret)
-                    }"
+                    v-for="(key, idx) in pianoKeys" 
+                    :key="idx"
+                    :class="['piano-key', key.type, { active: currentStep.pianoKeys?.includes(key.note) }]"
                   >
-                    <span v-if="isFingerPosition(string, fret)" class="finger-dot">
-                      {{ getFingerNumber(string, fret) }}
-                    </span>
+                    <span v-if="key.type === 'white'" class="key-label">{{ key.note }}</span>
                   </div>
                 </div>
               </div>
-              <div class="chord-name-display">{{ currentStep.chord || 'Position' }}</div>
-            </div>
 
-            <!-- Hand Position Animation -->
-            <div v-if="currentStep.type === 'technique'" class="technique-animation">
-              <div class="technique-visual">
-                <span class="technique-icon">{{ currentStep.icon || '🤚' }}</span>
+              <!-- Technique Animation -->
+              <div v-else class="technique-demo">
+                <div class="technique-icon">{{ currentStep.icon || '🎵' }}</div>
+                <h3>{{ currentStep.title }}</h3>
               </div>
             </div>
+          </div>
 
-            <!-- Tab Display -->
-            <div v-if="currentStep.tab" class="tab-display">
-              <pre class="tab-notation">{{ currentStep.tab }}</pre>
-            </div>
-
-            <!-- Instruction Overlay -->
-            <div class="instruction-overlay">
-              <span class="step-number">Step {{ currentStepIndex + 1 }}</span>
-              <h3>{{ currentStep.title }}</h3>
-            </div>
+          <!-- Step Info Overlay -->
+          <div class="step-overlay">
+            <div class="step-badge">Step {{ currentStepIndex + 1 }} of {{ selectedLesson.steps.length }}</div>
+            <h2>{{ currentStep.title }}</h2>
           </div>
         </div>
 
-        <!-- Step Content -->
-        <div class="step-content">
+        <!-- Instructor Notes -->
+        <div class="instructor-notes">
+          <div class="notes-header">
+            <div class="instructor-mini">CF</div>
+            <span>Coach Charles's Notes</span>
+          </div>
           <p class="step-description">{{ currentStep.description }}</p>
           
-          <div v-if="currentStep.tips?.length" class="step-tips">
-            <h4>💡 Tips</h4>
+          <div v-if="currentStep.tips?.length" class="tips-section">
+            <h4>💡 Pro Tips</h4>
             <ul>
               <li v-for="tip in currentStep.tips" :key="tip">{{ tip }}</li>
             </ul>
           </div>
 
-          <div v-if="currentStep.common_mistakes?.length" class="common-mistakes">
-            <h4>⚠️ Common Mistakes to Avoid</h4>
+          <div v-if="currentStep.common_mistakes?.length" class="mistakes-section">
+            <h4>⚠️ Watch Out For</h4>
             <ul>
               <li v-for="mistake in currentStep.common_mistakes" :key="mistake">{{ mistake }}</li>
             </ul>
@@ -119,21 +195,19 @@
         </div>
 
         <!-- Progress Bar -->
-        <div class="lesson-progress">
-          <div class="progress-steps">
+        <div class="progress-section">
+          <div class="progress-dots">
             <div 
               v-for="(step, i) in selectedLesson.steps" 
               :key="i"
               class="progress-dot"
               :class="{ 
                 active: i === currentStepIndex, 
-                completed: i < currentStepIndex,
-                clickable: true
+                completed: i < currentStepIndex
               }"
               @click="goToStep(i)"
             >
-              <span class="dot-inner"></span>
-              <span class="step-label">{{ i + 1 }}</span>
+              {{ i + 1 }}
             </div>
           </div>
           <div class="progress-bar">
@@ -144,387 +218,278 @@
           </div>
         </div>
 
-        <!-- Navigation Controls -->
+        <!-- Controls -->
         <div class="player-controls">
           <button 
-            class="nav-btn prev"
+            class="control-btn"
             :disabled="currentStepIndex === 0"
             @click="previousStep"
           >
             ← Previous
           </button>
           
-          <button class="play-btn" @click="toggleAnimation">
-            {{ isAnimating ? '⏸️ Pause' : '▶️ Play' }}
+          <button class="play-sound-btn" @click="playCurrentSound">
+            🔊 Play Sound
           </button>
           
           <button 
-            class="nav-btn next"
-            :disabled="currentStepIndex === selectedLesson.steps.length - 1"
+            class="control-btn primary"
             @click="nextStep"
           >
-            Next →
+            {{ currentStepIndex === selectedLesson.steps.length - 1 ? 'Complete ✓' : 'Next →' }}
           </button>
         </div>
 
-        <!-- Auto-play Toggle -->
-        <div class="autoplay-toggle">
-          <label class="toggle-label">
-            <input type="checkbox" v-model="autoPlay" />
-            <span class="toggle-switch"></span>
-            Auto-advance steps
-          </label>
-        </div>
-
-        <!-- Practice Section -->
-        <div class="practice-section">
-          <h3>🎸 Practice Along</h3>
-          <div class="practice-controls">
-            <div class="tempo-control">
-              <label>Practice Tempo</label>
-              <div class="tempo-slider">
-                <button @click="practiceTempo = Math.max(40, practiceTempo - 5)">−</button>
-                <span>{{ practiceTempo }} BPM</span>
-                <button @click="practiceTempo = Math.min(180, practiceTempo + 5)">+</button>
-              </div>
+        <!-- Completion Message -->
+        <div v-if="lessonComplete" class="completion-message">
+          <div class="completion-content">
+            <div class="completion-avatar">CF</div>
+            <h3>🎉 Great job!</h3>
+            <p>"You've completed this lesson! Keep practicing and you'll have this down in no time. I'm proud of your progress!"</p>
+            <div class="completion-actions">
+              <button @click="currentStepIndex = 0; lessonComplete = false">🔄 Review Lesson</button>
+              <button class="primary" @click="selectedLesson = null; lessonComplete = false">📚 More Lessons</button>
             </div>
-            <button class="practice-btn" @click="togglePracticeMode">
-              {{ practiceMode ? '⏹️ Stop Practice' : '▶️ Start Practice' }}
-            </button>
-          </div>
-          
-          <div v-if="practiceMode" class="practice-metronome">
-            <div class="beat-indicators">
-              <span 
-                v-for="beat in 4" 
-                :key="beat"
-                class="beat-dot"
-                :class="{ active: currentBeat === beat }"
-              ></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lesson Complete -->
-        <div v-if="currentStepIndex === selectedLesson.steps.length - 1" class="lesson-complete">
-          <h3>🎉 Great Progress!</h3>
-          <p>You've completed all steps in this lesson.</p>
-          <div class="complete-actions">
-            <button @click="currentStepIndex = 0">🔄 Restart Lesson</button>
-            <button @click="selectedLesson = null" class="primary">📚 More Lessons</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Generate Custom Lesson -->
-    <div v-if="!selectedLesson" class="custom-lesson-section">
-      <h3>✨ Generate Custom Lesson</h3>
-      <div class="custom-form">
-        <input 
-          v-model="customTopic"
-          type="text"
-          placeholder="What do you want to learn? (e.g., 'F barre chord', 'blues licks')"
-          class="custom-input"
-        />
-        <button class="generate-btn" @click="generateCustomLesson" :disabled="generating || !customTopic">
-          {{ generating ? '✨ Generating...' : '🤖 Generate Lesson' }}
-        </button>
+    <!-- Custom Lesson Request -->
+    <div v-if="!selectedLesson" class="custom-section">
+      <div class="custom-card">
+        <div class="custom-header">
+          <div class="custom-avatar">CF</div>
+          <div>
+            <h3>Request a Custom Lesson</h3>
+            <p>Tell me what you want to learn, and I'll create a personalized lesson just for you!</p>
+          </div>
+        </div>
+        <div class="custom-form">
+          <input 
+            v-model="customTopic"
+            type="text"
+            placeholder="e.g., 'Teach me the F barre chord' or 'Blues licks for beginners'"
+            class="custom-input"
+          />
+          <button class="custom-btn" @click="generateCustomLesson" :disabled="generating || !customTopic">
+            {{ generating ? 'Creating lesson...' : 'Create My Lesson' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { initAudio, playChord, playChordNotes, setInstrument, disposeAudio } from '../services/audioService'
 
+const selectedInstrument = ref('guitar')
 const selectedCategory = ref('beginner')
 const selectedLesson = ref(null)
 const currentStepIndex = ref(0)
 const isAnimating = ref(false)
-const autoPlay = ref(false)
-const practiceTempo = ref(60)
-const practiceMode = ref(false)
-const currentBeat = ref(0)
+const isSpeaking = ref(false)
+const lessonComplete = ref(false)
 const customTopic = ref('')
 const generating = ref(false)
 
-let animationTimer = null
-let practiceInterval = null
-let audioContext = null
+const instruments = [
+  { id: 'guitar', name: 'Guitar', icon: '🎸' },
+  { id: 'piano', name: 'Piano', icon: '🎹' },
+  { id: 'bass', name: 'Bass', icon: '🎸' },
+  { id: 'ukulele', name: 'Ukulele', icon: '🪕' },
+  { id: 'drums', name: 'Drums', icon: '🥁' },
+]
 
 const categories = [
-  { id: 'beginner', name: 'Beginner', icon: '🌱' },
-  { id: 'chords', name: 'Chords', icon: '🎸' },
-  { id: 'scales', name: 'Scales', icon: '🎹' },
+  { id: 'beginner', name: 'Getting Started', icon: '🌱' },
+  { id: 'chords', name: 'Chords', icon: '🎵' },
+  { id: 'scales', name: 'Scales', icon: '🎼' },
   { id: 'techniques', name: 'Techniques', icon: '⚡' },
-  { id: 'songs', name: 'Songs', icon: '🎵' }
+  { id: 'songs', name: 'Songs', icon: '🎤' }
 ]
+
+const pianoKeys = [
+  { note: 'C', type: 'white' }, { note: 'C#', type: 'black' },
+  { note: 'D', type: 'white' }, { note: 'D#', type: 'black' },
+  { note: 'E', type: 'white' },
+  { note: 'F', type: 'white' }, { note: 'F#', type: 'black' },
+  { note: 'G', type: 'white' }, { note: 'G#', type: 'black' },
+  { note: 'A', type: 'white' }, { note: 'A#', type: 'black' },
+  { note: 'B', type: 'white' }
+]
+
+const stringCount = computed(() => {
+  if (selectedInstrument.value === 'ukulele') return 4
+  if (selectedInstrument.value === 'bass') return 4
+  return 6
+})
+
+function getStringLabel(string) {
+  if (selectedInstrument.value === 'ukulele') {
+    return ['G', 'C', 'E', 'A'][string - 1]
+  }
+  if (selectedInstrument.value === 'bass') {
+    return ['G', 'D', 'A', 'E'][string - 1]
+  }
+  return ['e', 'B', 'G', 'D', 'A', 'E'][string - 1]
+}
 
 const lessons = ref([
   {
     id: 1,
     category: 'beginner',
     title: 'Your First Chord: G Major',
-    description: 'Learn the G major chord - one of the most useful chords in guitar',
+    description: 'Learn the G chord - one of the most essential chords in music',
     icon: '🎸',
     duration: '5 min',
     difficulty: 'beginner',
     steps: [
       {
         type: 'chord',
-        title: 'Hand Position',
-        description: 'Place your hand behind the fretboard with your thumb centered on the back of the neck. Keep your wrist straight and fingers curved.',
+        title: 'Getting Your Hand Position Right',
         chord: 'G',
+        teacherSays: "Alright, let's start with the G chord! This is probably the most useful chord you'll ever learn. First, I want you to relax your hand and place your thumb on the back of the neck - not over the top, but centered on the back.",
+        description: 'Place your hand behind the fretboard with your thumb centered on the back of the neck. Keep your wrist straight and fingers curved, like you\'re holding a tennis ball.',
         fingerPositions: [
           { string: 6, fret: 3, finger: 3 },
           { string: 5, fret: 2, finger: 2 },
           { string: 1, fret: 3, finger: 4 }
         ],
-        tips: ['Thumb should be behind the neck, not over it', 'Keep your palm away from the neck'],
-        common_mistakes: ['Pressing too hard', 'Muting adjacent strings']
+        tips: ['Keep your thumb behind the neck, not wrapped over the top', 'Your palm should not touch the neck', 'Curve your fingers like you\'re holding an egg'],
+        common_mistakes: ['Pressing way too hard - you need less pressure than you think', 'Flattening your fingers and muting other strings']
       },
       {
         type: 'chord',
-        title: 'Place Your Ring Finger',
-        description: 'Start with your ring finger (3) on the 6th string, 3rd fret. Press firmly just behind the fret.',
+        title: 'Place Your Ring Finger First',
         chord: 'G',
+        teacherSays: "Here's a little trick I teach all my students - start with your ring finger. Put it on the 6th string (that's the thickest one) at the 3rd fret. Press firmly right behind the metal fret wire, not on top of it.",
+        description: 'Your ring finger (finger 3) goes on the 6th string, 3rd fret. Press firmly just behind the fret wire for the clearest sound.',
         fingerPositions: [
           { string: 6, fret: 3, finger: 3 }
         ],
-        tips: ['Press close to the fret wire', 'Use your fingertip, not the pad'],
-        common_mistakes: ['Pressing on top of the fret']
+        tips: ['Press close to the fret wire, not in the middle of the fret', 'Use your fingertip, not the pad'],
+        common_mistakes: ['Pressing directly on the fret wire causes buzzing', 'Using too much pressure - let the fret do the work']
       },
       {
         type: 'chord',
         title: 'Add Your Middle Finger',
-        description: 'Place your middle finger (2) on the 5th string, 2nd fret.',
         chord: 'G',
+        teacherSays: "Now, without moving that ring finger, add your middle finger to the 5th string, 2nd fret. Keep both fingers arched - I call it the 'claw position'. Looking good!",
+        description: 'Keep your ring finger in place and add your middle finger (finger 2) to the 5th string, 2nd fret.',
         fingerPositions: [
           { string: 6, fret: 3, finger: 3 },
           { string: 5, fret: 2, finger: 2 }
         ],
-        tips: ['Keep fingers arched', 'Don\'t flatten your fingers'],
-        common_mistakes: ['Letting the middle finger touch the 4th string']
+        tips: ['Keep your fingers arched and on their tips', 'Make sure you can see light under your fingers'],
+        common_mistakes: ['Letting your middle finger accidentally touch the 4th string']
       },
       {
         type: 'chord',
         title: 'Complete the G Chord',
-        description: 'Add your pinky (4) on the 1st string, 3rd fret. Now strum all 6 strings!',
         chord: 'G',
+        teacherSays: "Last step! Add your pinky to the 1st string, 3rd fret. Now strum all 6 strings slowly and listen - every string should ring clearly. If something buzzes, adjust your fingers. You've got this!",
+        description: 'Add your pinky (finger 4) to the 1st string, 3rd fret. Strum all 6 strings and make sure each one rings clearly.',
         fingerPositions: [
           { string: 6, fret: 3, finger: 3 },
           { string: 5, fret: 2, finger: 2 },
           { string: 1, fret: 3, finger: 4 }
         ],
-        tips: ['Strum slowly and listen to each string', 'Adjust fingers if any string buzzes'],
-        common_mistakes: ['Not pressing hard enough', 'Rushing the strum']
+        tips: ['Strum slowly and listen to each string individually', 'If a string buzzes, press a little harder or adjust the angle'],
+        common_mistakes: ['Rushing the strum', 'Not pressing hard enough on all strings']
       },
       {
         type: 'technique',
-        title: 'Practice the Shape',
-        description: 'Practice forming the G chord shape. Lift all fingers, then place them back. Repeat 10 times.',
+        title: 'Practice Makes Permanent',
         icon: '🔄',
-        tips: ['Speed will come with time', 'Focus on accuracy first'],
-        common_mistakes: ['Moving too fast before the shape is memorized']
+        teacherSays: "Here's what I want you to do: lift all your fingers off, shake out your hand, then put the G chord shape back. Do this 10 times. Speed isn't important right now - muscle memory is. I'll be right here when you're ready for the next lesson!",
+        description: 'Practice forming the G chord shape repeatedly. Lift all fingers, relax, then form the shape again. Repeat 10 times.',
+        tips: ['Focus on accuracy before speed', 'Take breaks if your hand gets tired', 'Speed will come naturally with practice'],
+        common_mistakes: ['Practicing too fast before the shape is memorized', 'Getting frustrated - learning takes time!']
       }
     ]
   },
   {
     id: 2,
     category: 'beginner',
-    title: 'C Major Chord',
-    description: 'Master the C major chord - essential for countless songs',
-    icon: '🎸',
+    title: 'The C Major Chord',
+    description: 'Master C major - essential for countless songs',
+    icon: '🎵',
     duration: '5 min',
     difficulty: 'beginner',
     steps: [
       {
         type: 'chord',
-        title: 'C Major Shape',
-        description: 'The C chord uses 3 fingers in a diagonal pattern.',
+        title: 'The C Major Shape',
         chord: 'C',
+        teacherSays: "The C chord is one of my favorites because it's in SO many songs. It uses 3 fingers in a diagonal pattern. Here's the cool part - once you learn this shape, you can slide it up the neck for other chords!",
+        description: 'The C chord uses 3 fingers arranged diagonally. Only strum from the 5th string down.',
         fingerPositions: [
           { string: 5, fret: 3, finger: 3 },
           { string: 4, fret: 2, finger: 2 },
           { string: 2, fret: 1, finger: 1 }
         ],
-        tips: ['Only strum strings 5 through 1', 'Keep fingers curved'],
-        common_mistakes: ['Accidentally hitting the 6th string']
-      },
-      {
-        type: 'chord',
-        title: 'Finger Placement',
-        description: 'Ring finger on 5th string 3rd fret, middle on 4th string 2nd fret, index on 2nd string 1st fret.',
-        chord: 'C',
-        fingerPositions: [
-          { string: 5, fret: 3, finger: 3 },
-          { string: 4, fret: 2, finger: 2 },
-          { string: 2, fret: 1, finger: 1 }
-        ],
-        tips: ['Arch your fingers well', 'Let the 3rd and 1st strings ring open'],
-        common_mistakes: ['Index finger muting the 1st string']
+        tips: ['Only strum strings 5 through 1 - skip the 6th string', 'Keep your fingers curved'],
+        common_mistakes: ['Accidentally hitting the 6th string while strumming']
       }
     ]
   },
   {
     id: 3,
     category: 'chords',
-    title: 'F Barre Chord',
-    description: 'Conquer the infamous F chord with this step-by-step guide',
+    title: 'Conquering the F Barre Chord',
+    description: 'Master the chord that stops most beginners',
     icon: '💪',
     duration: '10 min',
     difficulty: 'intermediate',
     steps: [
       {
         type: 'technique',
-        title: 'Understanding the Barre',
-        description: 'A barre chord uses one finger to press multiple strings. The index finger acts as a "moveable nut".',
+        title: 'Why the F Chord Matters',
         icon: '📚',
-        tips: ['This takes time - be patient!', 'Strength comes from practice'],
-        common_mistakes: ['Giving up too soon']
+        teacherSays: "Okay, real talk - the F chord is where a lot of guitarists give up. But I'm going to show you exactly how to nail it. Once you get this, you can play ANY barre chord anywhere on the neck. This is a game-changer!",
+        description: 'The F chord is a barre chord that uses your index finger to press all 6 strings at once. This technique unlocks the entire fretboard.',
+        tips: ['This takes time - be patient with yourself', 'Strength comes from practice, not force'],
+        common_mistakes: ['Giving up too soon - this chord takes weeks to master, not days']
       },
       {
         type: 'chord',
         title: 'The Index Finger Barre',
-        description: 'Lay your index finger flat across all 6 strings at the 1st fret. Use the bony side of your finger, not the soft pad.',
         chord: 'F',
+        teacherSays: "Here's the secret nobody tells you: use the SIDE of your index finger, not the flat part. Lay your finger across all 6 strings at the 1st fret, but roll it slightly towards the nut. The bony side presses better than the soft pad.",
+        description: 'Lay your index finger flat across all 6 strings at the 1st fret. Roll your finger slightly toward the headstock to use the firmer side of your finger.',
         fingerPositions: [
           { string: 1, fret: 1, finger: 1 },
           { string: 2, fret: 1, finger: 1 },
           { string: 6, fret: 1, finger: 1 }
         ],
-        tips: ['Roll your finger slightly toward the nut', 'Position close to the fret wire'],
-        common_mistakes: ['Using the flat/soft part of the finger']
-      },
-      {
-        type: 'chord',
-        title: 'Complete F Major',
-        description: 'While maintaining the barre, add: ring finger on 5th string 3rd fret, pinky on 4th string 3rd fret, middle on 3rd string 2nd fret.',
-        chord: 'F',
-        fingerPositions: [
-          { string: 1, fret: 1, finger: 1 },
-          { string: 2, fret: 1, finger: 1 },
-          { string: 6, fret: 1, finger: 1 },
-          { string: 5, fret: 3, finger: 3 },
-          { string: 4, fret: 3, finger: 4 },
-          { string: 3, fret: 2, finger: 2 }
-        ],
-        tips: ['Pull back with your arm to add pressure', 'Keep thumb behind the neck'],
-        common_mistakes: ['Squeezing too hard with thumb']
+        tips: ['Roll your finger slightly toward the nut', 'Position close to the fret wire', 'Pull back with your arm, don\'t squeeze with your thumb'],
+        common_mistakes: ['Using the flat, soft part of your finger', 'Squeezing too hard with your thumb']
       }
     ]
   },
   {
     id: 4,
     category: 'scales',
-    title: 'Minor Pentatonic Scale',
-    description: 'Learn the most popular scale for rock and blues soloing',
-    icon: '🎵',
+    title: 'The Minor Pentatonic Scale',
+    description: 'The most important scale for rock and blues',
+    icon: '🎸',
     duration: '8 min',
     difficulty: 'beginner',
     steps: [
       {
         type: 'fretboard',
         title: 'The Box Pattern',
-        description: 'The minor pentatonic "box 1" is the foundation of rock guitar soloing. We\'ll learn it in A minor (5th fret).',
+        teacherSays: "This scale is responsible for like 90% of rock guitar solos. Seriously! Once you learn this pattern, you can solo over almost any rock or blues song. We're going to learn it in A minor, starting at the 5th fret.",
+        description: 'The minor pentatonic "box 1" is the foundation of rock and blues guitar. Learn it starting at the 5th fret for A minor.',
         fingerPositions: [
           { string: 6, fret: 5, finger: 1 },
-          { string: 6, fret: 8, finger: 4 },
-          { string: 5, fret: 5, finger: 1 },
-          { string: 5, fret: 7, finger: 3 }
+          { string: 6, fret: 8, finger: 4 }
         ],
-        tips: ['One finger per fret in this position', 'Keep your hand relaxed'],
-        common_mistakes: ['Tensing up the hand']
-      },
-      {
-        type: 'fretboard',
-        title: 'Ascending Pattern',
-        description: 'Play the scale going up: 6th string (5, 8), 5th string (5, 7), 4th string (5, 7), 3rd string (5, 7), 2nd string (5, 8), 1st string (5, 8).',
-        tab: `e|--5--8--|
-B|--5--8--|
-G|--5--7--|
-D|--5--7--|
-A|--5--7--|
-E|--5--8--|`,
-        tips: ['Use alternate picking', 'Start slow with a metronome'],
-        common_mistakes: ['Rushing', 'Inconsistent picking']
-      }
-    ]
-  },
-  {
-    id: 5,
-    category: 'techniques',
-    title: 'Hammer-Ons & Pull-Offs',
-    description: 'Essential legato techniques for smoother playing',
-    icon: '⚡',
-    duration: '7 min',
-    difficulty: 'intermediate',
-    steps: [
-      {
-        type: 'technique',
-        title: 'What is a Hammer-On?',
-        description: 'A hammer-on is when you "hammer" a finger onto a fret to sound a note WITHOUT picking. Pick the first note, then hammer your finger down hard to sound the second.',
-        icon: '🔨',
-        tips: ['Hit the string with force and accuracy', 'The hammering finger creates the sound'],
-        common_mistakes: ['Not hammering hard enough', 'Picking both notes']
-      },
-      {
-        type: 'fretboard',
-        title: 'Practice Hammer-Ons',
-        description: 'Pick the open 1st string, then hammer your index finger onto the 1st fret. The second note should ring clearly.',
-        tab: `e|--0h1--|`,
-        fingerPositions: [
-          { string: 1, fret: 1, finger: 1 }
-        ],
-        tips: ['Use your fingertip', 'Hammer right behind the fret'],
-        common_mistakes: ['Weak hammer', 'Lifting the first finger too early']
-      },
-      {
-        type: 'technique',
-        title: 'What is a Pull-Off?',
-        description: 'A pull-off is the opposite - you "pull" your finger off the string to sound a lower note. It\'s like plucking the string with your fretting finger.',
-        icon: '↩️',
-        tips: ['Pull slightly downward, not straight up', 'The pulling motion creates the sound'],
-        common_mistakes: ['Just lifting the finger instead of pulling']
-      }
-    ]
-  },
-  {
-    id: 6,
-    category: 'songs',
-    title: 'Wonderwall Intro',
-    description: 'Learn the iconic intro to Oasis\'s Wonderwall',
-    icon: '🎵',
-    duration: '10 min',
-    difficulty: 'intermediate',
-    steps: [
-      {
-        type: 'chord',
-        title: 'Em7 Chord',
-        description: 'The song starts with Em7. This is like an Em but with your ring and pinky on the 3rd fret.',
-        chord: 'Em7',
-        fingerPositions: [
-          { string: 5, fret: 2, finger: 2 },
-          { string: 4, fret: 2, finger: 1 },
-          { string: 2, fret: 3, finger: 3 },
-          { string: 1, fret: 3, finger: 4 }
-        ],
-        tips: ['These two fingers stay anchored throughout the song!', 'Strum strings 6 through 1'],
-        common_mistakes: ['Moving the ring and pinky fingers']
-      },
-      {
-        type: 'chord',
-        title: 'G Chord (Wonderwall version)',
-        description: 'Keep fingers 3 and 4 anchored, add finger 2 to the 6th string.',
-        chord: 'G',
-        fingerPositions: [
-          { string: 6, fret: 3, finger: 2 },
-          { string: 2, fret: 3, finger: 3 },
-          { string: 1, fret: 3, finger: 4 }
-        ],
-        tips: ['Ring and pinky never move!', 'This makes transitions much easier'],
-        common_mistakes: ['Using the standard G fingering']
+        tips: ['One finger per fret in this position', 'Keep your hand relaxed', 'Let the notes ring out clearly'],
+        common_mistakes: ['Tensing up your hand', 'Moving your whole hand instead of stretching']
       }
     ]
   }
@@ -539,59 +504,63 @@ const currentStep = computed(() => {
   return selectedLesson.value.steps[currentStepIndex.value] || {}
 })
 
+// Watch instrument changes
+watch(selectedInstrument, (newInstrument) => {
+  setInstrument(newInstrument)
+})
+
 function selectLesson(lesson) {
   selectedLesson.value = lesson
   currentStepIndex.value = 0
-  isAnimating.value = false
+  lessonComplete.value = false
+  simulateSpeaking()
 }
 
 function nextStep() {
   if (currentStepIndex.value < selectedLesson.value.steps.length - 1) {
     currentStepIndex.value++
-    if (autoPlay.value) {
-      startAnimation()
-    }
+    simulateSpeaking()
+  } else {
+    lessonComplete.value = true
   }
 }
 
 function previousStep() {
   if (currentStepIndex.value > 0) {
     currentStepIndex.value--
+    simulateSpeaking()
   }
 }
 
 function goToStep(index) {
   currentStepIndex.value = index
+  simulateSpeaking()
 }
 
-function toggleAnimation() {
-  if (isAnimating.value) {
-    stopAnimation()
-  } else {
-    startAnimation()
-  }
+function simulateSpeaking() {
+  isSpeaking.value = true
+  setTimeout(() => {
+    isSpeaking.value = false
+  }, 3000)
 }
 
-function startAnimation() {
-  isAnimating.value = true
-  
-  // Auto-advance after animation
-  if (autoPlay.value) {
-    animationTimer = setTimeout(() => {
-      if (currentStepIndex.value < selectedLesson.value.steps.length - 1) {
-        nextStep()
-      } else {
-        stopAnimation()
-      }
-    }, 5000)
-  }
-}
-
-function stopAnimation() {
-  isAnimating.value = false
-  if (animationTimer) {
-    clearTimeout(animationTimer)
-    animationTimer = null
+async function playCurrentSound() {
+  try {
+    setInstrument(selectedInstrument.value)
+    
+    if (currentStep.value.chord) {
+      await playChord(currentStep.value.chord, 'medium', 'down')
+    } else if (currentStep.value.notes) {
+      await playChordNotes(currentStep.value.notes)
+    }
+    
+    // Animate the fretboard
+    isAnimating.value = true
+    setTimeout(() => {
+      isAnimating.value = false
+    }, 1500)
+  } catch (e) {
+    console.log('Audio error:', e)
   }
 }
 
@@ -606,89 +575,29 @@ function getFingerNumber(string, fret) {
   return pos ? pos.finger : ''
 }
 
-function togglePracticeMode() {
-  practiceMode.value = !practiceMode.value
-  
-  if (practiceMode.value) {
-    startPracticeMetronome()
-  } else {
-    stopPracticeMetronome()
-  }
-}
-
-function startPracticeMetronome() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)()
-  }
-  
-  const beatDuration = 60000 / practiceTempo.value
-  currentBeat.value = 0
-  
-  practiceInterval = setInterval(() => {
-    currentBeat.value = (currentBeat.value % 4) + 1
-    playMetronomeClick(currentBeat.value === 1)
-  }, beatDuration)
-}
-
-function stopPracticeMetronome() {
-  if (practiceInterval) {
-    clearInterval(practiceInterval)
-    practiceInterval = null
-  }
-  currentBeat.value = 0
-}
-
-function playMetronomeClick(accent) {
-  if (!audioContext) return
-  
-  const osc = audioContext.createOscillator()
-  const gain = audioContext.createGain()
-  
-  osc.type = 'sine'
-  osc.frequency.value = accent ? 1000 : 800
-  
-  gain.gain.setValueAtTime(accent ? 0.3 : 0.15, audioContext.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05)
-  
-  osc.connect(gain)
-  gain.connect(audioContext.destination)
-  
-  osc.start()
-  osc.stop(audioContext.currentTime + 0.05)
-}
-
 async function generateCustomLesson() {
   if (!customTopic.value.trim()) return
   
   generating.value = true
-  
-  // Simulate AI generation (in production, this would call the AI service)
   await new Promise(resolve => setTimeout(resolve, 2000))
   
   const newLesson = {
     id: Date.now(),
-    category: 'custom',
+    category: selectedCategory.value,
     title: `Custom: ${customTopic.value}`,
-    description: `AI-generated lesson for: ${customTopic.value}`,
+    description: `Personalized lesson created just for you`,
     icon: '✨',
     duration: '5 min',
     difficulty: 'intermediate',
     steps: [
       {
         type: 'technique',
-        title: 'Introduction',
-        description: `Let's learn about ${customTopic.value}. This custom lesson was generated based on your request.`,
-        icon: '📚',
-        tips: ['Take your time with each step', 'Practice slowly at first'],
-        common_mistakes: ['Rushing through the material']
-      },
-      {
-        type: 'technique',
-        title: 'Practice Exercise',
-        description: `Here's a practice exercise to help you master ${customTopic.value}. Repeat this exercise until it feels comfortable.`,
+        title: 'Let\'s Learn This Together',
         icon: '🎯',
-        tips: ['Use a metronome', 'Start at a slow tempo'],
-        common_mistakes: ['Practicing too fast too soon']
+        teacherSays: `Great question! You want to learn about ${customTopic.value}. I love teaching this - let me break it down for you step by step.`,
+        description: `This custom lesson on "${customTopic.value}" was created based on your request. Let's work through this together!`,
+        tips: ['Take your time with each concept', 'Practice slowly before speeding up'],
+        common_mistakes: ['Rushing through without mastering the basics']
       }
     ]
   }
@@ -698,18 +607,16 @@ async function generateCustomLesson() {
   currentStepIndex.value = 0
   customTopic.value = ''
   generating.value = false
+  simulateSpeaking()
 }
 
-// Watch for auto-play changes
-watch(autoPlay, (newVal) => {
-  if (newVal && isAnimating.value) {
-    startAnimation()
-  }
+onMounted(async () => {
+  await initAudio()
+  setInstrument(selectedInstrument.value)
 })
 
 onUnmounted(() => {
-  stopAnimation()
-  stopPracticeMetronome()
+  disposeAudio()
 })
 </script>
 
@@ -720,58 +627,188 @@ onUnmounted(() => {
   padding: 24px;
 }
 
-.lessons-header {
-  text-align: center;
+/* Teacher Introduction */
+.teacher-intro {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 24px;
+  padding: 40px;
   margin-bottom: 32px;
 }
 
-.lessons-header h1 {
-  font-size: 2.5rem;
-  margin: 0 0 8px;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.teacher-profile {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-.subtitle {
-  color: #8892a6;
-  font-size: 1.1rem;
+.teacher-avatar {
+  position: relative;
+}
+
+.avatar-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3);
+}
+
+.online-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border: 3px solid #0f172a;
+  border-radius: 50%;
+}
+
+.teacher-info h1 {
+  font-size: 1.8rem;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.teacher-title {
+  color: #94a3b8;
+  margin: 0 0 16px;
+}
+
+.teacher-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.teacher-stats .stat {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.teacher-message {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+}
+
+.teacher-message::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 4rem;
+  color: rgba(34, 197, 94, 0.3);
+  font-family: Georgia, serif;
+}
+
+.teacher-message p {
+  color: #cbd5e1;
+  line-height: 1.7;
   margin: 0;
+  font-style: italic;
+}
+
+/* Instrument Selector */
+.instrument-selector {
+  margin-bottom: 32px;
+}
+
+.instrument-selector h3 {
+  color: #fff;
+  text-align: center;
+  margin: 0 0 16px;
+}
+
+.instrument-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.instrument-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.instrument-btn:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.instrument-btn.active {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.inst-icon {
+  font-size: 2rem;
+}
+
+.inst-name {
+  color: #fff;
+  font-weight: 600;
 }
 
 /* Categories */
 .category-tabs {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 8px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
 .category-tab {
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: 2px solid #2a2a3e;
-  background: #0f1424;
-  color: #8892a6;
-  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .category-tab:hover {
-  border-color: #ec4899;
-  color: #fff;
+  border-color: rgba(34, 197, 94, 0.5);
 }
 
 .category-tab.active {
-  border-color: #ec4899;
-  background: rgba(236, 72, 153, 0.1);
-  color: #ec4899;
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
 }
 
-/* Lesson Grid */
+/* Lessons Grid */
 .lessons-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -779,25 +816,41 @@ onUnmounted(() => {
 }
 
 .lesson-card {
-  background: linear-gradient(135deg, #0f1424, #1a1f35);
-  border: 2px solid #2a2a3e;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .lesson-card:hover {
-  border-color: #ec4899;
+  border-color: #22c55e;
   transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 12px 40px rgba(34, 197, 94, 0.15);
 }
 
 .lesson-thumbnail {
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
-  padding: 40px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05));
+  padding: 48px;
   text-align: center;
   position: relative;
+}
+
+.teacher-mini {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
 }
 
 .lesson-icon {
@@ -806,13 +859,27 @@ onUnmounted(() => {
 
 .lesson-duration {
   position: absolute;
-  top: 12px;
+  bottom: 12px;
   right: 12px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.lesson-card:hover .play-overlay {
+  opacity: 1;
 }
 
 .lesson-info {
@@ -826,16 +893,14 @@ onUnmounted(() => {
 }
 
 .lesson-info p {
-  color: #8892a6;
+  color: #94a3b8;
   margin: 0 0 12px;
   font-size: 0.9rem;
-  line-height: 1.5;
 }
 
 .lesson-meta {
   display: flex;
   gap: 12px;
-  align-items: center;
 }
 
 .difficulty {
@@ -846,23 +911,12 @@ onUnmounted(() => {
   text-transform: uppercase;
 }
 
-.difficulty.beginner {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-.difficulty.intermediate {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-}
-
-.difficulty.advanced {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
+.difficulty.beginner { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+.difficulty.intermediate { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.difficulty.advanced { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
 .steps {
-  color: #6b7280;
+  color: #64748b;
   font-size: 0.85rem;
 }
 
@@ -872,14 +926,17 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: none;
   border: none;
-  color: #8892a6;
+  color: #94a3b8;
   font-size: 1rem;
   cursor: pointer;
   padding: 0;
@@ -888,91 +945,139 @@ onUnmounted(() => {
 }
 
 .back-btn:hover {
-  color: #ec4899;
+  color: #22c55e;
 }
 
 .player-content {
-  background: linear-gradient(135deg, #0f1424, #1a1f35);
-  border: 2px solid #2a2a3e;
-  border-radius: 20px;
-  padding: 32px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
 }
 
-.player-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.player-header h2 {
-  color: #fff;
-  margin: 0 0 8px;
-}
-
-.player-header p {
-  color: #8892a6;
-  margin: 0;
-}
-
-/* Video/Animation Area */
-.video-area {
-  margin-bottom: 24px;
-}
-
-.animation-container {
-  background: #0a0a14;
-  border-radius: 16px;
-  padding: 32px;
+/* Video Container */
+.video-container {
   position: relative;
+}
+
+.video-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   min-height: 300px;
+}
+
+@media (max-width: 768px) {
+  .video-area {
+    grid-template-columns: 1fr;
+  }
+}
+
+.teacher-video {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
 }
 
-/* Animated Fretboard */
-.fretboard-animation {
+.teacher-cam {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.cam-avatar {
   width: 100%;
-  max-width: 400px;
+  height: 100%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
 }
 
-.animated-fretboard {
-  background: linear-gradient(180deg, #2d1f0f, #1a1208);
+.speaking-indicator {
+  position: absolute;
+  inset: -4px;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.speaking-indicator.active {
+  border-color: #22c55e;
+  animation: speakPulse 1s infinite;
+}
+
+@keyframes speakPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.teacher-speech {
+  text-align: center;
+}
+
+.speech-bubble {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.demo-area {
+  background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Fretboard Demo */
+.fretboard-demo {
+  width: 100%;
+}
+
+.fretboard-visual {
+  background: linear-gradient(180deg, #3a2a1a, #2a1a0a);
   border-radius: 8px;
-  padding: 16px;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+  padding: 12px;
 }
 
 .fret-row {
   display: flex;
   align-items: center;
-  height: 36px;
+  height: 32px;
   position: relative;
 }
 
 .fret-row::after {
   content: '';
   position: absolute;
-  left: 40px;
+  left: 32px;
   right: 0;
   top: 50%;
   height: 2px;
-  background: linear-gradient(90deg, #8b7355, #a08060);
+  background: linear-gradient(90deg, #a08060, #8a7050);
 }
 
 .string-label {
-  width: 36px;
-  color: #8892a6;
+  width: 28px;
+  color: #94a3b8;
   font-weight: 600;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   z-index: 1;
 }
 
 .fret-cell {
-  width: 60px;
+  width: 50px;
   height: 100%;
-  border-right: 2px solid #4a4a4a;
+  border-right: 2px solid #5a5a5a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -981,16 +1086,17 @@ onUnmounted(() => {
 }
 
 .finger-dot {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.5);
+  font-size: 0.8rem;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
   animation: fingerAppear 0.3s ease-out;
 }
 
@@ -999,188 +1105,247 @@ onUnmounted(() => {
 }
 
 @keyframes fingerAppear {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: scale(0); }
+  to { transform: scale(1); }
 }
 
 @keyframes fingerPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.5); }
-  50% { transform: scale(1.1); box-shadow: 0 4px 25px rgba(236, 72, 153, 0.8); }
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4); }
+  50% { transform: scale(1.15); box-shadow: 0 4px 20px rgba(34, 197, 94, 0.7); }
 }
 
 .chord-name-display {
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #ec4899;
-  margin-top: 16px;
+  color: #22c55e;
+  margin-top: 12px;
 }
 
-/* Technique Animation */
-.technique-animation {
+/* Piano Demo */
+.piano-demo {
+  width: 100%;
+}
+
+.piano-keys {
+  display: flex;
+  justify-content: center;
+  height: 140px;
+  position: relative;
+}
+
+.piano-key {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.piano-key.white {
+  width: 36px;
+  height: 140px;
+  background: linear-gradient(180deg, #f5f5f5, #e0e0e0);
+  border: 1px solid #999;
+  border-radius: 0 0 4px 4px;
+  z-index: 1;
+}
+
+.piano-key.black {
+  width: 24px;
+  height: 90px;
+  background: linear-gradient(180deg, #333, #111);
+  border-radius: 0 0 3px 3px;
+  margin: 0 -12px;
+  z-index: 2;
+}
+
+.piano-key.active {
+  background: linear-gradient(180deg, #22c55e, #16a34a) !important;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+}
+
+.key-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Technique Demo */
+.technique-demo {
   text-align: center;
 }
 
-.technique-visual {
-  font-size: 5rem;
-  animation: techniqueFloat 2s ease-in-out infinite;
+.technique-demo .technique-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: float 2s ease-in-out infinite;
 }
 
-@keyframes techniqueFloat {
+@keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
 
-/* Tab Display */
-.tab-display {
-  width: 100%;
-  margin-top: 20px;
-}
-
-.tab-notation {
-  background: #0a0a14;
-  border: 1px solid #2a2a3e;
-  border-radius: 8px;
-  padding: 16px;
-  font-family: 'Courier New', monospace;
-  color: #a5b4fc;
-  font-size: 1rem;
-  line-height: 1.6;
-  overflow-x: auto;
-}
-
-/* Instruction Overlay */
-.instruction-overlay {
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
-  background: rgba(15, 20, 36, 0.9);
-  border-radius: 10px;
-  padding: 12px 16px;
-}
-
-.step-number {
-  color: #ec4899;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.instruction-overlay h3 {
+.technique-demo h3 {
   color: #fff;
-  margin: 4px 0 0;
-  font-size: 1.1rem;
+  margin: 0;
 }
 
-/* Step Content */
-.step-content {
-  margin-bottom: 24px;
+/* Step Overlay */
+.step-overlay {
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.8));
+  padding: 16px 24px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
-.step-description {
-  color: #a5b4fc;
-  line-height: 1.7;
-  font-size: 1.05rem;
-  margin: 0 0 20px;
+.step-badge {
+  display: inline-block;
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
-.step-tips, .common-mistakes {
-  background: #0a0a14;
-  border-radius: 12px;
-  padding: 16px 20px;
+.step-overlay h2 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+/* Instructor Notes */
+.instructor-notes {
+  padding: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notes-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.step-tips h4, .common-mistakes h4 {
+.instructor-mini {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: #fff;
-  margin: 0 0 12px;
-  font-size: 1rem;
 }
 
-.step-tips ul, .common-mistakes ul {
+.notes-header span {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.step-description {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin: 0 0 20px;
+}
+
+.tips-section, .mistakes-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.tips-section h4, .mistakes-section h4 {
+  color: #fff;
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.tips-section ul, .mistakes-section ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.step-tips li, .common-mistakes li {
-  color: #8892a6;
+.tips-section li, .mistakes-section li {
+  color: #94a3b8;
   padding: 6px 0;
   padding-left: 20px;
   position: relative;
 }
 
-.step-tips li::before {
+.tips-section li::before {
   content: '✓';
   position: absolute;
   left: 0;
-  color: #10b981;
+  color: #22c55e;
 }
 
-.common-mistakes li::before {
+.mistakes-section li::before {
   content: '✗';
   position: absolute;
   left: 0;
   color: #ef4444;
 }
 
-/* Progress */
-.lesson-progress {
-  margin-bottom: 24px;
+/* Progress Section */
+.progress-section {
+  padding: 0 24px 24px;
 }
 
-.progress-steps {
+.progress-dots {
   display: flex;
   justify-content: center;
-  gap: 24px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
 .progress-dot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.dot-inner {
-  width: 16px;
-  height: 16px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #2a2a3e;
+  background: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
   transition: all 0.3s;
 }
 
-.progress-dot.completed .dot-inner {
-  background: #10b981;
+.progress-dot.completed {
+  background: #22c55e;
+  color: #fff;
 }
 
-.progress-dot.active .dot-inner {
-  background: #ec4899;
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-  transform: scale(1.2);
-}
-
-.step-label {
-  color: #6b7280;
-  font-size: 0.8rem;
-}
-
-.progress-dot.active .step-label {
-  color: #ec4899;
+.progress-dot.active {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
 }
 
 .progress-bar {
   height: 4px;
-  background: #2a2a3e;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ec4899, #8b5cf6);
+  background: linear-gradient(90deg, #22c55e, #16a34a);
   border-radius: 2px;
   transition: width 0.3s;
 }
@@ -1189,257 +1354,171 @@ onUnmounted(() => {
 .player-controls {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  padding: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.nav-btn {
+.control-btn {
   padding: 12px 24px;
   border-radius: 10px;
-  border: 2px solid #2a2a3e;
-  background: transparent;
-  color: #8892a6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.nav-btn:hover:not(:disabled) {
-  border-color: #ec4899;
+.control-btn:hover:not(:disabled) {
+  border-color: #22c55e;
   color: #fff;
 }
 
-.nav-btn:disabled {
+.control-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.play-btn {
-  padding: 14px 32px;
-  border-radius: 12px;
+.control-btn.primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   border: none;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
   color: #fff;
-  font-size: 1.1rem;
-  font-weight: 700;
+}
+
+.control-btn.primary:hover {
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+}
+
+.play-sound-btn {
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 2px solid #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
-.play-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+.play-sound-btn:hover {
+  background: #22c55e;
+  color: #fff;
 }
 
-/* Autoplay Toggle */
-.autoplay-toggle {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: #8892a6;
-  cursor: pointer;
-}
-
-.toggle-label input {
-  display: none;
-}
-
-.toggle-switch {
-  width: 48px;
-  height: 24px;
-  background: #2a2a3e;
-  border-radius: 12px;
-  position: relative;
-  transition: background 0.3s;
-}
-
-.toggle-switch::after {
-  content: '';
+/* Completion Message */
+.completion-message {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  background: #fff;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.completion-content {
+  text-align: center;
+  padding: 40px;
+}
+
+.completion-avatar {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s;
-}
-
-.toggle-label input:checked + .toggle-switch {
-  background: #ec4899;
-}
-
-.toggle-label input:checked + .toggle-switch::after {
-  transform: translateX(24px);
-}
-
-/* Practice Section */
-.practice-section {
-  background: #0a0a14;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.practice-section h3 {
-  color: #fff;
-  margin: 0 0 16px;
-}
-
-.practice-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.tempo-control {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.tempo-control label {
-  color: #8892a6;
-}
-
-.tempo-slider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.tempo-slider button {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 2px solid #2a2a3e;
-  background: transparent;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
+  margin: 0 auto 20px;
 }
 
-.tempo-slider button:hover {
-  border-color: #ec4899;
-}
-
-.tempo-slider span {
-  color: #ec4899;
-  font-weight: 600;
-  min-width: 80px;
-  text-align: center;
-}
-
-.practice-btn {
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: 2px solid #ec4899;
-  background: rgba(236, 72, 153, 0.1);
-  color: #ec4899;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.practice-btn:hover {
-  background: #ec4899;
+.completion-content h3 {
   color: #fff;
+  font-size: 1.8rem;
+  margin: 0 0 12px;
 }
 
-.practice-metronome {
-  margin-top: 20px;
-  text-align: center;
+.completion-content p {
+  color: #94a3b8;
+  font-style: italic;
+  max-width: 400px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
 }
 
-.beat-indicators {
+.completion-actions {
   display: flex;
   justify-content: center;
   gap: 16px;
 }
 
-.beat-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #2a2a3e;
-  transition: all 0.1s;
-}
-
-.beat-dot.active {
-  background: #ec4899;
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
-  transform: scale(1.2);
-}
-
-/* Lesson Complete */
-.lesson-complete {
-  text-align: center;
-  padding: 32px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
-  border-radius: 16px;
-  border: 2px solid rgba(16, 185, 129, 0.3);
-}
-
-.lesson-complete h3 {
-  color: #10b981;
-  margin: 0 0 8px;
-  font-size: 1.5rem;
-}
-
-.lesson-complete p {
-  color: #8892a6;
-  margin: 0 0 20px;
-}
-
-.complete-actions {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.complete-actions button {
+.completion-actions button {
   padding: 12px 24px;
   border-radius: 10px;
-  border: 2px solid #2a2a3e;
-  background: transparent;
-  color: #8892a6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.complete-actions button:hover {
-  border-color: #10b981;
+.completion-actions button:hover {
+  border-color: #22c55e;
   color: #fff;
 }
 
-.complete-actions button.primary {
-  background: linear-gradient(135deg, #10b981, #06b6d4);
+.completion-actions button.primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   border: none;
   color: #fff;
 }
 
-/* Custom Lesson */
-.custom-lesson-section {
-  background: linear-gradient(135deg, #0f1424, #1a1f35);
-  border: 2px solid #2a2a3e;
-  border-radius: 16px;
-  padding: 24px;
-  margin-top: 32px;
+/* Custom Section */
+.custom-section {
+  margin-top: 40px;
 }
 
-.custom-lesson-section h3 {
+.custom-card {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(22, 163, 74, 0.02));
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.custom-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.custom-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
   color: #fff;
-  margin: 0 0 16px;
-  text-align: center;
+  flex-shrink: 0;
+}
+
+.custom-header h3 {
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.custom-header p {
+  color: #94a3b8;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .custom-form {
@@ -1449,28 +1528,28 @@ onUnmounted(() => {
 
 .custom-input {
   flex: 1;
-  padding: 14px 20px;
+  padding: 14px 18px;
   border-radius: 12px;
-  border: 2px solid #2a2a3e;
-  background: #0a0a14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
   color: #fff;
   font-size: 1rem;
   outline: none;
 }
 
 .custom-input:focus {
-  border-color: #ec4899;
+  border-color: #22c55e;
 }
 
 .custom-input::placeholder {
-  color: #6b7280;
+  color: #64748b;
 }
 
-.generate-btn {
+.custom-btn {
   padding: 14px 28px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
@@ -1478,46 +1557,22 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.generate-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+.custom-btn:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
 }
 
-.generate-btn:disabled {
+.custom-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .ai-video-lessons {
-    padding: 16px;
-  }
-
-  .lessons-header h1 {
-    font-size: 2rem;
-  }
-
-  .lessons-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .player-controls {
-    flex-direction: column;
-  }
-
-  .practice-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tempo-control {
-    justify-content: center;
-  }
-
-  .custom-form {
-    flex-direction: column;
-  }
+  .ai-video-lessons { padding: 16px; }
+  .teacher-profile { flex-direction: column; text-align: center; }
+  .teacher-stats { justify-content: center; }
+  .video-area { grid-template-columns: 1fr; }
+  .player-controls { flex-wrap: wrap; }
+  .custom-form { flex-direction: column; }
 }
 </style>
-

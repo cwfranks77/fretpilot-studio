@@ -130,7 +130,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { initAudio, playChord, playChordNotes, setInstrument, disposeAudio } from '../services/audioService'
 
 const instrument = ref('guitar')
 const category = ref('major')
@@ -264,39 +265,22 @@ function markComplete() {
   }
 }
 
-function playChordSound() {
+async function playChordSound() {
   try {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    const notes = currentChord.value.notes || ['C', 'E', 'G']
+    // Set instrument based on current selection
+    setInstrument(instrument.value)
     
-    const noteFreqs = {
-      'C': 261.63, 'C#': 277.18, 'Db': 277.18,
-      'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
-      'E': 329.63, 'E#': 349.23,
-      'F': 349.23, 'F#': 369.99, 'Gb': 369.99,
-      'G': 392.00, 'G#': 415.30, 'Ab': 415.30,
-      'A': 440.00, 'A#': 466.16, 'Bb': 466.16,
-      'B': 493.88
+    // Try to play the chord by name first (for realistic strumming)
+    const chordName = currentChord.value.name
+    if (chordName) {
+      await playChord(chordName, 'medium', 'down')
+    } else {
+      // Fallback to playing individual notes
+      const notes = currentChord.value.notes || ['C', 'E', 'G']
+      await playChordNotes(notes)
     }
-    
-    notes.forEach((note, i) => {
-      const osc = audioContext.createOscillator()
-      const gain = audioContext.createGain()
-      
-      osc.type = 'triangle'
-      osc.frequency.value = noteFreqs[note] || 440
-      
-      gain.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5)
-      
-      osc.connect(gain)
-      gain.connect(audioContext.destination)
-      
-      osc.start(audioContext.currentTime + i * 0.05)
-      osc.stop(audioContext.currentTime + 1.5)
-    })
   } catch (e) {
-    console.log('Audio not supported')
+    console.log('Audio error:', e)
   }
 }
 
@@ -320,8 +304,20 @@ function loadProgress() {
   } catch (e) {}
 }
 
-onMounted(() => {
+// Watch for instrument changes
+watch(instrument, (newInstrument) => {
+  setInstrument(newInstrument)
+})
+
+onMounted(async () => {
   loadProgress()
+  // Initialize audio system
+  await initAudio()
+  setInstrument(instrument.value)
+})
+
+onUnmounted(() => {
+  disposeAudio()
 })
 </script>
 
