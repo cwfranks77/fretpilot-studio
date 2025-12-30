@@ -3,25 +3,35 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="FretPilot Studio – AI guitar & multi-instrument lessons, jam companion, practice analytics, and gear store." />
+    <meta name="description" content="FretPilot Studio – Master any instrument with AI-powered lessons. Guitar, Piano, Bass, Ukulele, Drums & more. Personalized learning that adapts to you." />
     <meta name="author" content="FretPilot Studio" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#09090b" />
+    <meta name="keywords" content="guitar lessons, piano lessons, learn music, AI music teacher, chord trainer, music learning app, bass lessons, ukulele, drums" />
     <meta property="og:site_name" content="FretPilot Studio" />
-    <meta property="og:title" content="FretPilot Studio – AI Music Learning & Gear" />
-    <meta property="og:description" content="Adaptive AI lessons, jam tracks, analytics, and premium guitar gear in one platform." />
+    <meta property="og:title" content="FretPilot Studio – Master Any Instrument with AI" />
+    <meta property="og:description" content="Personalized AI lessons for Guitar, Piano, Bass, Drums & more. Join 12,000+ musicians learning smarter." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fretpilotstudio.com" />
+    <meta property="og:image" content="https://fretpilotstudio.com/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FretPilot Studio – Master Any Instrument with AI" />
+    <meta name="twitter:description" content="Personalized AI lessons for Guitar, Piano, Bass, Drums & more." />
     <link rel="canonical" href="https://fretpilotstudio.com" />
     <link rel="manifest" href="/manifest.json" />
-    <title>FretPilot Studio</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' rx='6' fill='%2322c55e'/%3E%3Cpath d='M8 16L16 8L24 16M16 8V26' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='20' r='2.5' fill='white'/%3E%3C/svg%3E" />
+    <title>FretPilot Studio – Master Any Instrument with AI</title>
     <style>
-      html, body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', system-ui, sans-serif; }
-      #app { min-height: 100vh; opacity: 0; transition: opacity 0.15s ease-in; }
+      html, body { margin: 0; padding: 0; background: #09090b; color: #fafafa; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      #app { min-height: 100vh; opacity: 0; transition: opacity 0.2s ease-out; }
       #app.loaded { opacity: 1; }
+      /* Initial loading state */
+      .app-loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #09090b; }
+      .app-loading::after { content: ''; width: 40px; height: 40px; border: 3px solid #27272a; border-top-color: #22c55e; border-radius: 50%; animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" class="app-loading"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
