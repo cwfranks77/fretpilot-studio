@@ -71,6 +71,30 @@
       </div>
     </main>
 
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav">
+      <button class="mobile-nav-item" :class="{ active: view === 'home' }" @click="view='home'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9L12 2L21 9V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="mobile-nav-item" :class="{ active: view === 'chord-trainer' }" @click="view='chord-trainer'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Learn</span>
+      </button>
+      <button class="mobile-nav-item" :class="{ active: view === 'chord-library' }" @click="view='chord-library'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 2H20V22H6.5A2.5 2.5 0 014 19.5V4.5A2.5 2.5 0 016.5 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Library</span>
+      </button>
+      <button class="mobile-nav-item" :class="{ active: view === 'metronome' }" @click="view='metronome'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Tools</span>
+      </button>
+      <button class="mobile-nav-item pricing" :class="{ active: view === 'pricing' }" @click="view='pricing'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Pro</span>
+      </button>
+    </nav>
+
     <footer class="app-footer">
       <div class="footer-content">
         <div class="footer-brand">
@@ -165,6 +189,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 .app-shell { 
@@ -231,6 +256,21 @@ body {
   gap: 6px; 
   flex-wrap: wrap; 
   align-items: center; 
+}
+
+@media (max-width: 480px) {
+  .nav {
+    display: none;
+  }
+  .topbar {
+    justify-content: center;
+  }
+  .header-right {
+    display: none;
+  }
+  .brand-name {
+    display: block !important;
+  }
 }
 
 .nav-link { 
@@ -512,5 +552,69 @@ div[class*="vercel"],
 iframe[src*="vercel"] { 
   display: none !important; 
   visibility: hidden !important;
+}
+
+/* Mobile Bottom Navigation */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(12, 10, 9, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(245, 158, 11, 0.1);
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 200;
+  justify-content: space-around;
+}
+
+@media (max-width: 480px) {
+  .mobile-nav {
+    display: flex;
+  }
+  .app-footer {
+    padding-bottom: 100px;
+  }
+  .content {
+    padding-bottom: 80px;
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #78716c;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.mobile-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-nav-item span {
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.mobile-nav-item.active {
+  color: #f97316;
+}
+
+.mobile-nav-item.pricing {
+  color: #f97316;
+}
+
+.mobile-nav-item.pricing.active {
+  color: #fb923c;
 }
 </style>

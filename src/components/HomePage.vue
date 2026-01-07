@@ -459,7 +459,7 @@ function showToast(message) {
   top: -20%;
   left: 50%;
   transform: translateX(-50%);
-  width: 140%;
+  width: 100%;
   height: 70%;
   background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.15), transparent 60%);
   pointer-events: none;
@@ -480,6 +480,7 @@ function showToast(message) {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  max-width: 100%;
 }
 
 .note {
@@ -490,9 +491,9 @@ function showToast(message) {
 }
 
 .n1 { top: 20%; left: 10%; animation-delay: 0s; }
-.n2 { top: 60%; left: 85%; animation-delay: 2s; }
+.n2 { top: 60%; right: 10%; animation-delay: 2s; }
 .n3 { top: 80%; left: 15%; animation-delay: 4s; }
-.n4 { top: 30%; left: 90%; animation-delay: 6s; }
+.n4 { top: 30%; right: 5%; animation-delay: 6s; }
 
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
