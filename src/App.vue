@@ -171,8 +171,10 @@ onUnmounted(() => {
 
 html { 
   overflow-y: scroll; 
+  overflow-x: hidden;
   scrollbar-gutter: stable; 
   width: 100%; 
+  max-width: 100vw;
   scroll-behavior: smooth;
 }
 
@@ -180,6 +182,8 @@ html, body, #app {
   height: 100%; 
   background: #0c0a09; 
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body { 
@@ -258,15 +262,30 @@ body {
   align-items: center; 
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .nav {
-    display: none;
+    display: none !important;
   }
   .topbar {
     justify-content: center;
   }
   .header-right {
-    display: none;
+    display: none !important;
+  }
+  .brand-name {
+    display: block !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    display: none !important;
+  }
+  .topbar {
+    justify-content: center;
+  }
+  .header-right {
+    display: none !important;
   }
   .brand-name {
     display: block !important;
@@ -570,7 +589,7 @@ iframe[src*="vercel"] {
   justify-content: space-around;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .mobile-nav {
     display: flex;
   }

@@ -971,7 +971,7 @@ function showToast(message) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120%;
+  width: 100%;
   height: 80%;
   background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.08), transparent 60%);
   pointer-events: none;
