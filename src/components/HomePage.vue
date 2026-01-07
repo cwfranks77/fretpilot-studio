@@ -1236,6 +1236,18 @@ function showToast(message) {
   z-index: 100;
 }
 
+.dev-trigger::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  background: #3b82f6;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
 .dev-password-overlay {
   position: fixed;
   inset: 0;

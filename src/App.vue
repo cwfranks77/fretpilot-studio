@@ -147,7 +147,13 @@ let premiumCheckInterval = null
 
 onMounted(() => {
   readAuth()
-  requestAnimationFrame(() => { document.getElementById('app')?.classList.add('loaded') })
+  requestAnimationFrame(() => { 
+    const app = document.getElementById('app')
+    if (app) {
+      app.classList.remove('app-loading')
+      app.classList.add('loaded')
+    }
+  })
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.get('tester_signup')) view.value = 'tester-signup'
   if (window.location.search.includes('payment_success')) view.value = 'payment-success'
