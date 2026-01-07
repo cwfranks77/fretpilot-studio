@@ -1228,24 +1228,32 @@ function showToast(message) {
 /* Dev Access */
 .dev-trigger {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 30px;
-  height: 30px;
+  bottom: 100px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  z-index: 100;
+  z-index: 300;
 }
 
 .dev-trigger::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 4px;
-  height: 4px;
+  bottom: 50%;
+  right: 50%;
+  transform: translate(50%, 50%);
+  width: 6px;
+  height: 6px;
   background: #3b82f6;
   border-radius: 50%;
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+@media (min-width: 601px) {
+  .dev-trigger {
+    bottom: 24px;
+    right: 24px;
+  }
 }
 
 .dev-password-overlay {
