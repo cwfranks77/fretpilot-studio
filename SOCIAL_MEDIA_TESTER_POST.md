@@ -17,7 +17,7 @@ I'm looking for beta testers for FretPilot Studio - an AI-powered guitar learnin
 • Bug reports
 • Feature suggestions
 
-Sign up here: [YOUR_TESTER_LINK]
+Sign up here: https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789
 
 #GuitarLessons #BetaTesting #FreePremium #GuitarApp
 ```
@@ -45,7 +45,7 @@ FretPilot Studio is an AI-powered guitar learning app that helps you practice sm
 • Share your ideas for new features
 • Help us test on different devices
 
-Ready to help? Sign up here: [YOUR_TESTER_LINK]
+Ready to help? Sign up here: https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789
 
 This is a limited-time opportunity - only the first 50 testers get lifetime access!
 
@@ -103,7 +103,7 @@ I've been working on FretPilot Studio, an AI-powered guitar learning app, and I'
 - Testing on different devices (Android, iOS, Web)
 
 **How to sign up:**
-Just click this link and enter your email: [YOUR_TESTER_LINK]
+Just click this link and enter your email: https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789
 
 This is a limited opportunity - only the first 50 testers get lifetime access. After that, it'll be regular pricing.
 
@@ -134,7 +134,7 @@ I'm reaching out because I know you're passionate about guitar, and I'd love you
 • Suggest features you'd like to see
 • Test on your device (Android, iOS, or Web)
 
-**Sign up here:** [YOUR_TESTER_LINK]
+**Sign up here:** https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789
 
 This is a limited-time offer - only the first 50 testers get lifetime access. After that, it'll be regular pricing.
 
@@ -157,7 +157,7 @@ Looking for guitar players to help test my new AI-powered learning app!
 ✨ All features unlocked forever
 ✨ Help shape the future of guitar learning
 
-Sign up: [YOUR_TESTER_LINK]
+Sign up: https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789
 
 Limited to first 50 testers!
 ```
@@ -193,7 +193,7 @@ Example: fretpilot-beta-2025-a7f3k9m2p5q8w1x4z6-20250101
 
 ## 📝 Notes
 
-1. **Replace [YOUR_TESTER_LINK]** with your actual tester signup URL
+1. **Replace https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789** with your actual tester signup URL
    - Format: `https://fretpilotstudio.com/?tester_signup=fretpilot-beta-2025-tester-access-secure-token-xyz789`
    - You can create a shorter link using bit.ly or similar
 
